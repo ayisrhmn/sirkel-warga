@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import * as XLSX from "xlsx";
 import { toCsv, validateDatasetInput } from "./dataset";
-import { buildDataset, describeColumns, detectNameMerge, guessHeaderIndex, looksLikeSpreadsheet, readWorkbook, sheetToGrid, type Grid } from "./excel";
+import { buildDataset, describeColumns, guessHeaderIndex, looksLikeSpreadsheet, readWorkbook, sheetToGrid } from "./excel";
 
 // A treasurer-style sheet: banner title (merged), header on row 3, an empty
 // column, a duplicate header, a vertical merge, a formula, a date, a blank
@@ -258,86 +258,6 @@ describe("pinnedColumn", () => {
     const { pinnedColumn } = await import("./dataset");
     expect(pinnedColumn(["Nama", "Jumlah"], [["Budi", 1]])).toBe(-1);
     expect(pinnedColumn(["a", "b", "c", "d", "e"], [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])).toBe(-1);
-  });
-});
-
-describe("merging Bapak, Ibu and Blok into one name column", () => {
-  const grid = sheetToGrid(
-    readWorkbook(
-      XLSX.write(
-        (() => {
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(
-            wb,
-            XLSX.utils.aoa_to_sheet([
-              ["LAPORAN"],
-              ["No", "Bapak", "Ibu", "Blok", "Januari"],
-              [1, "Fulan", "Fulana", "AH2-28", 5000],
-              [2, "Agus", null, "AH2-29", null],
-              [3, null, "Eny", "AH3-8", 5000],
-              [4, "Budi", "Sari", null, 5000],
-              [null, null, null, "TOTAL", 15000],
-              [null, null, null, "SALDO", 9000],
-            ]),
-            "S",
-          );
-          return wb;
-        })(),
-        { type: "array", bookType: "xlsx" },
-      ) as ArrayBuffer,
-    ).Sheets["S"],
-  );
-  const merge = detectNameMerge(grid, 1)!;
-
-  test("the usual household columns are detected; other tables are left alone", () => {
-    expect(merge).toEqual({ name: "Nama", people: [1, 2], place: 3 });
-    expect(detectNameMerge([["No", "Nama", "Jumlah"], [1, "Budi", 5]], 0)).toBeNull();
-    expect(detectNameMerge([["No", "Bapak", "Blok"], [1, "Budi", "A1"]], 0)).toBeNull(); // one person column is not enough
-  });
-
-  test("both names, one name, and the place are written the way people say them", () => {
-    const { columns, rows } = buildDataset(grid, 1, new Set(), { merge, from: 3, to: 6 });
-    expect(columns).toEqual(["No", "Nama", "Januari"]);
-    expect(rows.map((r) => r[1])).toEqual([
-      "Bapak Fulan & Ibu Fulana (AH2-28)",
-      "Bapak Agus (AH2-29)",
-      "Ibu Eny (AH3-8)",
-      "Bapak Budi & Ibu Sari", // no place: no empty parentheses
-    ]);
-    expect(rows[0][0]).toBe(1); // other columns are untouched
-  });
-
-  test("a label with a number under the name columns shows like a merged cell", () => {
-    // "SALDO AKHIR ..." sits under "No" and its number under "Bapak".
-    const withBalance: Grid = [...grid, [], ["SALDO AKHIR DES '25", 72000, null, null, null]];
-    const { columns, rows } = buildDataset(withBalance, 1, new Set(), { merge });
-    expect(columns).toEqual(["No", "Nama", "Januari"]);
-    // The label is in the (wide) name column, the number right after it, and the narrow No column is empty.
-    expect(rows.at(-1)).toEqual([null, "SALDO AKHIR DES '25", 72000]);
-    // Ordinary households are untouched.
-    expect(rows[0]).toEqual([1, "Bapak Fulan & Ibu Fulana (AH2-28)", 5000]);
-  });
-
-  test("a number under a person column with no label is kept as a plain number", () => {
-    const loose: Grid = [...grid, [], [null, 4500, null, null, null]];
-    expect(buildDataset(loose, 1, new Set(), { merge }).rows.at(-1)).toEqual([null, "4500", null]);
-  });
-
-  test("a summary block keeps its own label column instead of becoming a name", () => {
-    const summary = buildDataset(grid, 1, new Set(), { merge, from: 7, to: 8, renames: new Map([[3, "Keterangan"]]) });
-    expect(summary.columns).toEqual(["Keterangan", "Januari"]);
-    expect(summary.rows).toEqual([["TOTAL", 15000], ["SALDO", 9000]]);
-  });
-
-  test("with the whole sheet, labels of summary rows survive in the name column", () => {
-    const { rows } = buildDataset(grid, 1, new Set(), { merge });
-    expect(rows.slice(-2).map((r) => r[1])).toEqual(["TOTAL", "SALDO"]);
-  });
-
-  test("the merged column can be renamed or switched off", () => {
-    expect(buildDataset(grid, 1, new Set(), { merge, renames: new Map([[1, "Warga"]]) }).columns[1]).toBe("Warga");
-    expect(buildDataset(grid, 1, new Set(), {}).columns).toEqual(["No", "Bapak", "Ibu", "Blok", "Januari"]);
-    expect(buildDataset(grid, 1, new Set([1]), { merge }).columns).toEqual(["No", "Januari"]); // unticked = hidden
   });
 });
 

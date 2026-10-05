@@ -17,7 +17,6 @@ import {
   buildDataset,
   type BuildOptions,
   describeColumns,
-  detectNameMerge,
   guessHeaderIndex,
   looksLikeSpreadsheet,
   readWorkbook,
@@ -83,12 +82,10 @@ export function ImportDataset({ slug }: { slug: string }) {
     }
   }
 
-  // "Bapak", "Ibu" and "Blok" columns are always shown as one name column.
-  const nameMerge = useMemo(() => detectNameMerge(grid, headerIndex, headerRows), [grid, headerIndex, headerRows]);
   const options = useMemo<BuildOptions>(() => {
     const row = (text: string) => (/^\d+$/.test(text.trim()) ? Number(text) : undefined);
-    return { headerRows, from: row(fromRow), to: row(toRow), renames, merge: nameMerge ?? undefined };
-  }, [headerRows, fromRow, toRow, renames, nameMerge]);
+    return { headerRows, from: row(fromRow), to: row(toRow), renames };
+  }, [headerRows, fromRow, toRow, renames]);
   const candidates = useMemo(
     () => describeColumns(grid, headerIndex, options),
     [grid, headerIndex, options],
@@ -245,17 +242,6 @@ export function ImportDataset({ slug }: { slug: string }) {
               nomor telepon. Nama kolom bisa diubah, mis. &ldquo;Blok&rdquo; menjadi
               &ldquo;Keterangan&rdquo; untuk tabel ringkasan.
             </p>
-            {nameMerge && (
-              <p className="rounded-md border border-neutral-300 p-3 text-sm">
-                Kolom{" "}
-                {[...nameMerge.people, ...(nameMerge.place === undefined ? [] : [nameMerge.place])]
-                  .map((c) => `\u201c${String(grid[headerIndex]?.[c] ?? "").trim()}\u201d`)
-                  .join(", ")}{" "}
-                otomatis digabung menjadi satu kolom &ldquo;Nama&rdquo;, mis.{" "}
-                <span className="font-medium">Bapak Fulan &amp; Ibu Fulana (AH2-28)</span>. Bila hanya ada
-                satu, hanya itu yang tampil. Baris tanpa nama (mis. TOTAL) tetap memakai tulisannya.
-              </p>
-            )}
             <ul className="flex flex-col gap-1">
               {candidates.map((c) => (
                 <li key={c.index} className="flex items-center gap-2">
