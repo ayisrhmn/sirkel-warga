@@ -11,6 +11,7 @@ Panduan operasional untuk pemilik proyek (platform admin). Semua perintah dijala
 | `BETTER_AUTH_URL` | Alamat aplikasi, mis. `https://sirkel-warga.vercel.app` (tanpa garis miring di akhir) | Vercel |
 | `BETTER_AUTH_SECRET` | Acak, `openssl rand -base64 32` | Vercel |
 | `COOKIE_SECRET` | Acak, `openssl rand -base64 32`, minimal 16 karakter | Vercel |
+| `REGISTRATION_CODE` | Opsional. Bila diisi, halaman `/register` meminta kode ini, jadi hanya orang yang kamu beri kode yang bisa mendaftar. Mencegah antrean `/platform` dibanjiri spam. Ganti kapan saja (deploy ulang). | Vercel |
 
 Jangan pernah memakai awalan `NEXT_PUBLIC_` untuk variabel apa pun. Jangan simpan secret di repo.
 
@@ -31,6 +32,8 @@ Jangan pernah memakai awalan `NEXT_PUBLIC_` untuk variabel apa pun. Jangan simpa
 2. Isi environment variable dari tabel di atas (kecuali `DIRECT_URL`).
 3. Deploy. Region fungsi sudah diatur ke Singapore (`sin1`) lewat `vercel.json`. Paket Hobby hanya mengizinkan satu region.
 4. Setelah `BETTER_AUTH_URL` sesuai alamat produksi, deploy ulang bila perlu (perubahan env baru berlaku setelah deploy baru).
+
+**Preview deployment (branch lain, pull request).** Setiap preview punya alamat sendiri. Isi `BETTER_AUTH_URL` hanya untuk lingkungan **Production** di Vercel, sehingga preview memakai alamatnya sendiri (otomatis lewat `VERCEL_URL`) dan login tetap jalan. Preview tetap butuh `DATABASE_URL`, `BETTER_AUTH_SECRET`, dan `COOKIE_SECRET` untuk lingkungan Preview. **Jangan** mengarahkan preview ke database produksi: buat *branch* Neon terpisah untuk preview, supaya uji coba tidak menyentuh data warga.
 
 ### 2.3 Memeriksa region
 Buka halaman yang dinamis, mis. `https://<alamat>/admin`, dan lihat header `x-vercel-id`:

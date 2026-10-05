@@ -21,6 +21,7 @@ bun run dev
 | `DIRECT_URL` | Opsional, URL non-pooled untuk migrasi |
 | `BETTER_AUTH_URL` | URL dasar aplikasi, mis. `http://localhost:3000` |
 | `BETTER_AUTH_SECRET` | Kunci auth, buat dengan `openssl rand -base64 32` |
+| `REGISTRATION_CODE` | Opsional. Bila diisi, pendaftaran akun meminta kode ini |
 | `COOKIE_SECRET` | Kunci tanda tangan cookie akses laporan dilindungi (minimal 16 karakter), buat dengan `openssl rand -base64 32` |
 
 ## Database

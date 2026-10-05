@@ -1,13 +1,26 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { getDb } from "@/lib/db";
 
 const db = getDb();
 
+// Hashed first so the comparison takes the same time whatever the length.
+const sameSecret = (given: string, expected: string) =>
+  timingSafeEqual(
+    createHash("sha256").update(given).digest(),
+    createHash("sha256").update(expected).digest(),
+  );
+
 export const auth = betterAuth({
+  // Production sets BETTER_AUTH_URL. Preview deployments have a different
+  // address on every deploy, which Vercel provides as VERCEL_URL.
+  baseURL:
+    process.env.BETTER_AUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined),
   database: prismaAdapter(db, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,
@@ -40,6 +53,18 @@ export const auth = betterAuth({
     },
   },
   advanced: { ipAddress: { ipAddressHeaders: ["x-forwarded-for"] } },
+  hooks: {
+    // Optional gate on self-registration: when REGISTRATION_CODE is set, the
+    // sign-up request must carry it. Server-side calls (a super admin creating
+    // an admin account) have no HTTP request and are not affected.
+    before: createAuthMiddleware(async (ctx) => {
+      const expected = process.env.REGISTRATION_CODE;
+      if (ctx.path !== "/sign-up/email" || !ctx.request || !expected) return;
+      const given = ctx.request.headers.get("x-registration-code") ?? "";
+      if (!sameSecret(given, expected))
+        throw new APIError("FORBIDDEN", { message: "Kode pendaftaran salah." });
+    }),
+  },
   databaseHooks: {
     session: {
       create: {

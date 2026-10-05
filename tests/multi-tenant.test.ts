@@ -205,3 +205,62 @@ describe("emergency password reset", () => {
     expect(await resetAccountPassword("tidak_ada", "password-darurat-9")).toBe(false);
   });
 });
+
+describe("registration code", () => {
+  const signUp = (username: string, code?: string) =>
+    m.auth.handler(
+      new Request("http://localhost:3000/api/auth/sign-up/email", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: "http://localhost:3000",
+          ...(code === undefined ? {} : { "x-registration-code": code }),
+        },
+        body: JSON.stringify({
+          email: `${username}@users.sirkel.local`,
+          password: PASSWORD,
+          name: username,
+          username,
+        }),
+      }),
+    );
+
+  test("without REGISTRATION_CODE, sign-up stays open", async () => {
+    delete process.env.REGISTRATION_CODE;
+    expect((await signUp("kode_terbuka")).status).toBe(200);
+  });
+
+  test("with REGISTRATION_CODE, only requests carrying it can sign up", async () => {
+    process.env.REGISTRATION_CODE = "kode-rahasia-rt";
+    // Sign-up is limited to 5 per hour per address; start from a clean counter.
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+    try {
+      for (const code of [undefined, "", "salah", "Kode-Rahasia-RT", "kode-rahasia-rt-x"]) {
+        const response = await signUp("kode_ditolak", code);
+        expect(response.status).toBe(403);
+        expect((await response.json()).message).toBe("Kode pendaftaran salah.");
+      }
+      expect(await m.db.user.count({ where: { username: "kode_ditolak" } })).toBe(0);
+
+      // Wrong codes count towards the per-address limit too, so the code
+      // cannot be guessed either. The right code is tried from "another address".
+      expect((await signUp("kode_ditolak", "tebak-lagi")).status).toBe(429);
+      await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+      expect((await signUp("kode_benar", "kode-rahasia-rt")).status).toBe(200);
+      expect(await m.db.user.count({ where: { username: "kode_benar" } })).toBe(1);
+    } finally {
+      delete process.env.REGISTRATION_CODE;
+    }
+  });
+
+  test("a super admin can still create admin accounts while the code is required", async () => {
+    process.env.REGISTRATION_CODE = "kode-rahasia-rt";
+    try {
+      await login("owner_a");
+      const result = await m.users.createAdmin(slugA, {}, form({ name: "Admin Baru", username: "adm_kode", password: PASSWORD }));
+      expect(result.ok).toBeDefined();
+    } finally {
+      delete process.env.REGISTRATION_CODE;
+    }
+  });
+});

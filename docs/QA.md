@@ -114,6 +114,14 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - Catatan: ini menghalangi tes lain sementara waktu. Lakukan sebagai skenario terakhir di bagian ini, atau kosongkan dengan `docker exec postgres18 psql -U postgres -d sirkel -c 'delete from "rateLimit"'`.
 - [ ] Lolos
 
+**B9. Kode pendaftaran (opsional)**
+- Tambahkan `REGISTRATION_CODE=kode-uji` di `.env.local`, lalu restart `bun run dev`. Buka `/register`: ada kolom "Kode pendaftaran (dari pengelola Sirkel)" di paling atas.
+- Daftar dengan kode kosong atau salah → "Kode pendaftaran salah." Dengan kode `kode-uji` → "Pendaftaran berhasil..."
+- Kode yang salah juga menghabiskan batas 5 pendaftaran per jam per alamat IP.
+- Super admin tetap bisa membuat akun admin lewat menu Pengguna tanpa kode.
+- Hapus baris itu dan restart: kolom kode hilang dan pendaftaran terbuka lagi.
+- [ ] Lolos
+
 ---
 
 ## C. Komunitas
@@ -445,7 +453,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | Bagian | Jumlah skenario | Lolos | Gagal | Catatan |
 |---|---|---|---|---|
 | A. Halaman publik dasar | 3 | | | |
-| B. Akun dan persetujuan | 8 | | | |
+| B. Akun dan persetujuan | 9 | | | |
 | C. Komunitas | 5 | | | |
 | D. Role, isolasi, dan cadangan | 9 | | | |
 | E. Konten publik | 7 | | | |
