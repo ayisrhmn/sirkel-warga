@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { CommunityNotFound } from "@/components/community-not-found";
 import { getCommunity } from "@/lib/communities";
 import { asTimeZone, formatDate, formatDateTime } from "@/lib/datetime";
 import { getPublicContent } from "@/lib/public-content";
@@ -16,11 +16,15 @@ export const revalidate = 3600;
 export default async function CommunityPage({
   params,
 }: PageProps<"/[communitySlug]">) {
-  const { communitySlug } = await params;
-  if (!SLUG_RE.test(communitySlug)) notFound();
+  const { communitySlug: requested } = await params;
+  // Links typed by hand often have capitals ("RT05-Melati"). The page cache
+  // ignores letter case in paths, so serve the same page instead of
+  // redirecting (a cached redirect would loop back to itself).
+  const communitySlug = requested.toLowerCase();
+  if (!SLUG_RE.test(communitySlug)) return <CommunityNotFound />;
 
   const community = await getCommunity(communitySlug);
-  if (!community) notFound();
+  if (!community) return <CommunityNotFound />;
 
   const { announcements, events, contacts, datasets } = await getPublicContent(community);
   const zone = asTimeZone(community.timezone);

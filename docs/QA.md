@@ -61,8 +61,8 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 **A3. [Prioritas] Link tidak dikenal**
 - Buka `/tidak-ada-komunitas` dan `/Slug_Salah.php`.
-- Diharapkan: halaman ramah "Komunitas tidak ditemukan" dengan "Cek lagi link dari pengurus.", bukan error mentah.
-- Perhatikan: teks ini muncul setelah JavaScript jalan (perilaku Next.js yang sudah diketahui). Di DevTools aktifkan throttling "Slow 4G" lalu muat ulang. Catat apakah layar kosong terlihat lama dan apakah itu mengganggu.
+- Diharapkan: halaman ramah "Komunitas tidak ditemukan" dengan "Cek lagi link dari pengurus.", langsung tampil (tanpa menunggu JavaScript). Matikan JavaScript di DevTools (Command Menu, "Disable JavaScript") dan muat ulang: pesannya tetap terlihat. Status HTTP-nya 200 untuk alamat satu segmen seperti ini, dan 404 untuk alamat bertingkat tak dikenal seperti `/a/b/c`; keduanya sengaja.
+- Huruf besar pada link tidak jadi masalah: bila komunitas `dawis-matahari-sektor-3` ada, `/DAWIS-Matahari-Sektor-3` menampilkan halaman yang sama (tanpa pengalihan).
 - [ ] Lolos
 
 ---
