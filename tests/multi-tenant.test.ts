@@ -183,3 +183,25 @@ describe("communities, roles, and isolation", () => {
     );
   });
 });
+
+const id = async (username: string) =>
+  (await m.db.user.findUniqueOrThrow({ where: { username } })).id;
+
+describe("emergency password reset", () => {
+  test("a forgotten password can be reset from the command line", async () => {
+    const { resetAccountPassword } = await import("../src/lib/account-admin");
+    await register("lupa_pw");
+    await login("lupa_pw");
+    const userId = await id("lupa_pw");
+    expect(await m.db.session.count({ where: { userId } })).toBeGreaterThan(0);
+
+    expect(await resetAccountPassword("lupa_pw", "password-darurat-9")).toBe(true);
+    expect(await m.db.session.count({ where: { userId } })).toBe(0);
+    expect((await m.db.user.findUniqueOrThrow({ where: { id: userId } })).mustChangePassword).toBe(true);
+    await expect(login("lupa_pw", PASSWORD)).rejects.toThrow();
+    await login("lupa_pw", "password-darurat-9");
+    await rejects(m.requireUser(), "REDIRECT:/change-password");
+
+    expect(await resetAccountPassword("tidak_ada", "password-darurat-9")).toBe(false);
+  });
+});

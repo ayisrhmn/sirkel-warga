@@ -17,7 +17,7 @@ export default async function CommunityAdminLayout({
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {user.name} ({role === "owner" ? "Super admin" : "Admin"})
         </p>
-        <nav className="flex flex-wrap gap-x-4 gap-y-1">
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 [&_a]:py-1 [&_button]:py-1">
           <Link href={base} className="underline">
             Ringkasan
           </Link>
@@ -45,6 +45,9 @@ export default async function CommunityAdminLayout({
           )}
           <Link href={`/${community.slug}`} className="underline">
             Halaman publik
+          </Link>
+          <Link href="/change-password" className="underline">
+            Ganti password
           </Link>
           {user.isPlatformAdmin && (
             <Link href="/platform" className="underline">

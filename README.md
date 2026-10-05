@@ -2,7 +2,7 @@
 
 Info lingkungan (RT / gang / dasa wisma) dalam satu link: pengumuman, agenda, kontak penting, dan laporan dari Excel. Proyek sukarela, non-komersial.
 
-Rencana pengembangan: [docs/PLAN.md](docs/PLAN.md).
+Rencana pengembangan: [docs/PLAN.md](docs/PLAN.md). Deploy dan akses darurat: [docs/RUNBOOK.md](docs/RUNBOOK.md). Skenario uji manual: [docs/QA.md](docs/QA.md).
 
 ## Menjalankan
 
@@ -48,6 +48,7 @@ bun run user:promote <username>
 | `bun run db:migrate` | Buat dan terapkan migrasi dari `prisma/schema.prisma` (development) |
 | `bun run db:deploy` | Terapkan migrasi yang sudah ada (production) |
 | `bun run user:promote <username>` | Setujui akun dan jadikan platform admin |
+| `bun run user:reset-password <username>` | Akses darurat: password sementara untuk akun yang tidak bisa login |
 | `bun run test` | Tes unit dan tes integrasi akun, role, konten, dan isolasi komunitas (memakai database `sirkel_test`, dibuat otomatis) |
 
 Prisma Client dibuat otomatis ke `src/generated/prisma` lewat `postinstall`. Bila skema berubah, jalankan `bunx prisma generate`.

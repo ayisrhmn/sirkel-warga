@@ -4,6 +4,7 @@ import { APIError } from "better-auth/api";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { requireMember } from "@/lib/access";
+import { setTemporaryPassword } from "@/lib/account-admin";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
@@ -97,18 +98,7 @@ export async function resetPassword(
   if (!validPassword(password))
     return { error: `Password minimal ${PASSWORD_MIN} karakter.` };
 
-  const ctx = await auth.$context;
-  await ctx.internalAdapter.updatePassword(
-    userId,
-    await ctx.password.hash(password),
-  );
-
-  const db = getDb();
-  // Sign the account out everywhere and force a new password on next login.
-  await db.$transaction([
-    db.user.update({ where: { id: userId }, data: { mustChangePassword: true } }),
-    db.session.deleteMany({ where: { userId } }),
-  ]);
+  await setTemporaryPassword(userId, password);
 
   return {
     ok: "Password direset. Akun wajib menggantinya saat login berikutnya.",

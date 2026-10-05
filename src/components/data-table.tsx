@@ -15,7 +15,7 @@ export function DataTable({
         <thead>
           <tr className="border-b border-neutral-300 dark:border-neutral-700">
             {columns.map((name, i) => (
-              <th key={i} className="whitespace-nowrap px-3 py-2 text-left font-medium">
+              <th key={i} scope="col" className="whitespace-nowrap px-3 py-2 text-left font-medium">
                 {name}
               </th>
             ))}
