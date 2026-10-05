@@ -1,6 +1,6 @@
 # Sirkel — Rencana Pengembangan
 
-Status: Fase 0 selesai. Fase 1 diperluas dengan sistem akun multi-komunitas (lihat bagian 5) dan dibagi menjadi 1A, 1B, 1C.
+Status: Fase 0 sampai 3 selesai. Fase 4: kode dan dokumen selesai; yang tersisa dilakukan pemilik proyek (QA manual, push ke GitHub, deploy ke Vercel, uji di HP sungguhan) mengikuti [RUNBOOK.md](RUNBOOK.md).
 
 Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumuman, agenda, kontak penting, dan laporan tabel hasil import Excel. Proyek volunteer, non-komersial, tanpa iklan. Warga tidak login; hanya pengurus yang punya akun.
 
@@ -169,7 +169,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 - Rate limit percobaan password.
 - Selesai bila: tanpa cookie yang valid tidak ada satu pun data `protected` di HTML maupun respons jaringan, password komunitas A tidak membuka B, dan mengganti password membatalkan akses lama.
 
-### Fase 4 — Polishing dan deploy
+### Fase 4 — Polishing dan deploy (kode dan dokumen selesai, deploy menunggu)
 - Pengecekan mobile-first (HP kecil dan koneksi lambat), aksesibilitas dasar.
 - Deploy ke Vercel Hobby dan verifikasi region `sin1`.
 - Panduan satu halaman: akses darurat (reset password super admin yang lupa lewat platform admin) dan cara mengelola akun.
