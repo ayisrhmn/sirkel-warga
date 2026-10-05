@@ -1,7 +1,9 @@
 import { expect, test } from "bun:test";
 import {
   asTimeZone,
+  calendarTile,
   formatDateTime,
+  formatTime,
   parseLocalInput,
   startOfToday,
   toLocalInput,
@@ -38,4 +40,13 @@ test("unknown zones fall back to WIB", () => {
   expect(asTimeZone("Asia/Makassar")).toBe("Asia/Makassar");
   expect(asTimeZone("Europe/Paris")).toBe("Asia/Jakarta");
   expect(asTimeZone(null)).toBe("Asia/Jakarta");
+});
+
+test("calendar tile and time follow the community's zone, even across midnight", () => {
+  // 18:00 UTC is already the next day in WIB.
+  expect(calendarTile("2026-10-09T18:00:00Z", "Asia/Jakarta")).toEqual({ month: "OKT", day: "10" });
+  expect(calendarTile("2026-10-09T18:00:00Z", "Asia/Makassar")).toEqual({ month: "OKT", day: "10" });
+  expect(calendarTile("2026-12-31T17:00:00Z", "Asia/Jakarta")).toEqual({ month: "JAN", day: "1" });
+  expect(formatTime("2026-10-10T12:30:00Z", "Asia/Jakarta")).toBe("19.30 WIB");
+  expect(formatTime("2026-10-10T12:30:00Z", "Asia/Jayapura")).toBe("21.30 WIT");
 });

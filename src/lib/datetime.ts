@@ -58,3 +58,17 @@ export const formatDate = (value: string | Date, zone: TimeZone = DEFAULT_TIME_Z
   format(zone, false).format(new Date(value));
 export const formatDateTime = (value: string | Date, zone: TimeZone = DEFAULT_TIME_ZONE) =>
   format(zone, true).format(new Date(value));
+
+const MONTHS_SHORT = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+
+// Month and day of a moment as seen in the community's zone, for calendar tiles.
+export function calendarTile(value: string | Date, zone: TimeZone = DEFAULT_TIME_ZONE) {
+  const local = new Date(new Date(value).getTime() + offsetMs(zone));
+  return { month: MONTHS_SHORT[local.getUTCMonth()], day: String(local.getUTCDate()) };
+}
+
+// "19.30 WIB"
+export function formatTime(value: string | Date, zone: TimeZone = DEFAULT_TIME_ZONE) {
+  const time = new Intl.DateTimeFormat("id-ID", { timeStyle: "short", timeZone: zone }).format(new Date(value));
+  return `${time} ${TIME_ZONES[zone].label}`;
+}
