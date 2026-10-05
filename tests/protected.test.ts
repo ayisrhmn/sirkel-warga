@@ -254,3 +254,22 @@ describe("attempt limit", () => {
     expect(results.filter((r) => r.error?.includes("Terlalu banyak")).length).toBe(7);
   });
 });
+
+describe("rate limit cleanup", () => {
+  test("stale counters are removed, recent ones are kept", async () => {
+    const { pruneRateLimits } = await import("../src/lib/rate-limit");
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+    const now = Date.now();
+    await m.db.rateLimit.createMany({
+      data: [
+        { id: "a", key: "old:1", count: 3, lastRequest: BigInt(now - 25 * 3600 * 1000) },
+        { id: "b", key: "old:2", count: 1, lastRequest: BigInt(now - 48 * 3600 * 1000) },
+        { id: "c", key: "recent:1", count: 2, lastRequest: BigInt(now - 30 * 60 * 1000) },
+        { id: "d", key: "recent:2", count: 5, lastRequest: BigInt(now) },
+      ],
+    });
+    expect(await pruneRateLimits()).toBe(2);
+    const left = await m.db.rateLimit.findMany({ select: { key: true }, orderBy: { key: "asc" } });
+    expect(left.map((r) => r.key)).toEqual(["recent:1", "recent:2"]);
+  });
+});

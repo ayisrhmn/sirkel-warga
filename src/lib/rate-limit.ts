@@ -32,6 +32,23 @@ export async function releaseRateLimit(key: string) {
   `;
 }
 
+const STALE_AFTER_MS = 24 * 60 * 60 * 1000; // every window we use is at most an hour
+
+// Removes counters whose window ended long ago, so the table stays small.
+// Better Auth writes to the same table and never cleans it.
+export async function pruneRateLimits() {
+  const { count } = await getDb().rateLimit.deleteMany({
+    where: { lastRequest: { lt: BigInt(Date.now() - STALE_AFTER_MS) } },
+  });
+  return count;
+}
+
+// Cheap enough to run now and then instead of on a schedule (Vercel's free
+// plan has no frequent cron): about one request in fifty does the cleanup.
+export async function pruneRateLimitsSometimes(chance = 0.02) {
+  if (Math.random() < chance) await pruneRateLimits();
+}
+
 export async function clearRateLimit(key: string) {
   await getDb().rateLimit.deleteMany({ where: { key } });
 }

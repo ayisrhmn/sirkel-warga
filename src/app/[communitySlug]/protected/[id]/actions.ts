@@ -11,7 +11,13 @@ import {
   accessCookieName,
   createAccessToken,
 } from "@/lib/protected-access";
-import { clearRateLimit, clientIp, hitRateLimit, releaseRateLimit } from "@/lib/rate-limit";
+import {
+  clearRateLimit,
+  clientIp,
+  hitRateLimit,
+  pruneRateLimitsSometimes,
+  releaseRateLimit,
+} from "@/lib/rate-limit";
 import { SLUG_RE } from "@/lib/slug";
 
 // Per visitor address: stops one person from guessing.
@@ -40,6 +46,7 @@ export async function unlockDatasets(
 
   // Every attempt counts before the password is checked, so a burst of
   // parallel guesses is cut off too. A correct password clears the counter.
+  await pruneRateLimitsSometimes();
   const key = `unlock:${community.id}:${await clientIp()}`;
   if (!(await hitRateLimit(key, PER_ADDRESS)))
     return { error: "Terlalu banyak percobaan. Coba lagi beberapa menit lagi." };

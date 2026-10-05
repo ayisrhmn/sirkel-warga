@@ -5,6 +5,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { getDb } from "@/lib/db";
+import { pruneRateLimitsSometimes } from "@/lib/rate-limit";
 
 const db = getDb();
 
@@ -58,6 +59,7 @@ export const auth = betterAuth({
     // sign-up request must carry it. Server-side calls (a super admin creating
     // an admin account) have no HTTP request and are not affected.
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.request) await pruneRateLimitsSometimes();
       const expected = process.env.REGISTRATION_CODE;
       if (ctx.path !== "/sign-up/email" || !ctx.request || !expected) return;
       const given = ctx.request.headers.get("x-registration-code") ?? "";
