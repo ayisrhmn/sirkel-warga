@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import type { FormState } from "@/lib/form-state";
 import { TIME_ZONES, type TimeZone } from "@/lib/datetime";
@@ -75,14 +76,12 @@ export function ProtectedPasswordForm({ slug }: { slug: string }) {
 
   return (
     <form action={action} className="flex flex-col gap-3">
-      <input
+      <PasswordInput
         name="password"
-        type="text"
         required
         minLength={8}
-        autoComplete="off"
+        autoComplete="new-password"
         placeholder="Password baru (8-64 karakter)"
-        className={inputClass}
       />
       {state.error && <p className={errorClass}>{state.error}</p>}
       {state.ok && (

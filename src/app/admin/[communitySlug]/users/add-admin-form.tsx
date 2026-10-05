@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import type { FormState } from "@/lib/form-state";
 import { createAdmin } from "./actions";
@@ -34,13 +35,11 @@ export function AddAdminForm({ slug }: { slug: string }) {
       </label>
       <label className="flex flex-col gap-1">
         Password awal (minimal 8 karakter)
-        <input
+        <PasswordInput
           name="password"
-          type="text"
           required
           minLength={8}
-          autoComplete="off"
-          className={inputClass}
+          autoComplete="new-password"
         />
       </label>
       {state.error && <p className={errorClass}>{state.error}</p>}

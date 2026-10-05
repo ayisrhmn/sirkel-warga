@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
-import { errorClass, inputClass } from "@/components/form-styles";
+import { PasswordInput } from "@/components/password-input";
+import { errorClass } from "@/components/form-styles";
 import type { FormState } from "@/lib/form-state";
 import { removeAdmin, resetPassword } from "./actions";
 
 export function ResetPasswordForm({
   slug,
-  userId,
-}: {
+  userId }: {
   slug: string;
   userId: string;
 }) {
@@ -21,14 +21,12 @@ export function ResetPasswordForm({
     <details>
       <summary className="cursor-pointer underline">Reset password</summary>
       <form action={action} className="mt-2 flex flex-col gap-2">
-        <input
+        <PasswordInput
           name="password"
-          type="text"
           required
           minLength={8}
-          autoComplete="off"
+          autoComplete="new-password"
           placeholder="Password baru (minimal 8 karakter)"
-          className={inputClass}
         />
         {state.error && <p className={errorClass}>{state.error}</p>}
         {state.ok && (
@@ -45,8 +43,7 @@ export function ResetPasswordForm({
 export function RemoveAdminButton({
   slug,
   userId,
-  name,
-}: {
+  name }: {
   slug: string;
   userId: string;
   name: string;

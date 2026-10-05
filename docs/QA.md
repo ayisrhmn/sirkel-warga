@@ -184,6 +184,7 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 **D1. Super admin membuat admin**
 - Login `qa_owner1`, buka menu "Pengguna". Isi nama "QA Admin 1", username `qa_admin1`, password awal `password-uji-1`, klik "Buat akun admin".
 - Diharapkan: pesan hijau "Akun @qa_admin1 dibuat. Kirim password awalnya secara pribadi; akun wajib menggantinya saat login pertama." Daftar pengguna menampilkan `qa_admin1` sebagai "Admin" dan `qa_owner1` sebagai "Super admin".
+- Kolom "Password awal" tersembunyi (titik-titik) dan punya ikon mata untuk menampilkannya, supaya super admin bisa memeriksa dan menyalinnya sebelum mengirimnya. Hal yang sama berlaku untuk kolom reset password admin (D5) dan password laporan dilindungi di Pengaturan (G1).
 - Username kembar atau password pendek → pesan error, isi form tetap ada.
 - [ ] Lolos
 
