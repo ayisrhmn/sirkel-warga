@@ -44,6 +44,7 @@ docker exec postgres18 psql -U postgres -d sirkel -c 'delete from communities' -
 | `4-terlalu-banyak-kolom.xlsx` | 35 kolom | Batas kolom |
 | `5-bukan-excel.xlsx` | Teks biasa yang diberi ekstensi `.xlsx` | File rusak |
 | `6-header-bertingkat.xlsx` | Judul kolom dua baris ("Iuran" di atas "Kebersihan" dan "Keamanan"), format "Rp" dan persen | Judul bertingkat dan format angka |
+| `7-kas-bulanan-contoh.xlsx` | Mirip file kas bendahara: 20 warga (nama palsu) dengan iuran per bulan di baris 3 sampai 22, ringkasan kas (TOTAL, PENGELUARAN, PEMASUKAN, SALDO) di baris 23 sampai 26, saldo awal di baris 28 | Satu file jadi dua laporan, dan tabel lebar di HP |
 
 Bikin ulang file contoh kapan saja dengan `bun scripts/make-qa-samples.ts`.
 
@@ -352,6 +353,24 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Simpan, lalu buka laporan di halaman publik dan unduh CSV: nilainya sama ("Rp 25.000", "100%").
 - [ ] Lolos
 
+**F6c. [Prioritas] Satu file, dua laporan (rincian dilindungi, ringkasan publik)**
+- Impor `7-kas-bulanan-contoh.xlsx`. Daftar baris mentah bisa di-scroll sampai baris 28 (tidak berhenti di baris 15). Baris 2 terdeteksi sebagai judul.
+- **Laporan 1, rincian:** di bagian "Baris yang disimpan" isi Dari baris `3`, Sampai baris `22`. Baris 3 sampai 22 berwarna hijau muda, baris lainnya dan di luar rentang menjadi abu-abu. Pratinjau menampilkan 20 baris. Judul "Rincian iuran", tampilan **Dilindungi password**, klik **"Simpan, lalu buat laporan lain dari file ini"**.
+- Diharapkan: tetap di layar yang sama, muncul pesan hijau "Laporan "Rincian iuran" tersimpan..." dengan link "Lihat daftar laporan". Kolom judul dikosongkan dan tampilan kembali ke Draft; file dan pilihan lain tetap.
+- **Laporan 2, ringkasan:** Dari baris `23`, Sampai baris `26`. Kolom "No", "Bapak", dan "Ibu" **hilang sendiri** dari daftar kolom (kosong di baris itu). Ubah nama kolom "Blok" menjadi "Keterangan" di kolom isian di sebelah kotak centang. Pratinjau: 4 baris (TOTAL, PENGELUARAN, PEMASUKAN, SALDO), kolom pertama berjudul "Keterangan". Judul "Ringkasan kas", tampilan **Publik**, klik **"Simpan laporan"** (yang biasa): dialihkan ke daftar laporan.
+- Di daftar ada dua laporan. Sebagai warga (Incognito): halaman komunitas menampilkan "Ringkasan kas" (tabel terbuka) dan "Rincian iuran" berlabel "Dilindungi" (hanya judul; tanpa password tidak ada nama warga di mana pun, termasuk View Source).
+- Coba juga: Dari baris diisi lebih kecil dari baris judul (mis. `1`): tetap tidak mengambil baris judul; Dari baris `50` (di luar data): "Tidak ada data pada baris yang dipilih."; nama kolom dikosongkan: kembali ke nama aslinya; dua kolom diberi nama sama: yang kedua menjadi "... (2)".
+- [ ] Lolos
+
+**F6d. [Prioritas] Tabel lebar enak dibaca di HP**
+- Buka laporan hasil F6c (rincian, setelah memasukkan password) dan ringkasan, di emulasi HP lebar 360px (DevTools, device toolbar), lalu di HP sungguhan bila ada.
+- Di atas tabel ada tulisan "Geser tabel ke samping untuk melihat kolom lain." (hanya tampil di layar sempit, tidak di layar lebar).
+- Geser tabel ke kanan: kolom **"Bapak"** (rincian) atau **"Keterangan"** (ringkasan) **tetap menempel di kiri** dengan garis pemisah, sedangkan kolom lain bergeser di bawahnya. Teks di bawah kolom yang menempel tidak tembus terlihat. Kolom "No" ikut bergeser pergi (bukan yang menempel).
+- Warna selang-seling baris tetap terlihat, termasuk di kolom yang menempel. Judul kolom ikut menempel.
+- Laporan sempit (hanya 2 sampai 4 kolom, mis. "Ringkasan kas" dari `2-ringkasan-kas.xlsx`) tidak menampilkan petunjuk dan tidak punya kolom menempel.
+- Halaman itu sendiri tidak ikut bergeser ke samping; hanya tabelnya.
+- [ ] Lolos
+
 **F7. Edit metadata dan hapus**
 - Di detail: ganti judul dan periode, simpan → "Perubahan disimpan." dan tampilan publik ikut berubah.
 - Judul "ab" → "Judul 3-120 karakter."
@@ -511,7 +530,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | C. Komunitas | 5 | | | |
 | D. Role, isolasi, cadangan, akses darurat, dan platform admin | 11 | | | |
 | E. Konten publik | 7 | | | |
-| F. Laporan dari Excel | 11 | | | |
+| F. Laporan dari Excel | 13 | | | |
 | G. Laporan dilindungi | 8 | | | |
 | H. Tampilan, error, dan HP | 5 | | | |
 | I. Keamanan dan akses | 5 | | | |

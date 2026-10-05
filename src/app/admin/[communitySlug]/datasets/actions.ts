@@ -18,7 +18,9 @@ function refresh(slug: string) {
 export async function createDataset(
   slug: string,
   input: unknown,
-): Promise<{ error: string }> {
+  // Stay on the import screen so another report can be made from the same file.
+  stay = false,
+): Promise<{ error?: string; saved?: true }> {
   const { community } = await requireMember(slug);
   const parsed = validateDatasetInput(input);
   if ("error" in parsed) return { error: parsed.error };
@@ -28,6 +30,7 @@ export async function createDataset(
     data: { title, period, visibility, columns, rows, communityId: community.id },
   });
   refresh(slug);
+  if (stay) return { saved: true };
   redirect(`/admin/${slug}/datasets`);
 }
 

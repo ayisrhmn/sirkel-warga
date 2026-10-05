@@ -167,3 +167,57 @@ describe("delete", () => {
     await rejects(m.datasets.deleteDataset(slugA, datasetId), NOT_FOUND);
   });
 });
+
+describe("one sheet, two reports", () => {
+  // Shaped like a treasurer's sheet: title, header (row 2), members (rows 3-5),
+  // summary (rows 6-8) with its labels in the "Blok" column, opening balance (row 10).
+  const grid = (() => {
+    const ws = XLSX.utils.aoa_to_sheet([
+      ["LAPORAN KAS"],
+      ["No", "Bapak", "Ibu", "Blok", "Januari", "Februari"],
+      [1, "Warga Satu", "Ibu Satu", "AH2-28", 5000, null],
+      [2, "Warga Dua", null, "AH3-8", null, 5000],
+      [3, "Warga Tiga", "Ibu Tiga", "AH7-19", 5000, 5000],
+      [null, null, null, "TOTAL", 10000, 10000],
+      [null, null, null, "PENGELUARAN", 4000, null],
+      [null, null, null, "SALDO", 6000, 16000],
+      [],
+      ["SALDO AWAL", 2000],
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    return sheetToGrid(readWorkbook(XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer).Sheets["Sheet1"]);
+  })();
+
+  test("members stay protected while the summary of the same file goes public", async () => {
+    await login("adm_a");
+    const members = buildDataset(grid, 1, new Set(), { from: 3, to: 5 });
+    const summary = buildDataset(grid, 1, new Set(), { from: 6, to: 8, renames: new Map([[3, "Keterangan"]]) });
+    expect(summary.columns).toEqual(["Keterangan", "Januari", "Februari"]);
+    expect(members.rows.length).toBe(3);
+    expect(summary.rows.length).toBe(3);
+
+    // "Stay" keeps the import screen open: no redirect, just a confirmation.
+    expect(await m.datasets.createDataset(slugA, { title: "Rincian iuran", period: "2026", visibility: "protected", ...members }, true)).toEqual({ saved: true });
+    expect(await m.datasets.createDataset(slugA, { title: "Ringkasan kas", period: "2026", visibility: "public", ...summary }, true)).toEqual({ saved: true });
+
+    const c = await community(slugA);
+    const listed = (await m.getPublicContent(c)).datasets;
+    expect(listed.map((d) => `${d.title}:${d.visibility}`).sort()).toEqual(["Rincian iuran:protected", "Ringkasan kas:public"]);
+
+    // What a visitor can get: the summary table, and for the member table nothing but its title.
+    const publicIds = listed.map((d) => d.id);
+    const visible = await Promise.all(publicIds.map((id) => m.getPublicDataset(c, id)));
+    const everything = JSON.stringify([listed, visible]);
+    expect(everything).toContain("SALDO");
+    for (const secret of ["Warga Satu", "Warga Dua", "Ibu Tiga", "AH7-19"]) expect(everything).not.toContain(secret);
+  });
+
+  test("without stay, saving still goes back to the list", async () => {
+    const members = buildDataset(grid, 1, new Set(), { from: 3, to: 5 });
+    await rejects(
+      m.datasets.createDataset(slugA, { title: "Rincian lagi", period: "", visibility: "draft", ...members }),
+      `REDIRECT:/admin/${slugA}/datasets`,
+    );
+  });
+});

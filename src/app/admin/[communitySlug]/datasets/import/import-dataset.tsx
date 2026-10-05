@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import type { WorkBook } from "xlsx";
 import { DataTable } from "@/components/data-table";
@@ -14,6 +15,7 @@ import {
 } from "@/lib/dataset";
 import {
   buildDataset,
+  type BuildOptions,
   describeColumns,
   guessHeaderIndex,
   looksLikeSpreadsheet,
@@ -24,8 +26,8 @@ import {
 import { createDataset } from "../actions";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
-const PICKER_ROWS = 15;
-const PICKER_COLUMNS = 10;
+const PICKER_ROWS = 200; // all rows are listed so any block of a long sheet can be picked
+const PICKER_COLUMNS = 20;
 const PREVIEW_ROWS = 15;
 
 export function ImportDataset({ slug }: { slug: string }) {
@@ -35,6 +37,10 @@ export function ImportDataset({ slug }: { slug: string }) {
   const [headerIndex, setHeaderIndex] = useState(0);
   const [headerRows, setHeaderRows] = useState(1);
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
+  const [fromRow, setFromRow] = useState("");
+  const [toRow, setToRow] = useState("");
+  const [renames, setRenames] = useState<Map<number, string>>(new Map());
+  const [notice, setNotice] = useState("");
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("draft");
@@ -48,6 +54,10 @@ export function ImportDataset({ slug }: { slug: string }) {
     setHeaderIndex(guessHeaderIndex(nextGrid));
     setHeaderRows(1);
     setExcluded(new Set());
+    setFromRow("");
+    setToRow("");
+    setRenames(new Map());
+    setNotice("");
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -72,17 +82,22 @@ export function ImportDataset({ slug }: { slug: string }) {
     }
   }
 
+  const options = useMemo<BuildOptions>(() => {
+    const row = (text: string) => (/^\d+$/.test(text.trim()) ? Number(text) : undefined);
+    return { headerRows, from: row(fromRow), to: row(toRow), renames };
+  }, [headerRows, fromRow, toRow, renames]);
   const candidates = useMemo(
-    () => describeColumns(grid, headerIndex, headerRows),
-    [grid, headerIndex, headerRows],
+    () => describeColumns(grid, headerIndex, options),
+    [grid, headerIndex, options],
   );
   const built = useMemo(
-    () => buildDataset(grid, headerIndex, excluded, headerRows),
-    [grid, headerIndex, excluded, headerRows],
+    () => buildDataset(grid, headerIndex, excluded, options),
+    [grid, headerIndex, excluded, options],
   );
 
-  function onSave() {
+  function onSave(stay: boolean) {
     setError("");
+    setNotice("");
     const input = { title, period, visibility, columns: built.columns, rows: built.rows };
     const checked = validateDatasetInput(input);
     if ("error" in checked) {
@@ -90,9 +105,14 @@ export function ImportDataset({ slug }: { slug: string }) {
       return;
     }
     startSaving(async () => {
-      // Redirects to the dataset list on success; only errors come back.
-      const result = await createDataset(slug, input);
+      // Without `stay` this redirects to the dataset list on success.
+      const result = await createDataset(slug, input, stay);
       if (result?.error) setError(result.error);
+      else if (result?.saved) {
+        setNotice(`Laporan "${title}" tersimpan. Atur baris atau kolom di atas untuk laporan berikutnya, lalu simpan lagi.`);
+        setTitle("");
+        setVisibility("draft");
+      }
     });
   }
 
@@ -145,7 +165,7 @@ export function ImportDataset({ slug }: { slug: string }) {
                 ))}
               </select>
             </Field>
-            <div className="overflow-x-auto rounded-md border border-neutral-300">
+            <div className="max-h-80 overflow-auto rounded-md border border-neutral-300">
               <table className="w-full text-sm">
                 <tbody>
                   {grid.slice(0, PICKER_ROWS).map((row, r) => (
@@ -154,7 +174,11 @@ export function ImportDataset({ slug }: { slug: string }) {
                       className={
                         r >= headerIndex && r < headerIndex + headerRows
                           ? "bg-yellow-100"
-                          : ""
+                          : options.from !== undefined || options.to !== undefined
+                            ? r + 1 >= (options.from ?? 0) && r + 1 <= (options.to ?? Infinity) && r >= headerIndex + headerRows
+                              ? "bg-green-50"
+                              : "text-neutral-400"
+                            : ""
                       }
                     >
                       <td className="px-2 py-1">
@@ -183,36 +207,71 @@ export function ImportDataset({ slug }: { slug: string }) {
           </section>
 
           <section className="flex flex-col gap-2">
-            <h3 className="font-medium">4. Kolom yang disimpan</h3>
+            <h3 className="font-medium">4. Baris yang disimpan (opsional)</h3>
+            <p className="text-sm text-neutral-600">
+              Kosongkan untuk menyimpan semua baris di bawah judul. Isi bila satu
+              sheet berisi lebih dari satu tabel, mis. daftar warga di baris 3
+              sampai 22 dan ringkasan kas di baris 23 sampai 26. Nomor baris
+              sesuai kolom nomor di daftar di atas. Baris yang dipilih berwarna
+              hijau muda.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Dari baris">
+                <input
+                  inputMode="numeric"
+                  value={fromRow}
+                  onChange={(e) => setFromRow(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Sampai baris">
+                <input
+                  inputMode="numeric"
+                  value={toRow}
+                  onChange={(e) => setToRow(e.target.value)}
+                  className={inputClass}
+                />
+              </Field>
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h3 className="font-medium">5. Kolom yang disimpan</h3>
             <p className="text-sm text-neutral-600">
               Hilangkan centang pada kolom yang tidak perlu ditampilkan, mis.
-              nomor telepon.
+              nomor telepon. Nama kolom bisa diubah, mis. &ldquo;Blok&rdquo; menjadi
+              &ldquo;Keterangan&rdquo; untuk tabel ringkasan.
             </p>
             <ul className="flex flex-col gap-1">
               {candidates.map((c) => (
-                <li key={c.index}>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={!excluded.has(c.index)}
-                      onChange={(e) => {
-                        const next = new Set(excluded);
-                        if (e.target.checked) next.delete(c.index);
-                        else next.add(c.index);
-                        setExcluded(next);
-                      }}
-                    />
-                    {c.name}
-                  </label>
+                <li key={c.index} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={!excluded.has(c.index)}
+                    onChange={(e) => {
+                      const next = new Set(excluded);
+                      if (e.target.checked) next.delete(c.index);
+                      else next.add(c.index);
+                      setExcluded(next);
+                    }}
+                    aria-label={`Simpan kolom ${c.name}`}
+                  />
+                  <input
+                    value={renames.get(c.index) ?? c.name}
+                    placeholder={c.name}
+                    onChange={(e) => setRenames(new Map(renames).set(c.index, e.target.value))}
+                    aria-label={`Nama kolom ${c.name}`}
+                    className={`${inputClass} py-1`}
+                  />
                 </li>
               ))}
             </ul>
           </section>
 
           <section className="flex flex-col gap-2">
-            <h3 className="font-medium">5. Pratinjau</h3>
+            <h3 className="font-medium">6. Pratinjau</h3>
             {built.columns.length === 0 || built.rows.length === 0 ? (
-              <p className={errorClass}>Tidak ada data di bawah baris judul yang dipilih.</p>
+              <p className={errorClass}>Tidak ada data pada baris yang dipilih.</p>
             ) : (
               <>
                 <p className="text-sm text-neutral-600">
@@ -225,7 +284,7 @@ export function ImportDataset({ slug }: { slug: string }) {
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="font-medium">6. Simpan</h3>
+            <h3 className="font-medium">7. Simpan</h3>
             <Field label="Judul laporan">
               <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
             </Field>
@@ -246,8 +305,23 @@ export function ImportDataset({ slug }: { slug: string }) {
               </select>
             </Field>
             {error && <p className={errorClass}>{error}</p>}
-            <button onClick={onSave} disabled={saving} className={buttonClass}>
+            {notice && (
+              <p className="text-sm text-green-700">
+                {notice}{" "}
+                <Link href={`/admin/${slug}/datasets`} className="underline">
+                  Lihat daftar laporan
+                </Link>
+              </p>
+            )}
+            <button onClick={() => onSave(false)} disabled={saving} className={buttonClass}>
               {saving ? "Menyimpan..." : "Simpan laporan"}
+            </button>
+            <button
+              onClick={() => onSave(true)}
+              disabled={saving}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 font-medium disabled:opacity-50"
+            >
+              Simpan, lalu buat laporan lain dari file ini
             </button>
           </section>
         </>

@@ -160,12 +160,103 @@ describe("number formats and grouped headers", () => {
       },
       "A1:C3",
     );
-    expect(describeColumns(grid, 0, 2).map((c) => c.name)).toEqual(["Nama", "Iuran Kebersihan", "Iuran Keamanan"]);
-    expect(buildDataset(grid, 0, new Set(), 2)).toEqual({
+    expect(describeColumns(grid, 0, { headerRows: 2 }).map((c) => c.name)).toEqual(["Nama", "Iuran Kebersihan", "Iuran Keamanan"]);
+    expect(buildDataset(grid, 0, new Set(), { headerRows: 2 })).toEqual({
       columns: ["Nama", "Iuran Kebersihan", "Iuran Keamanan"],
       rows: [["Budi", 25000, 50000]],
     });
     // With one header row the second row would be read as data.
     expect(buildDataset(grid, 0).rows.length).toBe(2);
+  });
+});
+
+describe("row ranges and renamed columns", () => {
+  // A members table with a summary block under it, like a treasurer's sheet:
+  // title, header (row 2), members (rows 3-5), summary (rows 6-7), opening balance (row 9).
+  const grid = sheetToGrid(
+    readWorkbook(
+      XLSX.write(
+        (() => {
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(
+            wb,
+            XLSX.utils.aoa_to_sheet([
+              ["LAPORAN KAS"],
+              ["No", "Nama", "Blok", "Januari", "Februari"],
+              [1, "Warga A", "A1", 5000, null],
+              [2, "Warga B", "A2", null, 5000],
+              [3, "Warga C", "B1", 5000, 5000],
+              [null, null, "TOTAL", 10000, 10000],
+              [null, null, "SALDO", 12000, 22000],
+              [],
+              ["SALDO AWAL", 2000],
+            ]),
+            "S",
+          );
+          return wb;
+        })(),
+        { type: "array", bookType: "xlsx" },
+      ) as ArrayBuffer,
+    ).Sheets["S"],
+  );
+
+  test("a row range turns one sheet into separate tables", () => {
+    const members = buildDataset(grid, 1, new Set(), { from: 3, to: 5 });
+    expect(members.rows.map((r) => r[1])).toEqual(["Warga A", "Warga B", "Warga C"]);
+
+    const summary = buildDataset(grid, 1, new Set(), { from: 6, to: 7 });
+    expect(summary.rows.map((r) => r[0])).toEqual(["TOTAL", "SALDO"]);
+    // Columns with nothing in the kept rows (No, Nama) drop out by themselves.
+    expect(summary.columns).toEqual(["Blok", "Januari", "Februari"]);
+  });
+
+  test("the range never reaches back into the header and the end defaults to the last row", () => {
+    expect(buildDataset(grid, 1, new Set(), { from: 1 }).rows.length).toBe(6); // 3 members + 2 summary + opening balance
+    expect(buildDataset(grid, 1, new Set(), { to: 5 }).rows.length).toBe(3);
+    expect(buildDataset(grid, 1, new Set(), { from: 50 }).rows).toEqual([]);
+  });
+
+  test("columns can be renamed, and duplicate names are made unique", () => {
+    const renamed = buildDataset(grid, 1, new Set([0, 1]), {
+      from: 6,
+      to: 7,
+      renames: new Map([[2, "Keterangan"], [3, "Keterangan"]]),
+    });
+    expect(renamed.columns).toEqual(["Keterangan", "Keterangan (2)", "Februari"]);
+    // Blank renames fall back to the header.
+    expect(describeColumns(grid, 1, { renames: new Map([[1, "  "]]) })[1].name).toBe("Nama");
+  });
+
+  test("rows that are blank in the kept columns are dropped", () => {
+    // Without "No", "Nama" and "Blok" the opening-balance row has nothing left to show.
+    const table = buildDataset(grid, 1, new Set([0, 1, 2]), { from: 9 });
+    expect(table.rows).toEqual([]);
+  });
+});
+
+describe("pinnedColumn", () => {
+  const months = ["Jan", "Feb", "Mar"];
+
+  test("pins the first text column of a wide table, skipping a number column", async () => {
+    const { pinnedColumn } = await import("./dataset");
+    const columns = ["No", "Bapak", "Ibu", "Blok", ...months];
+    const rows = [
+      [1, "Budi", "Ani", "A1", 5000, null, 5000],
+      [2, "Cici", null, "A2", null, 5000, 5000],
+      [null, null, null, "TOTAL", 5000, 5000, 10000],
+    ];
+    expect(pinnedColumn(columns, rows)).toBe(1);
+  });
+
+  test("a summary table pins its label column", async () => {
+    const { pinnedColumn } = await import("./dataset");
+    const columns = ["Keterangan", ...months, "Apr", "Mei"];
+    expect(pinnedColumn(columns, [["Total", 1, 2, 3, 4, 5], ["Saldo", 1, 2, 3, 4, 5]])).toBe(0);
+  });
+
+  test("narrow tables and all-number tables are left alone", async () => {
+    const { pinnedColumn } = await import("./dataset");
+    expect(pinnedColumn(["Nama", "Jumlah"], [["Budi", 1]])).toBe(-1);
+    expect(pinnedColumn(["a", "b", "c", "d", "e"], [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])).toBe(-1);
   });
 });

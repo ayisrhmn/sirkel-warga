@@ -83,6 +83,20 @@ const numberFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }
 export const isNumericCell = (cell: DatasetCell) =>
   typeof cell === "number" || (typeof cell === "string" && /^-?(Rp )?-?[\d.,]+%?$/.test(cell));
 
+// On a phone a wide table scrolls sideways, and the names scroll away with the
+// first columns. Pin one column that names the rows: the first of the first
+// three whose cells are mostly text (a number column such as "No" is skipped).
+// Returns -1 when the table is narrow enough to need no pinning.
+export function pinnedColumn(columns: string[], rows: DatasetCell[][]): number {
+  if (columns.length <= 4) return -1;
+  for (let c = 0; c < Math.min(3, columns.length); c++) {
+    const filled = rows.map((row) => row[c]).filter((cell) => cell !== null);
+    const text = filled.filter((cell) => typeof cell === "string" && !isNumericCell(cell)).length;
+    if (filled.length > 0 && filled.length >= rows.length / 2 && text >= filled.length * 0.6) return c;
+  }
+  return -1;
+}
+
 export const formatCell = (cell: DatasetCell) =>
   cell === null ? "" : typeof cell === "number" ? numberFormat.format(cell) : cell;
 

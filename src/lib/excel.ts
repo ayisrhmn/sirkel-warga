@@ -143,8 +143,18 @@ export function guessHeaderIndex(grid: Grid): number {
 
 export type ColumnInfo = { index: number; name: string };
 
-// A column's name from its header rows: "Iuran" over "Kebersihan" becomes
-// "Iuran Kebersihan". Repeated parts (a merged cell) are written once.
+export type BuildOptions = {
+  // How many rows the header spans (1 to 3). "Iuran" over "Kebersihan" becomes
+  // "Iuran Kebersihan"; repeated parts (a merged cell) are written once.
+  headerRows?: number;
+  // First and last sheet row (1-based, as shown in the row picker) to keep.
+  // Lets one sheet become several tables, e.g. members and a summary.
+  from?: number;
+  to?: number;
+  // New names for columns, by original column index.
+  renames?: ReadonlyMap<number, string>;
+};
+
 function headerName(grid: Grid, headerIndex: number, headerRows: number, c: number) {
   const parts: string[] = [];
   for (let r = headerIndex; r < headerIndex + headerRows; r++) {
@@ -154,21 +164,34 @@ function headerName(grid: Grid, headerIndex: number, headerRows: number, c: numb
   return parts.join(" ");
 }
 
-// Columns that have a header or any data below it, with unique names.
+// The rows below the header that are kept (blank ones are dropped later).
+function dataRows(grid: Grid, headerIndex: number, options: BuildOptions) {
+  const start = headerIndex + (options.headerRows ?? 1);
+  const first = Math.max(start, (options.from ?? 0) - 1);
+  return grid.slice(first, options.to ?? grid.length);
+}
+
+// Columns that have a header or any data in the kept rows, with unique names.
 export function describeColumns(
   grid: Grid,
   headerIndex: number,
-  headerRows = 1,
+  options: BuildOptions = {},
 ): ColumnInfo[] {
-  const body = grid.slice(headerIndex + headerRows);
+  const headerRows = options.headerRows ?? 1;
+  const body = dataRows(grid, headerIndex, options);
   const width = Math.max(0, ...grid.map((row) => row.length));
+  // Without a range, a column with a header but no data yet (next month's
+  // column) is kept. With a range, the header may belong to another block of
+  // the sheet, so only columns that have data in the kept rows stay.
+  const rangeChosen = options.from !== undefined || options.to !== undefined;
   const seen = new Map<string, number>();
   const columns: ColumnInfo[] = [];
 
   for (let c = 0; c < width; c++) {
-    const name = headerName(grid, headerIndex, headerRows, c);
-    if (!name && body.every((row) => isEmpty(row[c] ?? null))) continue;
-    const base = name || `Kolom ${c + 1}`;
+    const original = headerName(grid, headerIndex, headerRows, c);
+    const hasData = body.some((row) => !isEmpty(row[c] ?? null));
+    if (!hasData && (rangeChosen || !original)) continue;
+    const base = options.renames?.get(c)?.trim() || original || `Kolom ${c + 1}`;
     const count = (seen.get(base) ?? 0) + 1;
     seen.set(base, count);
     columns.push({ index: c, name: count === 1 ? base : `${base} (${count})` });
@@ -176,19 +199,18 @@ export function describeColumns(
   return columns;
 }
 
-// The final table: the chosen header, then every non-blank row below it.
+// The final table: the chosen header, then every non-blank kept row below it.
 export function buildDataset(
   grid: Grid,
   headerIndex: number,
   excluded: ReadonlySet<number> = new Set(),
-  headerRows = 1,
+  options: BuildOptions = {},
 ) {
-  const columns = describeColumns(grid, headerIndex, headerRows).filter(
+  const columns = describeColumns(grid, headerIndex, options).filter(
     (c) => !excluded.has(c.index),
   );
-  const rows = grid
-    .slice(headerIndex + headerRows)
-    .filter((row) => row.some((v) => !isEmpty(v)))
-    .map((row) => columns.map((c) => row[c.index] ?? null));
+  const rows = dataRows(grid, headerIndex, options)
+    .map((row) => columns.map((c) => row[c.index] ?? null))
+    .filter((row) => row.some((v) => !isEmpty(v)));
   return { columns: columns.map((c) => c.name), rows };
 }

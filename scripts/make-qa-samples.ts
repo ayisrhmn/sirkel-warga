@@ -115,6 +115,42 @@ const save = (name: string, wb: XLSX.WorkBook) =>
   save("6-header-bertingkat.xlsx", wb);
 }
 
+// 7. A monthly cash sheet shaped like a real treasurer's file, with made-up
+// names: title row, header on row 2, 20 members (rows 3-22) with a payment per
+// month, a summary block (rows 23-26) whose labels sit in the "Blok" column, and
+// the opening balance on row 28. One sheet, two reports: members (protected) and
+// the summary (public).
+{
+  const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni"].map((m) => `${m} '26`);
+  const rows: unknown[][] = [["LAPORAN KAS CONTOH"], ["No", "Bapak", "Ibu", "Blok", ...months]];
+  for (let i = 1; i <= 20; i++) {
+    rows.push([i, `Warga ${i}`, i % 4 === 0 ? null : `Ibu ${i}`, `AH${1 + (i % 8)}-${i + 10}`, ...months.map((_, m) => ((i + m) % 3 === 0 ? null : 5000))]);
+  }
+  rows.push([null, null, null, "TOTAL", ...months.map(() => null)]);
+  rows.push([null, null, null, "PENGELUARAN", 200000, null, 150000, 169000, null, null]);
+  rows.push([null, null, null, "PEMASUKAN", 120000, null, null, 75000, null, null]);
+  rows.push([null, null, null, "SALDO", ...months.map(() => null)]);
+  rows.push([]);
+  rows.push(["SALDO AKHIR DES '25", 72000]);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const cols = "EFGHIJ";
+  const fmt = "#,##0;(#,##0)";
+  cols.split("").forEach((col, m) => {
+    const total = rows.slice(2, 22).reduce((sum, r) => sum + (Number(r[4 + m]) || 0), 0);
+    ws[`${col}23`] = { t: "n", f: `SUM(${col}3:${col}22)`, v: total, z: fmt };
+    const prev = m === 0 ? "B28" : `${cols[m - 1]}26`;
+    const spend = Number(rows[23][4 + m]) || 0;
+    const income = Number(rows[24][4 + m]) || 0;
+    const before = m === 0 ? 72000 : (ws[`${cols[m - 1]}26`].v as number);
+    ws[`${col}26`] = { t: "n", f: `${prev}+${col}23+${col}25-${col}24`, v: before + total + income - spend, z: fmt };
+  });
+  for (let r = 3; r <= 22; r++) for (const col of cols) if (ws[`${col}${r}`]) ws[`${col}${r}`].z = fmt;
+  ws["!ref"] = "A1:J1000"; // like the real file, which claims a huge range
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  save("7-kas-bulanan-contoh.xlsx", wb);
+}
+
 // 5. Not a spreadsheet at all.
 writeFileSync(`${OUT}/5-bukan-excel.xlsx`, "ini cuma teks biasa, bukan file Excel\n");
 
