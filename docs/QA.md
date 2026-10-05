@@ -13,7 +13,7 @@ Sudah ada tes otomatis (`bun run test`) untuk logika izin, isolasi komunitas, pa
 1. A, lalu B (akun), lalu C (komunitas).
 2. D1 sampai D7 (role dan isolasi), lalu E (konten) dan F (laporan Excel), lalu G (laporan dilindungi). Skenario E sampai G memakai data dari bagian D.
 3. **D9 (cadangan dan pemulihan) sebelum D8 (hapus komunitas).** D8 menghapus Komunitas 1, dan D9 memakai isinya. Setelah D8/D9, buat ulang Komunitas 1 bila masih ada yang perlu diuji.
-4. D10 (akses darurat), I (keamanan), dan H (tampilan dan HP) di akhir.
+4. D10 (akses darurat), D11 (platform admin, lakukan sebelum D8 selesai menghapus komunitas bila ingin memakainya), I (keamanan), dan H (tampilan dan HP) di akhir.
 
 **Mengosongkan data uji kapan saja** (misalnya kalau data kacau dan mau mulai dari awal):
 
@@ -110,7 +110,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 **B4. Platform admin pertama**
 - Daftarkan `qa_platform`, lalu jalankan `bun run user:promote qa_platform`. Diharapkan keluar `qa_platform is now an approved platform admin.`
-- Login sebagai `qa_platform`. Di `/admin` ada link "Persetujuan akun".
+- Login sebagai `qa_platform`. Diharapkan langsung dialihkan ke halaman **Platform** (`/platform`), bukan `/admin`. Di sana ada bagian "Akun menunggu persetujuan", "Komunitas", serta link "Ganti password" dan "Keluar".
 - [ ] Lolos
 
 **B5. [Prioritas] Menyetujui dan menolak akun**
@@ -121,7 +121,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - [ ] Lolos
 
 **B6. Hanya platform admin yang melihat `/platform`**
-- Login sebagai `qa_owner1`, buka `/platform`. Diharapkan: halaman 404. Link "Persetujuan akun" tidak ada di menu.
+- Login sebagai `qa_owner1`, buka `/platform`. Diharapkan: halaman 404. Link "Platform" tidak ada di menu.
 - Tanpa login, buka `/platform`: diarahkan ke `/login`.
 - [ ] Lolos
 
@@ -177,7 +177,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 ---
 
-## D. Role, isolasi, cadangan, dan akses darurat
+## D. Role, isolasi, cadangan, akses darurat, dan platform admin
 
 Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komunitas satu pengumuman agar ada data (lihat bagian E).
 
@@ -251,6 +251,17 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 - Diharapkan: terminal menampilkan `Temporary password for qa_owner1: <password acak>` dan "Share it privately. The account must change it at the next login."
 - Jika `qa_owner1` sedang login di browser, muat ulang halaman: sesi hilang, kembali ke `/login`. Login dengan password lama ditolak. Login dengan password sementara berhasil dan langsung dialihkan ke `/change-password`.
 - `bun run user:reset-password tidak_ada` → "No user with username ..."; `bun run user:reset-password qa_owner1 12345678` → ditolak (password terlalu mudah ditebak); tanpa username → pesan penggunaan.
+- [ ] Lolos
+
+**D11. [Prioritas] Platform admin: daftar komunitas, akses paksa, dan batasannya**
+- Siapkan: `qa_platform` (platform admin) dan dua komunitas milik `qa_owner1` dan `qa_owner2`.
+- Login `qa_platform`. Di halaman **Platform**, bagian "Komunitas (2)" menampilkan tiap komunitas: nama, `/slug`, tanggal dibuat, super admin (nama dan username), dan jumlah anggota, dengan link "Kelola (akses paksa)", "Pengaturan dan hapus", dan "Halaman publik".
+- **Tidak bisa membuat komunitas:** buka `/create-community` langsung → dialihkan ke `/platform`. Buka `/admin` → dialihkan ke `/platform`. Tidak ada tombol "Buat komunitas" di mana pun untuk akun ini.
+- Klik "Kelola (akses paksa)" pada komunitas yang bukan miliknya. Diharapkan: panel admin komunitas itu terbuka dengan kotak kuning "Akses paksa platform admin. Kamu bukan anggota komunitas ini...", label di bawah nama komunitas berbunyi "(Platform admin)", dan menu lengkap termasuk **Pengguna** dan **Pengaturan**.
+- Lakukan perubahan: ganti nama komunitas, tambah satu pengumuman, ubah zona waktu. Semuanya berhasil dan halaman publik komunitas itu langsung berubah. "Unduh cadangan lengkap" juga bisa.
+- "Pengaturan dan hapus" → hapus komunitas dengan mengetik slug-nya. Diharapkan: kembali ke `/platform`, komunitas hilang dari daftar, akun super admin-nya masih ada (bisa login dan membuat komunitas baru), dan komunitas lain tidak terpengaruh.
+- Alamat komunitas yang tidak ada, mis. `/admin/tidak-ada`: 404.
+- Pembanding: login `qa_owner2` (super admin biasa). Tidak ada kotak kuning di panelnya sendiri, dan `/admin/<slug komunitas lain>` tetap 404. Hanya platform admin yang bisa melakukan akses paksa.
 - [ ] Lolos
 
 ---
@@ -505,7 +516,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | A. Halaman publik dasar | 3 | | | |
 | B. Akun dan persetujuan | 9 | | | |
 | C. Komunitas | 5 | | | |
-| D. Role, isolasi, cadangan, dan akses darurat | 10 | | | |
+| D. Role, isolasi, cadangan, akses darurat, dan platform admin | 11 | | | |
 | E. Konten publik | 7 | | | |
 | F. Laporan dari Excel | 11 | | | |
 | G. Laporan dilindungi | 8 | | | |

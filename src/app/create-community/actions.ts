@@ -11,11 +11,14 @@ import type { FormState } from "@/lib/form-state";
 import { requireUser } from "@/lib/session";
 import { validateSlug } from "@/lib/slug";
 
+const PLATFORM_ADMIN_MESSAGE = "Akun platform admin tidak bisa membuat komunitas.";
+
 export async function createCommunity(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireUser();
+  if (user.isPlatformAdmin) return { error: PLATFORM_ADMIN_MESSAGE };
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
   const timezone = asTimeZone(String(formData.get("timezone") ?? ""));
@@ -61,6 +64,7 @@ export async function restoreCommunity(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireUser();
+  if (user.isPlatformAdmin) return { error: PLATFORM_ADMIN_MESSAGE };
   const db = getDb();
   if ((await db.membership.count({ where: { userId: user.id } })) > 0)
     return { error: "Kamu sudah punya komunitas." };

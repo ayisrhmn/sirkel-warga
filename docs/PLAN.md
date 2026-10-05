@@ -109,6 +109,8 @@ Hak akses:
 | Hapus komunitas | ya | tidak |
 | Akses komunitas lain | tidak | tidak |
 
+**Platform admin** (operator layanan, bukan pengurus komunitas): tidak bisa membuat atau memulihkan komunitas, dan setelah login dialihkan ke `/platform` yang memuat persetujuan akun dan daftar semua komunitas (nama, slug, super admin, jumlah anggota). Dari daftar itu ia bisa masuk ke komunitas mana pun dengan **akses paksa**: hak setara super admin (ubah info, kelola pengguna, ubah zona waktu, unduh cadangan, hapus), dengan banner di panel admin yang menyatakan ia bukan anggota. Satu-satunya jalan ke akses ini adalah pengecekan `requireMember`, yang memberi `forced: true`. Konsekuensinya platform admin dapat melihat seluruh data komunitas, termasuk laporan dilindungi, jadi akun ini harus dijaga ketat.
+
 Aturan implementasi:
 - Semua halaman dan Server Action admin lewat satu pengecekan `requireMember(slug, role?)`: sesi valid, akun disetujui, dan ada membership di komunitas itu dengan role yang cukup. Semua query konten selalu memakai `community_id` hasil pengecekan itu, tidak pernah dari input mentah.
 - Data per komunitas hanya bisa diakses anggotanya. Pengecualian: data yang sudah dipublikasikan di halaman publik dapat dilihat siapa saja.

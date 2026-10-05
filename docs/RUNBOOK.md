@@ -48,7 +48,7 @@ Bagian kedua harus `sin1` (bentuknya `xxx1::sin1::...`). Bagian pertama adalah l
    ```bash
    DATABASE_URL='postgresql://...pooled-atau-direct...' bun run user:promote <username>
    ```
-3. Login. Akun lain disetujui di `/platform`.
+3. Login. Kamu langsung masuk ke halaman **Platform**: di sana kamu menyetujui akun lain dan melihat daftar semua komunitas. Akun platform admin tidak bisa membuat komunitas; kalau kamu juga ingin mengelola komunitas sendiri, daftarkan akun biasa kedua untuk itu. Bila perlu, **Kelola (akses paksa)** membuka panel komunitas mana pun dengan hak super admin (untuk membantu, mengubah, atau menghapus).
 
 ### 2.5 Sebelum link dibagikan ke warga
 - [ ] Jalankan skenario di [QA.md](QA.md), terutama yang bertanda Prioritas.

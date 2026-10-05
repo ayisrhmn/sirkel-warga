@@ -6,6 +6,8 @@ import { RestoreForm } from "./restore-form";
 
 export default async function CreateCommunityPage() {
   const user = await requireUser();
+  // The operator manages communities from /platform; they never create one.
+  if (user.isPlatformAdmin) redirect("/platform");
   // Each account belongs to one community: created admins to the one that
   // made them, everyone else to the one they create here.
   const memberships = await getDb().membership.count({

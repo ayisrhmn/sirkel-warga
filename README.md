@@ -36,7 +36,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sirkel
 
 ## Akun
 
-Akun baru mendaftar di `/register` dan baru bisa login setelah disetujui. Akun pertama (platform admin) disetujui lewat perintah berikut, sesudahnya persetujuan dilakukan di `/platform`.
+Akun baru mendaftar di `/register` dan baru bisa login setelah disetujui. Akun pertama (platform admin) disetujui lewat perintah berikut, sesudahnya persetujuan dilakukan di `/platform`. Platform admin tidak membuat komunitas: ia melihat daftar semua komunitas di `/platform` dan bisa masuk ke komunitas mana pun (akses paksa) bila perlu.
 
 ```bash
 bun run user:promote <username>

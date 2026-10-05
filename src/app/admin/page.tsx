@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/session";
 
 export default async function AdminPage() {
   const user = await requireUser();
+  if (user.isPlatformAdmin) redirect("/platform");
   const memberships = await getDb().membership.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "asc" },
@@ -35,11 +36,6 @@ export default async function AdminPage() {
             </li>
           ))}
         </ul>
-      )}
-      {user.isPlatformAdmin && (
-        <Link href="/platform" className="underline">
-          Persetujuan akun
-        </Link>
       )}
       <LogoutButton />
     </main>
