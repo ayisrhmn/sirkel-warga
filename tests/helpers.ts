@@ -53,6 +53,10 @@ export type Modules = {
   events: typeof import("../src/app/admin/[communitySlug]/events/actions");
   contacts: typeof import("../src/app/admin/[communitySlug]/contacts/actions");
   getPublicContent: typeof import("../src/lib/public-content").getPublicContent;
+  datasets: typeof import("../src/app/admin/[communitySlug]/datasets/actions");
+  exportAll: typeof import("../src/app/admin/[communitySlug]/datasets/export/route").GET;
+  exportCsv: typeof import("../src/app/admin/[communitySlug]/datasets/[id]/export/route").GET;
+  getPublicDataset: typeof import("../src/lib/public-dataset").getPublicDataset;
 };
 export let m: Modules;
 
@@ -88,6 +92,10 @@ async function setup() {
     events: await import("../src/app/admin/[communitySlug]/events/actions"),
     contacts: await import("../src/app/admin/[communitySlug]/contacts/actions"),
     getPublicContent: (await import("../src/lib/public-content")).getPublicContent,
+    datasets: await import("../src/app/admin/[communitySlug]/datasets/actions"),
+    exportAll: (await import("../src/app/admin/[communitySlug]/datasets/export/route")).GET,
+    exportCsv: (await import("../src/app/admin/[communitySlug]/datasets/[id]/export/route")).GET,
+    getPublicDataset: (await import("../src/lib/public-dataset")).getPublicDataset,
   };
   await m.db.$executeRawUnsafe('TRUNCATE "user", "communities", "rateLimit" CASCADE');
   jar.clear();

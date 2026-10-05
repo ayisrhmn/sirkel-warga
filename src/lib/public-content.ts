@@ -14,6 +14,8 @@ export type PublicContent = {
     description: string | null;
   }[];
   contacts: { id: string; name: string; role: string; phone: string }[];
+  // Titles only: the rows of a dataset are fetched on its own page.
+  datasets: { id: string; title: string; period: string | null; visibility: "public" | "protected" }[];
 };
 
 // Everything shown on a community's public page, cached under the same tag
@@ -24,7 +26,7 @@ export function getPublicContent(community: { id: string; slug: string }) {
     async (): Promise<PublicContent> => {
       const db = getDb();
       const where = { communityId: community.id };
-      const [announcements, events, contacts] = await Promise.all([
+      const [announcements, events, contacts, datasets] = await Promise.all([
         db.announcement.findMany({
           where: { ...where, status: "public" },
           orderBy: { publishedAt: "desc" },
@@ -49,6 +51,12 @@ export function getPublicContent(community: { id: string; slug: string }) {
           take: 50,
           select: { id: true, name: true, role: true, phone: true },
         }),
+        db.dataset.findMany({
+          where: { ...where, visibility: { in: ["public", "protected"] } },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          select: { id: true, title: true, period: true, visibility: true },
+        }),
       ]);
       return {
         announcements: announcements.map((a) => ({
@@ -57,6 +65,10 @@ export function getPublicContent(community: { id: string; slug: string }) {
         })),
         events: events.map((e) => ({ ...e, startsAt: e.startsAt.toISOString() })),
         contacts,
+        datasets: datasets.map((d) => ({
+          ...d,
+          visibility: d.visibility === "protected" ? ("protected" as const) : ("public" as const),
+        })),
       };
     },
     ["community-content", community.id],

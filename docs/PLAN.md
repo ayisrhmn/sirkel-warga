@@ -71,7 +71,8 @@ Aturan:
 |---|---|---|
 | `/` | Landing page statis, teks persis sesuai spesifikasi | Static, cache penuh, tanpa DB |
 | `/[communitySlug]` | Halaman komunitas: pengumuman, agenda, kontak, daftar laporan | ISR, revalidate saat admin mengubah data |
-| `/[communitySlug]/datasets/[id]` | Tampilan dataset | `public`: ISR. `protected`: dynamic penuh, tanpa cache |
+| `/[communitySlug]/datasets/[id]` | Tampilan dataset `public` (tabel). Untuk `protected` hanya pemberitahuan, barisnya tidak pernah dimuat. Draft: 404 | ISR |
+| `/[communitySlug]/protected/[id]` (Fase 3) | Tampilan dataset `protected` setelah password benar | Dynamic penuh, `no-store`. Dipisah dari route publik supaya route publik tetap bisa di-cache (membaca cookie membuat seluruh route dinamis) |
 | `/register` | Pendaftaran akun (status menunggu persetujuan) | Dynamic, `noindex` |
 | `/login` | Login, tidak ada di navigasi publik | Dynamic, `noindex` |
 | `/change-password` | Wajib dilalui bila `must_change_password` | Dynamic |
@@ -79,6 +80,7 @@ Aturan:
 | `/admin` | Daftar komunitas milik user; langsung diteruskan bila hanya satu | Dynamic |
 | `/admin/[communitySlug]` | Ringkasan dan menu | Dynamic |
 | `/admin/[communitySlug]/announcements`, `/events`, `/contacts`, `/datasets` | CRUD konten (super admin dan admin) | Dynamic |
+| `/admin/[communitySlug]/datasets/import`, `/datasets/[id]`, `/datasets/export`, `/datasets/[id]/export` | Impor Excel dengan pratinjau, detail dan ubah metadata, cadangan JSON semua laporan, CSV satu laporan | Dynamic |
 | `/admin/[communitySlug]/users` | Tambah, reset password, hapus admin (hanya super admin) | Dynamic |
 | `/admin/[communitySlug]/settings` | Nama komunitas dan password `protected` (hanya super admin) | Dynamic |
 | `/platform` | Persetujuan akun baru (hanya `is_platform_admin`, yaitu pemilik proyek) | Dynamic |
@@ -152,8 +154,8 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 - Halaman publik menampilkan ketiganya dengan ISR, dan revalidate saat data berubah.
 - Selesai bila: pengurus dapat mengelola konten, halaman publik langsung terbarui, dan data draft tidak tampil di publik.
 
-### Fase 2 — Dataset dari Excel
-- Pasang SheetJS (versi dan cara install diverifikasi ulang).
+### Fase 2 — Dataset dari Excel (selesai)
+- Pasang SheetJS dari tarball resmi (versi 0.20.3, diverifikasi di docs SheetJS).
 - Alur import di browser admin: unggah file, pilih sheet, pilih baris header, lihat preview, simpan. Membaca nilai hasil formula, bukan teksnya. Menangani merged cell dan header yang bukan di baris 1.
 - Simpan ke `datasets` (`columns` dan `rows` sebagai JSONB), dengan validasi ukuran payload dan pesan error yang jelas (batas body Vercel sekitar 4.5MB).
 - Tampilan tabel publik dengan scroll horizontal di dalam container.
@@ -163,7 +165,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 ### Fase 3 — Mode `protected`
 - Pengaturan password `protected` per komunitas di admin (hanya super admin, disimpan sebagai hash).
 - Form password, verifikasi di server, cookie bertanda tangan per komunitas (7 hari).
-- Halaman dataset `protected` dengan dynamic rendering dan `no-store`.
+- Halaman dataset `protected` di route dinamis terpisah (`/[communitySlug]/protected/[id]`) dengan `no-store`. Route publik `/datasets/[id]` untuk dataset `protected` mengarahkan ke sana.
 - Rate limit percobaan password.
 - Selesai bila: tanpa cookie yang valid tidak ada satu pun data `protected` di HTML maupun respons jaringan, password komunitas A tidak membuka B, dan mengganti password membatalkan akses lama.
 

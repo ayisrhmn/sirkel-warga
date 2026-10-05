@@ -10,11 +10,12 @@ export default async function CommunityAdminPage({
 
   const where = { communityId: community.id };
   const db = getDb();
-  const [announcements, drafts, events, contacts] = await Promise.all([
+  const [announcements, drafts, events, contacts, datasets] = await Promise.all([
     db.announcement.count({ where: { ...where, status: "public" } }),
     db.announcement.count({ where: { ...where, status: "draft" } }),
     db.event.count({ where }),
     db.contact.count({ where }),
+    db.dataset.count({ where }),
   ]);
   const base = `/admin/${community.slug}`;
 
@@ -42,6 +43,12 @@ export default async function CommunityAdminPage({
             Kontak
           </Link>
           : {contacts}
+        </li>
+        <li>
+          <Link href={`${base}/datasets`} className="underline">
+            Laporan
+          </Link>
+          : {datasets}
         </li>
       </ul>
     </main>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCommunity } from "@/lib/communities";
 import { formatDate, formatDateTime } from "@/lib/datetime";
@@ -21,7 +22,7 @@ export default async function CommunityPage({
   const community = await getCommunity(communitySlug);
   if (!community) notFound();
 
-  const { announcements, events, contacts } = await getPublicContent(community);
+  const { announcements, events, contacts, datasets } = await getPublicContent(community);
   const muted = "text-neutral-600 dark:text-neutral-400";
   const card = "rounded-md border border-neutral-300 p-3 dark:border-neutral-700";
 
@@ -55,6 +56,27 @@ export default async function CommunityPage({
           </article>
         ))}
       </section>
+
+      {datasets.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Laporan</h2>
+          {datasets.map((d) => (
+            <Link
+              key={d.id}
+              href={`/${community.slug}/datasets/${d.id}`}
+              className={`${card} flex items-center justify-between gap-3 underline`}
+            >
+              <span>
+                {d.title}
+                {d.period && <span className={`block text-sm no-underline ${muted}`}>{d.period}</span>}
+              </span>
+              {d.visibility === "protected" && (
+                <span className={`text-sm no-underline ${muted}`}>Dilindungi</span>
+              )}
+            </Link>
+          ))}
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Kontak penting</h2>

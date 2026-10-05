@@ -30,6 +30,9 @@ export default async function CommunityAdminLayout({
           <Link href={`${base}/contacts`} className="underline">
             Kontak
           </Link>
+          <Link href={`${base}/datasets`} className="underline">
+            Laporan
+          </Link>
           {role === "owner" && (
             <>
               <Link href={`${base}/users`} className="underline">
