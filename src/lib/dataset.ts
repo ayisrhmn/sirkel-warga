@@ -1,5 +1,30 @@
 export type DatasetCell = string | number | null;
 
+// A background colour carried over from the Excel sheet: [row, column, "RRGGBB"],
+// counted in the stored table (the header row is not part of it, so header
+// colours are never carried).
+export type DatasetFill = [number, number, string];
+const HEX_COLOR = /^[0-9A-F]{6}$/;
+export const isHexColor = (value: unknown): value is string =>
+  typeof value === "string" && HEX_COLOR.test(value);
+
+// Black or white text, whichever reads better on this background.
+export function readableTextColor(hex: string): "#000000" | "#ffffff" {
+  const channel = (i: number) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  return luminance > 0.4 ? "#000000" : "#ffffff";
+}
+
+// Lookup "row:column" -> colour for rendering.
+export function fillLookup(fills: readonly DatasetFill[] | undefined) {
+  const map = new Map<string, string>();
+  for (const [r, c, color] of fills ?? []) if (isHexColor(color)) map.set(`${r}:${c}`, color);
+  return map;
+}
+
 export const DATASET_LIMITS = {
   maxRows: 1000,
   maxColumns: 30,
@@ -22,6 +47,7 @@ export type DatasetInput = {
   visibility: Visibility;
   columns: string[];
   rows: DatasetCell[][];
+  fills: DatasetFill[];
 };
 
 // Validates a dataset coming from the browser. The Excel parsing happens
@@ -30,7 +56,7 @@ export function validateDatasetInput(
   input: unknown,
 ): { error: string } | { data: DatasetInput } {
   if (typeof input !== "object" || input === null) return { error: "Data tidak valid." };
-  const { title, period, visibility, columns, rows } = input as Record<string, unknown>;
+  const { title, period, visibility, columns, rows, fills } = input as Record<string, unknown>;
 
   if (typeof title !== "string" || title.trim().length < 3 || title.trim().length > 120)
     return { error: "Judul 3-120 karakter." };
@@ -66,6 +92,21 @@ export function validateDatasetInput(
   if (JSON.stringify(rows).length > DATASET_LIMITS.maxBytes)
     return { error: "Data terlalu besar." };
 
+  // Optional background colours; anything but valid positions and hex colours is refused,
+  // because the colour ends up in a style attribute.
+  const fillList = fills === undefined || fills === null ? [] : fills;
+  if (!Array.isArray(fillList) || fillList.length > Math.min(rows.length * columns.length, 30_000))
+    return { error: "Warna sel tidak valid." };
+  for (const fill of fillList) {
+    const ok =
+      Array.isArray(fill) &&
+      fill.length === 3 &&
+      Number.isInteger(fill[0]) && fill[0] >= 0 && fill[0] < rows.length &&
+      Number.isInteger(fill[1]) && fill[1] >= 0 && fill[1] < columns.length &&
+      isHexColor(fill[2]);
+    if (!ok) return { error: "Warna sel tidak valid." };
+  }
+
   return {
     data: {
       title: title.trim(),
@@ -73,6 +114,7 @@ export function validateDatasetInput(
       visibility: visibility as Visibility,
       columns: columns as string[],
       rows: rows as DatasetCell[][],
+      fills: fillList as DatasetFill[],
     },
   };
 }

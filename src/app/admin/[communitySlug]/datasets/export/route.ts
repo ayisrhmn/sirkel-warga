@@ -19,6 +19,7 @@ export async function GET(
       visibility: true,
       columns: true,
       rows: true,
+      fills: true,
       createdAt: true,
     },
   });

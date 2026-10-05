@@ -20,7 +20,9 @@ import {
   guessHeaderIndex,
   looksLikeSpreadsheet,
   readWorkbook,
+  sheetToFills,
   sheetToGrid,
+  type FillGrid,
   type Grid,
 } from "@/lib/excel";
 import { createDataset } from "../actions";
@@ -34,6 +36,7 @@ export function ImportDataset({ slug }: { slug: string }) {
   const [workbook, setWorkbook] = useState<WorkBook | null>(null);
   const [sheet, setSheet] = useState("");
   const [grid, setGrid] = useState<Grid>([]);
+  const [fillGrid, setFillGrid] = useState<FillGrid>([]);
   const [headerIndex, setHeaderIndex] = useState(0);
   const [headerRows, setHeaderRows] = useState(1);
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
@@ -51,6 +54,7 @@ export function ImportDataset({ slug }: { slug: string }) {
     const nextGrid = sheetToGrid(wb.Sheets[name]);
     setSheet(name);
     setGrid(nextGrid);
+    setFillGrid(sheetToFills(wb.Sheets[name]));
     setHeaderIndex(guessHeaderIndex(nextGrid));
     setHeaderRows(1);
     setExcluded(new Set());
@@ -84,8 +88,8 @@ export function ImportDataset({ slug }: { slug: string }) {
 
   const options = useMemo<BuildOptions>(() => {
     const row = (text: string) => (/^\d+$/.test(text.trim()) ? Number(text) : undefined);
-    return { headerRows, from: row(fromRow), to: row(toRow), renames };
-  }, [headerRows, fromRow, toRow, renames]);
+    return { headerRows, from: row(fromRow), to: row(toRow), renames, fills: fillGrid };
+  }, [headerRows, fromRow, toRow, renames, fillGrid]);
   const candidates = useMemo(
     () => describeColumns(grid, headerIndex, options),
     [grid, headerIndex, options],
@@ -98,7 +102,7 @@ export function ImportDataset({ slug }: { slug: string }) {
   function onSave(stay: boolean) {
     setError("");
     setNotice("");
-    const input = { title, period, visibility, columns: built.columns, rows: built.rows };
+    const input = { title, period, visibility, columns: built.columns, rows: built.rows, fills: built.fills };
     const checked = validateDatasetInput(input);
     if ("error" in checked) {
       setError(checked.error);
@@ -278,7 +282,11 @@ export function ImportDataset({ slug }: { slug: string }) {
                   {built.rows.length} baris, {built.columns.length} kolom
                   {built.rows.length > PREVIEW_ROWS && ` (menampilkan ${PREVIEW_ROWS} baris pertama)`}
                 </p>
-                <DataTable columns={built.columns} rows={built.rows.slice(0, PREVIEW_ROWS)} />
+                <DataTable
+                  columns={built.columns}
+                  rows={built.rows.slice(0, PREVIEW_ROWS)}
+                  fills={built.fills}
+                />
               </>
             )}
           </section>

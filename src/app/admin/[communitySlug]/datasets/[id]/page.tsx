@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { DataTable } from "@/components/data-table";
 import { DeleteButton } from "@/components/delete-button";
 import { requireMember } from "@/lib/access";
-import type { DatasetCell } from "@/lib/dataset";
+import type { DatasetCell, DatasetFill } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
 import { requireUuid } from "@/lib/form";
 import { deleteDataset } from "../actions";
@@ -52,6 +52,7 @@ export default async function DatasetPage({
         <DataTable
           columns={dataset.columns as string[]}
           rows={dataset.rows as DatasetCell[][]}
+          fills={dataset.fills as DatasetFill[]}
         />
         <div className="flex flex-wrap gap-4">
           <a

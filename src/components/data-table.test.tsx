@@ -117,4 +117,24 @@ describe("DataTable", () => {
     expect(html).not.toContain("Geser tabel");
     expect(html).not.toContain("sticky");
   });
+
+  test("fills become the cell background with readable text, and never touch other cells", () => {
+    const html = renderToStaticMarkup(
+      <DataTable
+        columns={wide.columns}
+        rows={wide.rows}
+        fills={[[2, 1, "FFFF00"], [0, 1, "0B1F3A"], [1, 0, "bad;x"]]}
+      />,
+    );
+    expect(html).toContain('style="background-color:#FFFF00;color:#000000"');
+    expect(html).toContain('style="background-color:#0B1F3A;color:#ffffff"');
+    expect(html).not.toContain("bad;x");
+    expect(html.match(/style="/g)?.length).toBe(2);
+    expect(renderToStaticMarkup(<DataTable columns={wide.columns} rows={wide.rows} />)).not.toContain("style=");
+  });
+
+  test("an empty cell shows a muted dash in an amount column only", () => {
+    const html = render(["Nama", "Jumlah"], [["Budi", 5000], ["Ani", null], [null, 7000]]);
+    expect(html.match(/>-<\/span>/g)?.length).toBe(1); // Ani's amount; the empty name stays empty
+  });
 });

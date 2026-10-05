@@ -60,7 +60,7 @@ export async function buildBackup(community: {
     db.dataset.findMany({
       where,
       orderBy: { createdAt: "asc" },
-      select: { title: true, period: true, visibility: true, columns: true, rows: true },
+      select: { title: true, period: true, visibility: true, columns: true, rows: true, fills: true },
     }),
   ]);
 
@@ -82,6 +82,7 @@ export async function buildBackup(community: {
       visibility: d.visibility,
       columns: d.columns as string[],
       rows: d.rows as DatasetInput["rows"],
+      fills: d.fills as DatasetInput["fills"],
     })),
   };
 }

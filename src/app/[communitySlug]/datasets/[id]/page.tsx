@@ -37,7 +37,7 @@ export default async function DatasetPage({
           <p className="text-neutral-600">{dataset.period}</p>
         )}
       </div>
-      <DataTable columns={dataset.columns} rows={dataset.rows} />
+      <DataTable columns={dataset.columns} rows={dataset.rows} fills={dataset.fills} />
     </main>
   );
 }

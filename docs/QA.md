@@ -362,6 +362,15 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Coba juga: Dari baris diisi lebih kecil dari baris judul (mis. `1`): tetap tidak mengambil baris judul; Dari baris `50` (di luar data): "Tidak ada data pada baris yang dipilih."; nama kolom dikosongkan: kembali ke nama aslinya; dua kolom diberi nama sama: yang kedua menjadi "... (2)".
 - [ ] Lolos
 
+**F6e. [Prioritas] Warna sel dari Excel dan tanda "-"**
+- Berkas contoh dari generator tidak punya warna (pustaka yang dipakai hanya bisa membaca warna, tidak bisa menulisnya), jadi pakai file Excel milikmu sendiri yang sel-selnya diberi warna latar (mis. file kas dawis).
+- Impor file itu dan lihat pratinjau: warna latar sel data muncul sama seperti di Excel (mis. sel merah untuk yang menunggak, baris SALDO kuning). **Warna baris judul kolom tidak ikut**: judul memakai gaya tampilan Sirkel sendiri.
+- Teks di atas warna tetap terbaca (hitam di warna terang, putih di warna gelap). Warna bergaris-garis selang-seling hanya tampil di sel yang tidak berwarna.
+- Sel kosong di **kolom angka** tampil sebagai "-" abu-abu; sel kosong di kolom teks tetap kosong.
+- Simpan, lalu buka laporan di halaman publik, halaman admin, dan (untuk yang dilindungi) setelah memasukkan password: warnanya sama. Unduh cadangan (JSON) lalu pulihkan di komunitas baru: warna tetap ada. Laporan lama (dibuat sebelum fitur ini) tampil tanpa warna.
+- Catatan: hanya warna isian polos (RGB) yang terbaca. Warna dari tema Excel, warna putih, dan tebal/miring tidak dibawa.
+- [ ] Lolos
+
 **F6d. [Prioritas] Tabel lebar di HP**
 - Buka laporan hasil F6c (rincian, setelah memasukkan password) dan ringkasan, di emulasi HP lebar 360px (DevTools, device toolbar), lalu di HP sungguhan bila ada.
 - Tabel tetap **tabel** di semua ukuran layar (tidak ada tampilan kartu), dengan semua baris dan kolom terlihat, termasuk baris TOTAL, PENGELUARAN, PEMASUKAN, SALDO. Di layar kecil ada tulisan "Geser tabel ke samping untuk melihat kolom lain." (tidak tampil di layar lebar, dan tidak tampil untuk tabel sempit).

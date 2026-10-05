@@ -1,8 +1,10 @@
 import * as XLSX from "xlsx";
-import type { DatasetCell } from "@/lib/dataset";
+import { isHexColor, type DatasetCell, type DatasetFill } from "@/lib/dataset";
 
 // Rows of cell values, rectangular, with null for empty cells.
 export type Grid = DatasetCell[][];
+// The same shape, holding each cell's background colour ("RRGGBB") or null.
+export type FillGrid = (string | null)[][];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -78,8 +80,18 @@ function usedRange(ws: XLSX.WorkSheet) {
   return maxR < 0 ? null : { minR, minC, maxR, maxC };
 }
 
-// Sheet to grid. Merged ranges repeat their top-left value in every cell.
-export function sheetToGrid(ws: XLSX.WorkSheet): Grid {
+// The solid background colour of a cell, if any. SheetJS Community Edition
+// only exposes plain RGB fills (not theme colours or fonts), which is enough
+// for the colours a treasurer paints on a total row. White is not a colour.
+function fillOf(cell: XLSX.CellObject | undefined): string | null {
+  const style = (cell as { s?: { patternType?: string; fgColor?: { rgb?: string } } } | undefined)?.s;
+  if (style?.patternType !== "solid") return null;
+  const rgb = style.fgColor?.rgb?.toUpperCase().slice(-6);
+  return isHexColor(rgb) && rgb !== "FFFFFF" ? rgb : null;
+}
+
+// The cells of the used area, with merged ranges repeating their top-left cell.
+function sheetCells(ws: XLSX.WorkSheet): (XLSX.CellObject | undefined)[][] {
   const used = usedRange(ws);
   if (!used) return [];
   const { minR, minC, maxR, maxC } = used;
@@ -96,16 +108,24 @@ export function sheetToGrid(ws: XLSX.WorkSheet): Grid {
           merged.set(XLSX.utils.encode_cell({ r, c }), origin);
   }
 
-  const grid: Grid = [];
+  const cells: (XLSX.CellObject | undefined)[][] = [];
   for (let r = minR; r <= maxR; r++) {
-    const row: DatasetCell[] = [];
+    const row: (XLSX.CellObject | undefined)[] = [];
     for (let c = minC; c <= maxC; c++) {
       const address = XLSX.utils.encode_cell({ r, c });
-      row.push(cellValue(merged.get(address) ?? ws[address]));
+      row.push(merged.get(address) ?? ws[address]);
     }
-    grid.push(row);
+    cells.push(row);
   }
-  return grid;
+  return cells;
+}
+
+export function sheetToGrid(ws: XLSX.WorkSheet): Grid {
+  return sheetCells(ws).map((row) => row.map(cellValue));
+}
+
+export function sheetToFills(ws: XLSX.WorkSheet): FillGrid {
+  return sheetCells(ws).map((row) => row.map(fillOf));
 }
 
 // SheetJS reads any unknown file as CSV text, so a renamed text file would be
@@ -118,8 +138,9 @@ export function looksLikeSpreadsheet(bytes: Uint8Array, fileName: string) {
 }
 
 export function readWorkbook(data: ArrayBuffer | Uint8Array) {
-  // cellNF keeps number formats, needed to recognise date cells.
-  return XLSX.read(data, { type: "array", cellNF: true });
+  // cellNF keeps number formats (needed to recognise date cells); cellStyles
+  // keeps cell fills.
+  return XLSX.read(data, { type: "array", cellNF: true, cellStyles: true });
 }
 
 const isEmpty = (v: DatasetCell) => v === null;
@@ -153,6 +174,8 @@ export type BuildOptions = {
   to?: number;
   // New names for columns, by original column index.
   renames?: ReadonlyMap<number, string>;
+  // Background colours of the sheet, to carry over to the data cells.
+  fills?: FillGrid;
 };
 
 function headerName(grid: Grid, headerIndex: number, headerRows: number, c: number) {
@@ -210,8 +233,18 @@ export function buildDataset(
   const columns = describeColumns(grid, headerIndex, options).filter(
     (c) => !excluded.has(c.index),
   );
-  const rows = dataRows(grid, headerIndex, options)
-    .map((row) => columns.map((c) => row[c.index] ?? null))
-    .filter((row) => row.some((v) => !isEmpty(v)));
-  return { columns: columns.map((c) => c.name), rows };
+  const first = Math.max(headerIndex + (options.headerRows ?? 1), (options.from ?? 0) - 1);
+  const last = Math.min(options.to ?? grid.length, grid.length);
+  const rows: DatasetCell[][] = [];
+  const fills: DatasetFill[] = [];
+  for (let r = first; r < last; r++) {
+    const row = columns.map((c) => grid[r][c.index] ?? null);
+    if (!row.some((v) => !isEmpty(v))) continue; // blank in the kept columns
+    columns.forEach((c, ci) => {
+      const color = options.fills?.[r]?.[c.index];
+      if (color) fills.push([rows.length, ci, color]);
+    });
+    rows.push(row);
+  }
+  return { columns: columns.map((c) => c.name), rows, fills };
 }

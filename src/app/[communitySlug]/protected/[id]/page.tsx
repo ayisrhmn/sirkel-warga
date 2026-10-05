@@ -32,7 +32,7 @@ export default async function ProtectedDatasetPage({
         )}
       </div>
       {result.state === "open" ? (
-        <DataTable columns={result.columns} rows={result.rows} />
+        <DataTable columns={result.columns} rows={result.rows} fills={result.fills} />
       ) : result.hasPassword ? (
         <>
           <p>Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.</p>

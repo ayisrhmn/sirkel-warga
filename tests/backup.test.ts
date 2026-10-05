@@ -37,7 +37,7 @@ describe("backup", () => {
     await m.contacts.createContact(slugA, {}, form({ name: "Ani", role: "Ketua RT", phone: "0812-3456-7890", sortOrder: "1" }));
     for (const [title, visibility] of [["Ringkasan kas", "public"], ["Rincian nunggak", "protected"], ["Draft laporan", "draft"]]) {
       await rejects(
-        m.datasets.createDataset(slugA, { title, period: "Oktober 2026", visibility, columns: ["Nama", "Jumlah"], rows: [["Budi", 1500000.5], ["Total", null]] }),
+        m.datasets.createDataset(slugA, { title, period: "Oktober 2026", visibility, columns: ["Nama", "Jumlah"], rows: [["Budi", 1500000.5], ["Total", null]], fills: [[1, 0, "FFFF00"], [1, 1, "FFFF00"]] }),
         `REDIRECT:/admin/${slugA}/datasets`,
       );
     }
@@ -102,6 +102,7 @@ describe("restore", () => {
     const protectedSet = await m.db.dataset.findFirstOrThrow({ where: { communityId: community.id, title: "Rincian nunggak" } });
     expect(protectedSet.visibility).toBe("protected");
     expect(protectedSet.rows).toEqual(datasetRows);
+    expect(protectedSet.fills).toEqual([[1, 0, "FFFF00"], [1, 1, "FFFF00"]]);
     expect(await m.db.announcement.count({ where: { communityId: community.id, status: "draft" } })).toBe(1);
     expect(await m.db.user.count({ where: { username: "adm_a" } })).toBe(0); // accounts are not restored
   });

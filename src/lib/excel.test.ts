@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import * as XLSX from "xlsx";
 import { toCsv, validateDatasetInput } from "./dataset";
-import { buildDataset, describeColumns, guessHeaderIndex, looksLikeSpreadsheet, readWorkbook, sheetToGrid } from "./excel";
+import { buildDataset, describeColumns, guessHeaderIndex, looksLikeSpreadsheet, readWorkbook, sheetToFills, sheetToGrid } from "./excel";
 
 // A treasurer-style sheet: banner title (merged), header on row 3, an empty
 // column, a duplicate header, a vertical merge, a formula, a date, a blank
@@ -164,6 +164,7 @@ describe("number formats and grouped headers", () => {
     expect(buildDataset(grid, 0, new Set(), { headerRows: 2 })).toEqual({
       columns: ["Nama", "Iuran Kebersihan", "Iuran Keamanan"],
       rows: [["Budi", 25000, 50000]],
+      fills: [],
     });
     // With one header row the second row would be read as data.
     expect(buildDataset(grid, 0).rows.length).toBe(2);
@@ -273,5 +274,72 @@ describe("isIndexColumn", () => {
     expect(isIndexColumn("No", [[1], [2], [3], [4], ["SALDO AKHIR DES '25"]], 0)).toBe(true);
     expect(isIndexColumn("No", [[null], [null]], 0)).toBe(false);
     expect(isIndexColumn("No", [[1.5]], 0)).toBe(false);
+  });
+});
+
+describe("cell fills", () => {
+  // SheetJS Community Edition cannot write styles, so the worksheet is built by hand.
+  const solid = (rgb: string) => ({ patternType: "solid", fgColor: { rgb } });
+  const sheet = () =>
+    ({
+      "!ref": "A1:C4",
+      A1: { t: "s", v: "Nama", s: solid("FF9900") }, // header colour
+      B1: { t: "s", v: "Jumlah", s: solid("FF9900") },
+      C1: { t: "s", v: "Ket", s: solid("FF9900") },
+      A2: { t: "s", v: "Budi", s: solid("FFFCE5CD") }, // ARGB
+      B2: { t: "n", v: 1000, s: { patternType: "solid", fgColor: { theme: 4 } } }, // theme colour: ignored
+      C2: { t: "s", v: "-", s: { patternType: "none" } },
+      A3: { t: "s", v: "SALDO", s: solid("ffff00") }, // lower case
+      B3: { t: "n", v: 1000, s: solid("FFFFFF") }, // white is not a colour
+      C3: { t: "s", v: "x", s: solid("not-a-colour") },
+      A4: { t: "s", v: "Ani" },
+      B4: { t: "n", v: 5 },
+      C4: { t: "s", v: "y" },
+    }) as XLSX.WorkSheet;
+
+  test("only plain solid RGB fills are read, normalised to upper case", () => {
+    expect(sheetToFills(sheet())).toEqual([
+      ["FF9900", "FF9900", "FF9900"],
+      ["FCE5CD", null, null],
+      ["FFFF00", null, null],
+      [null, null, null],
+    ]);
+  });
+
+  test("a built dataset carries fills aligned to its rows and columns, never the header's", () => {
+    const ws = sheet();
+    const built = buildDataset(sheetToGrid(ws), 0, new Set([1]), { fills: sheetToFills(ws) });
+    // Column "Jumlah" is excluded, so "Ket" becomes column 1.
+    expect(built.columns).toEqual(["Nama", "Ket"]);
+    expect(built.fills).toEqual([[0, 0, "FCE5CD"], [1, 0, "FFFF00"]]);
+  });
+
+  test("a merged range paints every cell with the colour of its top-left cell", () => {
+    const ws = {
+      "!ref": "A1:B2",
+      "!merges": [{ s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }],
+      A1: { t: "s", v: "Blok", s: solid("A4C2F4") },
+      B1: { t: "s", v: "Nama" },
+      B2: { t: "s", v: "Budi" },
+    } as XLSX.WorkSheet;
+    expect(sheetToFills(ws).map((row) => row[0])).toEqual(["A4C2F4", "A4C2F4"]);
+  });
+
+  test("validation accepts a clean list and refuses bad colours or positions", () => {
+    const base = { title: "Kas", period: "", visibility: "draft", columns: ["a", "b"], rows: [["x", 1]] };
+    expect("error" in validateDatasetInput({ ...base, fills: [[0, 1, "FFFF00"]] })).toBe(false);
+    expect("error" in validateDatasetInput(base)).toBe(false); // fills are optional
+    for (const fills of [
+      [[0, 0, "red"]],
+      [[0, 0, "ffff00"]],
+      [[0, 0, "FFFF00; background:url(x)"]],
+      [[1, 0, "FFFF00"]], // row out of range
+      [[0, 2, "FFFF00"]], // column out of range
+      [[0.5, 0, "FFFF00"]],
+      [[0, 0]],
+      "FFFF00",
+      [[0, 0, "FFFF00"], [0, 1, "FFFF00"], [0, 0, "FFFF00"]], // more than rows * columns
+    ])
+      expect("error" in validateDatasetInput({ ...base, fills })).toBe(true);
   });
 });

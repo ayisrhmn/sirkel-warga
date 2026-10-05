@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { DatasetCell } from "@/lib/dataset";
+import type { DatasetCell, DatasetFill } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
 import { accessCookieName, verifyAccessToken } from "@/lib/protected-access";
 
@@ -20,6 +20,7 @@ export type ProtectedDatasetResult =
       period: string | null;
       columns: string[];
       rows: DatasetCell[][];
+      fills: DatasetFill[];
     };
 
 // The only place where the rows of a `protected` dataset leave the database
@@ -53,12 +54,13 @@ export async function getProtectedDataset(
 
   const data = await db.dataset.findFirstOrThrow({
     where: { id, communityId: community.id, visibility: "protected" },
-    select: { columns: true, rows: true },
+    select: { columns: true, rows: true, fills: true },
   });
   return {
     state: "open",
     ...base,
     columns: data.columns as string[],
     rows: data.rows as DatasetCell[][],
+    fills: data.fills as DatasetFill[],
   };
 }

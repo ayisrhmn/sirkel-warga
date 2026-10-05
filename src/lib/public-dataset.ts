@@ -1,10 +1,10 @@
 import { unstable_cache } from "next/cache";
 import { communityTag } from "@/lib/communities";
-import type { DatasetCell } from "@/lib/dataset";
+import type { DatasetCell, DatasetFill } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
 
 export type PublicDataset =
-  | { visibility: "public"; id: string; title: string; period: string | null; columns: string[]; rows: DatasetCell[][] }
+  | { visibility: "public"; id: string; title: string; period: string | null; columns: string[]; rows: DatasetCell[][]; fills: DatasetFill[] }
   | { visibility: "protected"; id: string; title: string; period: string | null };
 
 // A dataset as shown to anyone with the link. Drafts do not exist here. The
@@ -30,13 +30,14 @@ export function getPublicDataset(
 
       const data = await db.dataset.findUniqueOrThrow({
         where: { id: meta.id },
-        select: { columns: true, rows: true },
+        select: { columns: true, rows: true, fills: true },
       });
       return {
         ...meta,
         visibility: "public",
         columns: data.columns as string[],
         rows: data.rows as DatasetCell[][],
+        fills: data.fills as DatasetFill[],
       };
     },
     ["dataset", community.id, id],

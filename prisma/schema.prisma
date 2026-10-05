@@ -119,6 +119,8 @@ model Dataset {
   // string[] of column names / (string | number | null)[][] of rows.
   columns     Json
   rows        Json
+  // [row, column, "RRGGBB"][]: background colours carried over from the Excel file.
+  fills       Json              @default("[]")
   visibility  DatasetVisibility @default(draft)
   createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)

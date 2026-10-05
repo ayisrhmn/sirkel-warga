@@ -1,4 +1,13 @@
-import { formatCell, isIndexColumn, isNumericCell, pinnedColumn, type DatasetCell } from "@/lib/dataset";
+import {
+  fillLookup,
+  formatCell,
+  isIndexColumn,
+  isNumericCell,
+  pinnedColumn,
+  readableTextColor,
+  type DatasetCell,
+  type DatasetFill,
+} from "@/lib/dataset";
 
 // Wide tables scroll sideways inside their own container, so the page itself
 // never scrolls horizontally on a phone. One column that names the rows stays
@@ -8,10 +17,14 @@ import { formatCell, isIndexColumn, isNumericCell, pinnedColumn, type DatasetCel
 export function DataTable({
   columns,
   rows,
+  fills,
 }: {
   columns: string[];
   rows: DatasetCell[][];
+  // Background colours of the original sheet, as stored with the dataset.
+  fills?: readonly DatasetFill[];
 }) {
+  const fillAt = fillLookup(fills);
   const pinned = pinnedColumn(columns, rows);
   // A running number needs only its digits: `w-px` with no-wrap shrinks the
   // column to its content while the other columns share the rest.
@@ -65,9 +78,12 @@ export function DataTable({
           <tbody>
             {rows.map((row, r) => (
               <tr key={r} className="bg-white odd:bg-neutral-100">
-                {row.map((cell, c) => (
+                {row.map((cell, c) => {
+                  const fill = fillAt.get(`${r}:${c}`);
+                  return (
                   <td
                     key={c}
+                    style={fill ? { backgroundColor: `#${fill}`, color: readableTextColor(fill) } : undefined}
                     className={`${
                       c === pinned
                         ? ""
@@ -78,9 +94,14 @@ export function DataTable({
                       narrow[c] ? "tabular-nums" : numeric[c] || isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)} ${hideOnPhone(c)}`}
                   >
-                    {formatCell(cell)}
+                    {cell === null && numeric[c] ? (
+                      <span className={fill ? "opacity-60" : "text-neutral-400"}>-</span>
+                    ) : (
+                      formatCell(cell)
+                    )}
                   </td>
-                ))}
+                  );
+                })}
               </tr>
             ))}
           </tbody>

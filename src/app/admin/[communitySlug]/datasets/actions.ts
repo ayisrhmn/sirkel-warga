@@ -25,9 +25,9 @@ export async function createDataset(
   const parsed = validateDatasetInput(input);
   if ("error" in parsed) return { error: parsed.error };
 
-  const { title, period, visibility, columns, rows } = parsed.data;
+  const { title, period, visibility, columns, rows, fills } = parsed.data;
   await getDb().dataset.create({
-    data: { title, period, visibility, columns, rows, communityId: community.id },
+    data: { title, period, visibility, columns, rows, fills, communityId: community.id },
   });
   refresh(slug);
   if (stay) return { saved: true };
