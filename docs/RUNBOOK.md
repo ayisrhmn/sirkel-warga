@@ -113,7 +113,7 @@ Yang **tidak** ada di cadangan, dengan sengaja: password (hash password laporan 
 
 - **Permintaan pertama setelah lama sepi lebih lambat** (beberapa detik). Database Neon Free tertidur setelah 5 menit tanpa aktivitas lalu bangun otomatis. Halaman publik yang sudah ter-cache tidak terpengaruh.
 - **Halaman publik langsung berubah setelah pengurus menyimpan**, dan agenda yang sudah lewat hilang sendiri paling lambat satu jam kemudian.
-- **Laporan dilindungi:** pengunjung memasukkan password, lalu akses berlaku 15 menit di perangkat itu. Super admin, admin, dan platform admin yang sedang login membuka laporan tanpa password. Lima kali salah dalam 10 menit mengunci percobaan dari alamat IP itu sementara, dan 100 tebakan salah dalam satu jam (dari alamat mana pun) mengunci pengunjung baru untuk komunitas itu sampai jamnya lewat. Pengunjung yang sudah membuka laporan tidak terpengaruh. Password laporan dilindungi minimal 8 karakter.
+- **Laporan dilindungi:** pengunjung memasukkan password, lalu akses berlaku 5 menit di perangkat itu. Super admin, admin, dan platform admin yang sedang login membuka laporan tanpa password. Lima kali salah dalam 10 menit mengunci percobaan dari alamat IP itu sementara, dan 100 tebakan salah dalam satu jam (dari alamat mana pun) mengunci pengunjung baru untuk komunitas itu sampai jamnya lewat. Pengunjung yang sudah membuka laporan tidak terpengaruh. Password laporan dilindungi minimal 8 karakter.
 
 ## 7. Bot dan pemindaian
 

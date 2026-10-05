@@ -4,7 +4,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 // datasets: a signed token in an httpOnly cookie. It is short on purpose: a
 // visitor enters the password again on the next visit, and a shared device
 // does not stay unlocked. (Members of the community never need it.)
-export const ACCESS_MAX_AGE_SECONDS = 15 * 60;
+export const ACCESS_MAX_AGE_SECONDS = 5 * 60;
 
 // One cookie per community, so unlocking A never opens B.
 export const accessCookieName = (communityId: string) => `sirkel_access_${communityId}`;
