@@ -17,7 +17,7 @@ export function DataTable({
   // column to its content while the other columns share the rest.
   const narrow = columns.map((name, c) => isIndexColumn(name, rows, c));
   const pad = (c: number) => (narrow[c] ? "w-px px-2 text-center" : "px-3");
-  // A column of amounts has its header on the right too, above its numbers.
+  // A column of amounts is centred: its header and its numbers line up in the middle.
   const numeric = columns.map((_, c) => {
     const cells = rows.map((row) => row[c]).filter((cell) => cell !== null);
     return !narrow[c] && cells.length > 0 && cells.filter(isNumericCell).length >= cells.length * 0.6;
@@ -44,18 +44,17 @@ export function DataTable({
           Geser tabel ke samping untuk melihat kolom lain.
         </p>
       )}
-      {/* The table is as wide as its content, not stretched to fill the page:
-          stretching shares the spare room out among all columns, leaving wide
-          gaps and amounts far away from their headers. It scrolls when wider. */}
-      <div className="w-fit max-w-full overflow-x-auto rounded-md border border-neutral-300">
-        <table className="w-max border-separate border-spacing-0 text-sm">
+      {/* Full width: the table fills the page, and scrolls sideways inside its
+          frame when its content is wider. */}
+      <div className="overflow-x-auto rounded-md border border-neutral-300">
+        <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
               {columns.map((name, i) => (
                 <th
                   key={i}
                   scope="col"
-                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : numeric[i] ? "text-right" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
+                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : numeric[i] ? "text-center" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
                 >
                   {name}
                 </th>
@@ -75,7 +74,7 @@ export function DataTable({
                           ? "whitespace-normal break-words"
                           : "whitespace-nowrap"
                     } bg-inherit ${pad(c)} py-2 ${
-                      narrow[c] ? "tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
+                      narrow[c] ? "tabular-nums" : numeric[c] ? "text-center tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)} ${hideOnPhone(c)}`}
                   >
                     {formatCell(cell)}

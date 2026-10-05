@@ -24,21 +24,25 @@ describe("DataTable", () => {
     for (const name of wide.columns) expect(html).toContain(`>${name}</th>`);
   });
 
-  test("the table is as wide as its content instead of being stretched to the page", () => {
+  test("the table is full width and scrolls inside its frame when wider", () => {
     const html = render(wide.columns, wide.rows);
-    expect(html).toContain("w-fit max-w-full overflow-x-auto"); // the frame hugs the table
+    expect(html).toContain("overflow-x-auto");
+    expect(html).not.toContain("w-fit");
     const table = html.split("<table")[1].split(">")[0];
-    expect(table).toContain("w-max");
-    expect(table).not.toContain("w-full");
+    expect(table).toContain("w-full");
+    expect(table).not.toContain("w-max");
   });
 
-  test("a column of amounts has its header on the right, text columns on the left", () => {
+  test("a column of amounts is centred, header and numbers alike; text columns stay on the left", () => {
     const html = render(wide.columns, wide.rows);
-    for (const name of ["Januari", "Februari", "Maret"]) expect(html).toMatch(new RegExp(`<th[^>]*text-right[^>]*>${name}</th>`));
+    for (const name of ["Januari", "Februari", "Maret"]) expect(html).toMatch(new RegExp(`<th[^>]*text-center[^>]*>${name}</th>`));
     expect(html).toMatch(/<th[^>]*text-left[^>]*>Nama<\/th>/);
-    expect(html).not.toMatch(/<th[^>]*text-right[^>]*>Nama<\/th>/);
-    // The running number keeps its own centred style.
-    expect(html).toMatch(/<th[^>]*text-center[^>]*>No<\/th>/);
+    expect(html).not.toMatch(/<th[^>]*text-center[^>]*>Nama<\/th>/);
+    // The numbers are centred too (none is right-aligned any more), and the name cells are not.
+    const body = html.split("<tbody>")[1];
+    expect(body).not.toContain("text-right");
+    expect((body.match(/text-center tabular-nums/g) ?? []).length).toBeGreaterThanOrEqual(wide.rows.length * 3 - 2);
+    expect(body).not.toMatch(/<td[^>]*text-center[^>]*>Bapak/);
   });
 
   test("the container scrolls sideways and a hint appears on small screens only", () => {
