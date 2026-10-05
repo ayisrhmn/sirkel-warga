@@ -8,6 +8,7 @@ import { setTemporaryPassword } from "@/lib/account-admin";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
+import { passwordProblem } from "@/lib/password-policy";
 import { usernameToEmail } from "@/lib/username";
 
 const PASSWORD_MIN = 8;
@@ -39,6 +40,8 @@ export async function createAdmin(
     };
   if (!validPassword(password))
     return { error: `Password minimal ${PASSWORD_MIN} karakter.`, values };
+  const weak = passwordProblem(password, username);
+  if (weak) return { error: weak, values };
 
   let userId: string;
   try {
@@ -97,6 +100,9 @@ export async function resetPassword(
   const password = String(formData.get("password") ?? "");
   if (!validPassword(password))
     return { error: `Password minimal ${PASSWORD_MIN} karakter.` };
+  const target = await getDb().user.findUnique({ where: { id: userId }, select: { username: true } });
+  const weak = passwordProblem(password, target?.username ?? undefined);
+  if (weak) return { error: weak };
 
   await setTemporaryPassword(userId, password);
 

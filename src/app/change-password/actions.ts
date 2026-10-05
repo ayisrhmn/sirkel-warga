@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
+import { passwordProblem } from "@/lib/password-policy";
 import { requireUser } from "@/lib/session";
 
 export async function changePassword(
@@ -18,6 +19,8 @@ export async function changePassword(
 
   if (newPassword.length < 8 || newPassword.length > 128)
     return { error: "Password baru minimal 8 karakter." };
+  const weak = passwordProblem(newPassword, user.username ?? undefined);
+  if (weak) return { error: weak };
   if (newPassword !== String(formData.get("confirm") ?? ""))
     return { error: "Konfirmasi password tidak sama." };
   if (newPassword === currentPassword)

@@ -264,3 +264,48 @@ describe("registration code", () => {
     }
   });
 });
+
+describe("password policy", () => {
+  const WEAK = "password123";
+
+  test("weak passwords are refused wherever a password is set", async () => {
+    await login("owner_a");
+    const created = await m.users.createAdmin(slugA, {}, form({ name: "Admin Lemah", username: "adm_lemah", password: WEAK }));
+    expect(created.error).toContain("terlalu mudah ditebak");
+    expect(await m.db.user.count({ where: { username: "adm_lemah" } })).toBe(0);
+
+    // A password built from the username is weak too.
+    expect((await m.users.createAdmin(slugA, {}, form({ name: "Admin Lemah", username: "adm_lemah", password: "adm_lemah-1" }))).error).toContain("terlalu mudah ditebak");
+
+    const reset = await m.users.createAdmin(slugA, {}, form({ name: "Admin Kuat", username: "adm_kuat", password: PASSWORD }));
+    expect(reset.ok).toBeDefined();
+    const adminId = await id("adm_kuat");
+    expect((await m.users.resetPassword(slugA, adminId, {}, form({ password: "12345678" }))).error).toContain("terlalu mudah ditebak");
+
+    expect((await m.settings.setProtectedPassword(slugA, {}, form({ password: WEAK }))).error).toContain("terlalu mudah ditebak");
+
+    await login("adm_kuat");
+    await m.db.user.update({ where: { id: adminId }, data: { mustChangePassword: false } });
+    expect((await m.changePassword({}, form({ current: PASSWORD, new: WEAK, confirm: WEAK }))).error).toContain("terlalu mudah ditebak");
+    expect((await m.changePassword({}, form({ current: PASSWORD, new: "adm_kuat-2026", confirm: "adm_kuat-2026" }))).error).toContain("terlalu mudah ditebak");
+  });
+
+  test("self-registration over HTTP is checked on the server, not just in the form", async () => {
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+    const signUp = (username: string, password: string) =>
+      m.auth.handler(
+        new Request("http://localhost:3000/api/auth/sign-up/email", {
+          method: "POST",
+          headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+          body: JSON.stringify({ email: `${username}@users.sirkel.local`, password, name: username, username }),
+        }),
+      );
+
+    const weak = await signUp("daftar_lemah", WEAK);
+    expect(weak.status).toBe(400);
+    expect(await weak.json()).toMatchObject({ code: "PASSWORD_TOO_WEAK" });
+    expect(await m.db.user.count({ where: { username: "daftar_lemah" } })).toBe(0);
+
+    expect((await signUp("daftar_kuat", "kucing-oren-di-atap")).status).toBe(200);
+  });
+});

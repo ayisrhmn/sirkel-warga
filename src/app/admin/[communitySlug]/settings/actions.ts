@@ -7,6 +7,7 @@ import { communityTag } from "@/lib/communities";
 import { isTimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
+import { passwordProblem } from "@/lib/password-policy";
 import type { FormState } from "@/lib/form-state";
 
 export async function renameCommunity(
@@ -76,6 +77,9 @@ export async function setProtectedPassword(
     return {
       error: `Password ${PROTECTED_PASSWORD_MIN}-${PROTECTED_PASSWORD_MAX} karakter.`,
     };
+
+  const weak = passwordProblem(password);
+  if (weak) return { error: weak };
 
   await getDb().community.update({
     where: { id: community.id },

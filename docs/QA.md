@@ -79,6 +79,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - Username `Ada Spasi` → pesan yang sama.
 - Password dan ulangi password berbeda → "Konfirmasi password tidak sama."
 - Password 5 karakter → browser menolak (minimal 8).
+- Password yang sangat mudah ditebak, mis. `12345678`, `password123`, `qwertyui`, atau yang sama dengan atau memuat username → "Password terlalu mudah ditebak. Pakai kombinasi yang lebih panjang atau acak." Aturan yang sama berlaku saat super admin membuat atau mereset akun admin, saat ganti password, dan untuk password laporan dilindungi.
 - Username `qa_owner1` yang sudah dipakai → "Username sudah dipakai."
 - [ ] Lolos
 

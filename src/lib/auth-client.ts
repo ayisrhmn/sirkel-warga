@@ -14,6 +14,7 @@ export function authMessage(error: AuthError): string {
   if (error.code === "INVALID_USERNAME_OR_PASSWORD") return "Username atau password salah.";
   if (error.code?.includes("USERNAME_IS_ALREADY_TAKEN") || error.code === "USER_ALREADY_EXISTS")
     return "Username sudah dipakai.";
+  if (error.code === "PASSWORD_TOO_WEAK" && error.message) return error.message;
   if (error.status === 403 && error.message) return error.message;
   return "Terjadi kesalahan. Coba lagi.";
 }

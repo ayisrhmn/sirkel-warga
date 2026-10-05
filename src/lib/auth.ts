@@ -5,6 +5,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { getDb } from "@/lib/db";
+import { passwordProblem } from "@/lib/password-policy";
 import { pruneRateLimitsSometimes } from "@/lib/rate-limit";
 
 const db = getDb();
@@ -60,11 +61,22 @@ export const auth = betterAuth({
     // an admin account) have no HTTP request and are not affected.
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.request) await pruneRateLimitsSometimes();
+      if (ctx.path !== "/sign-up/email" || !ctx.request) return;
+
       const expected = process.env.REGISTRATION_CODE;
-      if (ctx.path !== "/sign-up/email" || !ctx.request || !expected) return;
-      const given = ctx.request.headers.get("x-registration-code") ?? "";
-      if (!sameSecret(given, expected))
-        throw new APIError("FORBIDDEN", { message: "Kode pendaftaran salah." });
+      if (expected) {
+        const given = ctx.request.headers.get("x-registration-code") ?? "";
+        if (!sameSecret(given, expected))
+          throw new APIError("FORBIDDEN", { message: "Kode pendaftaran salah." });
+      }
+
+      const { password, username } = (ctx.body ?? {}) as { password?: unknown; username?: unknown };
+      const problem = passwordProblem(
+        typeof password === "string" ? password : "",
+        typeof username === "string" ? username : undefined,
+      );
+      if (problem)
+        throw new APIError("BAD_REQUEST", { message: problem, code: "PASSWORD_TOO_WEAK" });
     }),
   },
   databaseHooks: {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import { authClient, authMessage } from "@/lib/auth-client";
+import { passwordProblem } from "@/lib/password-policy";
 import { usernameToEmail } from "@/lib/username";
 
 export function RegisterForm({ requireCode }: { requireCode: boolean }) {
@@ -20,6 +21,11 @@ export function RegisterForm({ requireCode }: { requireCode: boolean }) {
 
     if (!/^[a-z0-9_.]{3,30}$/.test(username)) {
       setError("Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah.");
+      return;
+    }
+    const weak = passwordProblem(password, username);
+    if (weak) {
+      setError(weak);
       return;
     }
     if (password !== String(form.get("confirm"))) {
