@@ -1,8 +1,27 @@
-# Skenario QA Manual — Sirkel (Fase 0 sampai 3)
+# Skenario QA Manual — Sirkel
 
-Dokumen ini untuk menguji Sirkel secara manual di browser. Yang diuji: halaman publik, akun, komunitas, role dan isolasi, konten, dan laporan dari Excel. Fase 4 (deploy dan polishing) belum termasuk.
+Dokumen ini untuk menguji Sirkel secara manual di browser, sebelum dideploy. Yang diuji: halaman publik, akun, komunitas, role dan isolasi, cadangan, konten, laporan dari Excel, laporan dilindungi password, tampilan HP, dan keamanan dasar. Deploy ke Vercel dan uji di HP sungguhan ada di [RUNBOOK.md](RUNBOOK.md).
 
 Sudah ada tes otomatis (`bun run test`) untuk logika izin, isolasi komunitas, parser Excel, validasi, serta gerbang password dan rate limit. Skenario di bawah fokus pada hal yang **belum bisa dicek otomatis**: tampilan, form di browser, alur impor Excel di layar, perilaku cache, dan pengalaman di HP. Skenario bertanda **[Prioritas]** adalah yang paling mungkin menemukan masalah.
+
+## Cara memakai dokumen ini
+
+**Perkiraan waktu:** sekitar 3 sampai 4 jam bila dikerjakan semua. Skenario **[Prioritas]** saja sekitar 1,5 jam.
+
+**Urutan yang disarankan.** Beberapa skenario mengubah atau menghapus data yang dipakai skenario lain, jadi kerjakan berurutan:
+
+1. A, lalu B (akun), lalu C (komunitas).
+2. D1 sampai D7 (role dan isolasi), lalu E (konten) dan F (laporan Excel), lalu G (laporan dilindungi). Skenario E sampai G memakai data dari bagian D.
+3. **D9 (cadangan dan pemulihan) sebelum D8 (hapus komunitas).** D8 menghapus Komunitas 1, dan D9 memakai isinya. Setelah D8/D9, buat ulang Komunitas 1 bila masih ada yang perlu diuji.
+4. D10 (akses darurat), I (keamanan), dan H (tampilan dan HP) di akhir.
+
+**Mengosongkan data uji kapan saja** (misalnya kalau data kacau dan mau mulai dari awal):
+
+```bash
+docker exec postgres18 psql -U postgres -d sirkel -c 'delete from communities' -c 'delete from "user"' -c 'delete from "rateLimit"'
+```
+
+**Melaporkan masalah.** Catat ID skenario (mis. F6b), langkah yang kamu lakukan, apa yang kamu lihat, dan apa yang diharapkan. Screenshot layar dan tab Network membantu. Jangan lupa menulisnya di kolom Catatan di ringkasan paling bawah.
 
 ## 1. Persiapan
 
@@ -133,9 +152,9 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - [ ] Lolos
 
 **C2. [Prioritas] Link yang dibuka sebelum komunitas ada**
-- Buka `/dawis-matahari-sektor-3` (404). Biarkan tab terbuka.
+- Buka `/dawis-matahari-sektor-3` (muncul "Komunitas tidak ditemukan"). Biarkan tab terbuka.
 - Lalu buat komunitas (C3), dan segera muat ulang `/dawis-matahari-sektor-3`.
-- Diharapkan: halaman komunitas langsung tampil, bukan 404 yang tersimpan di cache.
+- Diharapkan: halaman komunitas langsung tampil, bukan pesan "tidak ditemukan" yang masih tersimpan di cache.
 - [ ] Lolos
 
 **C3. Membuat komunitas dan slug otomatis**
@@ -157,7 +176,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 ---
 
-## D. Role, isolasi, dan cadangan
+## D. Role, isolasi, cadangan, dan akses darurat
 
 Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komunitas satu pengumuman agar ada data (lihat bagian E).
 
@@ -172,6 +191,7 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 - Diharapkan: langsung dialihkan ke `/change-password` ("Password awalmu dari super admin harus diganti sebelum lanjut."). Mengetik `/admin` atau `/admin/dawis-matahari-sektor-3` di address bar tetap kembali ke `/change-password`.
 - Coba: password lama salah → "Password lama salah."; password baru sama dengan lama → "Password baru harus berbeda dari yang lama."; konfirmasi beda → "Konfirmasi password tidak sama."
 - Ganti ke `password-baru-2` dengan benar → masuk ke dashboard komunitas. Logout, login dengan `password-uji-1` ditolak, dengan `password-baru-2` berhasil.
+- Menu admin punya link "Ganti password" (untuk semua pengurus, bukan hanya saat dipaksa). Link itu membuka `/change-password` dengan form yang sama; password baru yang mudah ditebak (mis. `12345678`) ditolak.
 - [ ] Lolos
 
 **D3. [Prioritas] Admin tidak bisa mengelola komunitas dan pengguna**
@@ -210,7 +230,7 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 
 **D8. Menghapus komunitas**
 - Buat admin baru `qa_admin_hapus` di Komunitas 1. Lalu di "Pengaturan" bagian "Hapus komunitas": ketik slug yang salah → "Ketik slug komunitas dengan benar untuk menghapus."; ketik slug benar → klik hapus.
-- Diharapkan: dialihkan ke `/admin` ("Kamu belum punya komunitas."), `/dawis-matahari-sektor-3` menjadi 404, akun `qa_admin_hapus` tidak bisa login, akun `qa_owner1` masih bisa login dan boleh membuat komunitas baru. Komunitas 2 tetap utuh.
+- Diharapkan: dialihkan ke `/admin` ("Kamu belum punya komunitas."), `/dawis-matahari-sektor-3` menampilkan "Komunitas tidak ditemukan", akun `qa_admin_hapus` tidak bisa login, akun `qa_owner1` masih bisa login dan boleh membuat komunitas baru. Komunitas 2 tetap utuh.
 - Bagian "Hapus komunitas" memuat peringatan untuk mengunduh cadangan lengkap dulu. Lakukan D9 sebelum skenario ini bila ingin menguji pemulihan.
 - [ ] Lolos
 
@@ -223,6 +243,13 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 - Diharapkan: masuk ke `/admin/dawis-matahari-sektor-3`. Pengumuman publik dan draft, agenda, kontak, dan ketiga laporan kembali persis seperti semula (status Publik/Dilindungi/Draft sama, isi tabel sama). Halaman publik `/dawis-matahari-sektor-3` langsung tampil. Yang **tidak** kembali: password laporan dilindungi (Pengaturan menyatakan belum diatur) dan akun `qa_admin1`.
 - Coba pulihkan lagi saat sudah punya komunitas: "Kamu sudah punya komunitas." Dengan akun lain tanpa komunitas, memakai file yang sama dan slug yang sudah dipakai: "Slug sudah dipakai. Isi slug lain di bawah." lalu isi slug lain, berhasil.
 - File yang bukan cadangan (mis. `5-bukan-excel.xlsx` atau JSON sembarang): "File cadangan tidak valid." dan tidak ada komunitas baru.
+- [ ] Lolos
+
+**D10. Akses darurat: reset password dari terminal**
+- Dari folder proyek: `bun run user:reset-password qa_owner1`.
+- Diharapkan: terminal menampilkan `Temporary password for qa_owner1: <password acak>` dan "Share it privately. The account must change it at the next login."
+- Jika `qa_owner1` sedang login di browser, muat ulang halaman: sesi hilang, kembali ke `/login`. Login dengan password lama ditolak. Login dengan password sementara berhasil dan langsung dialihkan ke `/change-password`.
+- `bun run user:reset-password tidak_ada` → "No user with username ..."; `bun run user:reset-password qa_owner1 12345678` → ditolak (password terlalu mudah ditebak); tanpa username → pesan penggunaan.
 - [ ] Lolos
 
 ---
@@ -298,7 +325,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - [ ] Lolos
 
 **F4. [Prioritas] Draft tidak terlihat publik**
-- Buka `/dawis-matahari-sektor-3`: tidak ada bagian "Laporan". Buka langsung `/dawis-matahari-sektor-3/datasets/<id>` (id dari URL detail admin): 404.
+- Buka `/dawis-matahari-sektor-3`: tidak ada bagian "Laporan". Buka langsung `/dawis-matahari-sektor-3/datasets/<id>` (id dari URL detail admin): 404. (Untuk alamat laporan seperti ini, halaman 404 bisa tampil kosong sebentar sebelum pesannya muncul; itu diketahui, lihat bagian J.)
 - [ ] Lolos
 
 **F5. Laporan publik**
@@ -403,7 +430,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 
 ---
 
-## H. Tampilan dan HP
+## H. Tampilan, error, dan HP
 
 **H1. [Prioritas] Emulasi HP**
 - DevTools → Toggle device toolbar, pilih ukuran kecil (iPhone SE atau 360x640). Telusuri: `/`, halaman komunitas, halaman laporan, `/login`, `/register`, seluruh menu admin, form impor.
@@ -419,9 +446,16 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 - Diharapkan: teks terbaca, garis tepi kartu dan tabel terlihat, pesan error merah dan sukses hijau terbaca.
 - [ ] Lolos
 
-**H4. HP sungguhan**
-- Catatan: login dari HP lewat alamat LAN akan ditolak karena `BETTER_AUTH_URL` ditetapkan ke `localhost`. Uji di HP sungguhan setelah deploy ke Vercel (Fase 4), atau minimal buka halaman publik lewat IP LAN.
-- [ ] Ditunda ke Fase 4
+**H4. Halaman error yang ramah**
+- Jalankan versi produksi: `bun run build && bun run start` (mode `dev` menampilkan layar error pengembang, bukan halaman ini).
+- Ubah port di `DATABASE_URL` pada `.env.local` menjadi port yang salah (mis. `5999`) lalu jalankan ulang `bun run start`. Jangan menghentikan container Postgres: container itu dipakai proyek lain.
+- Buka `/dawis-matahari-sektor-3` dan `/admin` (setelah login lama masih tersimpan, atau cukup halaman komunitas). Diharapkan: halaman "Terjadi kesalahan" dengan tombol "Coba lagi", tanpa teks error teknis, jejak stack, atau alamat database.
+- Kembalikan port yang benar dan jalankan ulang; tombol "Coba lagi" (atau muat ulang) memulihkan halaman.
+- [ ] Lolos
+
+**H5. HP sungguhan**
+- Catatan: login dari HP lewat alamat LAN akan ditolak karena `BETTER_AUTH_URL` ditetapkan ke `localhost`. Uji di HP sungguhan setelah deploy ke Vercel, atau minimal buka halaman publik lewat IP LAN.
+- [ ] Dikerjakan setelah deploy (RUNBOOK bagian 2.5)
 
 ---
 
@@ -445,16 +479,22 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 - Halaman publik komunitas memiliki `Cache-Control: s-maxage=3600, stale-while-revalidate=...`. Halaman admin dan export tidak boleh ter-cache (`no-store` atau dinamis).
 - [ ] Lolos
 
+**I5. Header keamanan**
+- Di tab Network, buka satu halaman apa saja (mis. `/login`) dan lihat Response Headers: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (kamera, mikrofon, lokasi dimatikan), dan `X-Robots-Tag: noindex, nofollow`.
+- [ ] Lolos
+
 ---
 
 ## J. Yang sengaja belum ada (jangan dilaporkan sebagai bug)
 
 - Membuat password berbeda untuk tiap laporan: ada satu password per komunitas.
 - Tombol "kunci kembali" atau keluar dari laporan dilindungi: akses habis setelah 7 hari atau saat password diganti.
-- Batas percobaan yang memperhitungkan serangan dari banyak alamat IP sekaligus.
 - Reset password lewat email. Super admin yang lupa password hanya bisa direset manual oleh platform admin.
 - Paginasi di halaman publik (maksimal 20 pengumuman, 20 agenda, 50 kontak, 50 laporan).
-- Tampilan di HP sungguhan, deploy ke Vercel, dan panduan akses darurat (Fase 4).
+- Deploy ke Vercel dan uji di HP sungguhan: dikerjakan setelah QA ini, mengikuti [RUNBOOK.md](RUNBOOK.md).
+- Cadangan otomatis terjadwal: cadangan lengkap harus diunduh sendiri oleh super admin.
+- Halaman 404 untuk alamat laporan yang tidak ada atau draft (`/slug/datasets/<id>`) bisa tampil kosong sebentar sebelum pesannya muncul (perilaku Next.js yang diketahui). Halaman komunitas sendiri sudah tidak terpengaruh.
+- Memindahkan super admin ke orang lain: satu komunitas punya satu super admin.
 - Impor ulang ke laporan yang sudah ada: tiap impor membuat laporan baru.
 
 ## K. Ringkasan hasil
@@ -464,9 +504,9 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | A. Halaman publik dasar | 3 | | | |
 | B. Akun dan persetujuan | 9 | | | |
 | C. Komunitas | 5 | | | |
-| D. Role, isolasi, dan cadangan | 9 | | | |
+| D. Role, isolasi, cadangan, dan akses darurat | 10 | | | |
 | E. Konten publik | 7 | | | |
 | F. Laporan dari Excel | 11 | | | |
 | G. Laporan dilindungi | 8 | | | |
-| H. Tampilan dan HP | 4 | | | |
-| I. Keamanan dan akses | 4 | | | |
+| H. Tampilan, error, dan HP | 5 | | | |
+| I. Keamanan dan akses | 5 | | | |
