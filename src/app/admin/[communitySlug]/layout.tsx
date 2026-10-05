@@ -21,6 +21,15 @@ export default async function CommunityAdminLayout({
           <Link href={base} className="underline">
             Ringkasan
           </Link>
+          <Link href={`${base}/announcements`} className="underline">
+            Pengumuman
+          </Link>
+          <Link href={`${base}/events`} className="underline">
+            Agenda
+          </Link>
+          <Link href={`${base}/contacts`} className="underline">
+            Kontak
+          </Link>
           {role === "owner" && (
             <>
               <Link href={`${base}/users`} className="underline">

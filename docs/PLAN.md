@@ -147,7 +147,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 - `/admin` (daftar komunitas milik user), `/admin/[slug]/settings` (ubah nama), `/admin/[slug]/users` (tambah admin, reset password, hapus user), `/change-password`.
 - Selesai bila: admin komunitas A tidak bisa membuka atau memanipulasi komunitas B (diuji lewat URL dan Server Action), admin biasa ditolak di halaman pengaturan dan pengguna, dan user yang dihapus langsung kehilangan akses.
 
-### Fase 1C — Konten dan halaman publik
+### Fase 1C — Konten dan halaman publik (selesai)
 - CRUD pengumuman (draft/publik), agenda, dan kontak penting, semua dibatasi `community_id`.
 - Halaman publik menampilkan ketiganya dengan ISR, dan revalidate saat data berubah.
 - Selesai bila: pengurus dapat mengelola konten, halaman publik langsung terbarui, dan data draft tidak tampil di publik.

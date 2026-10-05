@@ -47,7 +47,7 @@ bun run user:promote <username>
 | `bun run db:migrate` | Buat dan terapkan migrasi dari `prisma/schema.prisma` (development) |
 | `bun run db:deploy` | Terapkan migrasi yang sudah ada (production) |
 | `bun run user:promote <username>` | Setujui akun dan jadikan platform admin |
-| `bun run test` | Tes slug dan tes integrasi akun, role, dan isolasi komunitas (memakai database `sirkel_test`, dibuat otomatis) |
+| `bun run test` | Tes unit dan tes integrasi akun, role, konten, dan isolasi komunitas (memakai database `sirkel_test`, dibuat otomatis) |
 
 Prisma Client dibuat otomatis ke `src/generated/prisma` lewat `postinstall`. Bila skema berubah, jalankan `bunx prisma generate`.
 
