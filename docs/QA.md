@@ -70,7 +70,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 **A1. Landing page**
 - Buka `/`.
-- Diharapkan: judul "Sirkel", tagline "Info lingkungan, satu link.", penjelasan, petunjuk "Buka lewat link yang dibagikan pengurus RT-mu...", footer berisi link "Login pengurus" dan teks "Dibuat sukarela untuk warga.". Tidak ada daftar komunitas, tombol daftar, atau gambar besar.
+- Diharapkan: judul "Sirkel", tagline "Info lingkungan, satu link.", penjelasan, petunjuk "Buka lewat link yang dibagikan pengurus RT-mu...", tombol "Login pengurus" di header (terlihat tanpa scroll), dan footer berisi "© <tahun ini> Muhammad Fariz Rahman" (link ke https://ayisrhmn.vercel.app, tab baru) lalu teks "Dibuat sukarela untuk warga.". Tidak ada daftar komunitas atau tombol daftar.
 - [ ] Lolos
 
 **A2. Tidak terindeks mesin pencari**

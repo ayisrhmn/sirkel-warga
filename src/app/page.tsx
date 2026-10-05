@@ -1,5 +1,5 @@
-import { CalendarDays, Link2, Megaphone, Phone, Table2 } from "lucide-react";
-import Link from "next/link";
+import { CalendarDays, Link2, LogIn, Megaphone, Phone, Table2 } from "lucide-react";
+import { ButtonLink } from "@/components/atoms/button";
 import { Container } from "@/components/atoms/container";
 import { Heading } from "@/components/atoms/heading";
 import { IconTile } from "@/components/atoms/icon-tile";
@@ -17,9 +17,12 @@ const FEATURES = [
 export default function Home() {
   return (
     <Container>
-      <div className="py-5">
+      <header className="flex items-center justify-between gap-3 py-5">
         <Wordmark />
-      </div>
+        <ButtonLink href="/login" prefetch={false} variant="secondary" size="sm" icon={LogIn}>
+          Login pengurus
+        </ButtonLink>
+      </header>
       <main className="flex flex-col items-center gap-8 pt-4 pb-8 lg:flex-row lg:gap-12 lg:pt-10 lg:pb-14">
         <div className="flex flex-col gap-5 lg:flex-1 lg:gap-6">
           <h1 className="font-display text-[2.9rem] leading-[1.02] font-extrabold tracking-tight text-primary-dark lg:text-8xl">Info lingkungan, satu link.</h1>
@@ -49,10 +52,13 @@ export default function Home() {
           </li>
         ))}
       </ul>
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 pb-8 text-sm text-muted">
-        <Link href="/login" prefetch={false} className="inline-flex min-h-11 items-center underline">
-          Login pengurus
-        </Link>
+      <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-line pt-6 pb-8 text-sm text-muted">
+        <span>
+          &copy; {new Date().getFullYear()}{" "}
+          <a href="https://ayisrhmn.vercel.app" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center font-semibold underline">
+            Muhammad Fariz Rahman
+          </a>
+        </span>
         <span>Dibuat sukarela untuk warga.</span>
       </footer>
     </Container>

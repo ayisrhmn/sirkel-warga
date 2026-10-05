@@ -75,7 +75,7 @@ Aturan:
 | `/[communitySlug]/datasets/[id]` | Tampilan dataset `public` (tabel). Untuk `protected` hanya pemberitahuan, barisnya tidak pernah dimuat. Draft: 404 | ISR |
 | `/[communitySlug]/protected/[id]` (Fase 3) | Tampilan dataset `protected` setelah password benar | Dynamic penuh, `no-store`. Dipisah dari route publik supaya route publik tetap bisa di-cache (membaca cookie membuat seluruh route dinamis) |
 | `/register` | Pendaftaran akun (status menunggu persetujuan) | Dynamic, `noindex` |
-| `/login` | Login, tidak ada di navigasi publik | Dynamic, `noindex` |
+| `/login` | Login. Tombolnya ada di header landing page (bukan di halaman komunitas) | Dynamic, `noindex` |
 | `/change-password` | Wajib dilalui bila `must_change_password` | Dynamic |
 | `/create-community` | Membuat komunitas (user yang sudah disetujui dan belum punya komunitas) | Dynamic |
 | `/admin` | Daftar komunitas milik user; langsung diteruskan bila hanya satu | Dynamic |
