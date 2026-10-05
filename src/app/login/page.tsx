@@ -1,17 +1,21 @@
 import Link from "next/link";
+import { Heading } from "@/components/atoms/heading";
+import { AuthLayout } from "@/components/templates/auth-layout";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-12">
-      <h1 className="text-2xl font-bold">Login pengurus</h1>
+    <AuthLayout>
+      <Heading as="h1" size="page">
+        Login pengurus
+      </Heading>
       <LoginForm />
-      <p className="text-sm text-neutral-600">
+      <p className="text-[15px] text-muted">
         Belum punya akun?{" "}
-        <Link href="/register" className="underline">
+        <Link href="/register" className="font-bold text-primary underline">
           Daftar
         </Link>
       </p>
-    </main>
+    </AuthLayout>
   );
 }

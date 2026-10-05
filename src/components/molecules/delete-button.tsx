@@ -1,5 +1,9 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/atoms/button";
+
+// Deletes through a Server Action after the browser's confirm dialog.
 export function DeleteButton({
   action,
   confirmText,
@@ -16,7 +20,9 @@ export function DeleteButton({
         if (!confirm(confirmText)) e.preventDefault();
       }}
     >
-      <button className="text-red-600 underline">{label}</button>
+      <Button variant="danger-outline" size="sm" icon={Trash2}>
+        {label}
+      </Button>
     </form>
   );
 }

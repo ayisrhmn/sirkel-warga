@@ -1,3 +1,10 @@
+import { Avatar } from "@/components/atoms/avatar";
+import { Chip } from "@/components/atoms/chip";
+import { Heading } from "@/components/atoms/heading";
+import { FormPanel } from "@/components/molecules/form-panel";
+import { PageHeader } from "@/components/molecules/page-header";
+import { AdminListItem } from "@/components/organisms/admin-list-item";
+import { AdminSplit } from "@/components/templates/admin-split";
 import { requireMember } from "@/lib/access";
 import { getDb } from "@/lib/db";
 import { AddAdminForm } from "./add-admin-form";
@@ -19,40 +26,38 @@ export default async function UsersPage({
   });
 
   return (
-    <main className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Pengguna</h2>
-        <ul className="flex flex-col gap-3">
-          {members.map(({ role, user }) => (
-            <li
-              key={user.id}
-              className="flex flex-col gap-2 rounded-md border border-neutral-300 p-3"
-            >
-              <div>
-                <p className="font-medium">{user.name}</p>
-                <p className="text-sm text-neutral-600">
-                  @{user.username} ·{" "}
-                  {role === "owner" ? "Super admin" : "Admin"}
-                </p>
-              </div>
-              {role === "admin" && (
-                <div className="flex flex-col gap-2">
-                  <ResetPasswordForm slug={community.slug} userId={user.id} />
-                  <RemoveAdminButton
-                    slug={community.slug}
-                    userId={user.id}
-                    name={user.name}
-                  />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Tambah admin</h2>
-        <AddAdminForm slug={community.slug} />
-      </section>
-    </main>
+    <>
+      <PageHeader title="Pengguna" description="Admin hanya bisa mengelola komunitas ini." />
+      <AdminSplit
+        form={
+          <FormPanel title="Tambah admin">
+            <AddAdminForm slug={community.slug} />
+          </FormPanel>
+        }
+        list={
+          <>
+            <Heading>Pengguna ({members.length})</Heading>
+            <ul className="flex flex-col gap-3">
+              {members.map(({ role, user }) => (
+                <AdminListItem
+                  key={user.id}
+                  lead={<Avatar name={user.name} />}
+                  title={user.name}
+                  meta={
+                    <>
+                      <span>@{user.username}</span>
+                      <Chip tone={role === "owner" ? "green" : "gray"}>{role === "owner" ? "Super admin" : "Admin"}</Chip>
+                    </>
+                  }
+                  action={role === "admin" && <RemoveAdminButton slug={community.slug} userId={user.id} name={user.name} />}
+                >
+                  {role === "admin" && <ResetPasswordForm slug={community.slug} userId={user.id} />}
+                </AdminListItem>
+              ))}
+            </ul>
+          </>
+        }
+      />
+    </>
   );
 }

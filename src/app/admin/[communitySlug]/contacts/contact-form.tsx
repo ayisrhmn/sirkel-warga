@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
 import type { FormState } from "@/lib/form-state";
 import { createContact, updateContact } from "./actions";
 
@@ -23,37 +25,23 @@ export function ContactForm({ slug, item }: { slug: string; item?: ContactItem }
   const value = (key: keyof ContactItem) => state.values?.[key] ?? item?.[key];
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-5">
       <Field label="Nama">
-        <input name="name" required defaultValue={value("name")} className={inputClass} />
+        <Input name="name" required defaultValue={value("name")} />
       </Field>
-      <Field label="Peran (mis. Ketua RT, Ronda, Posyandu)">
-        <input name="role" required defaultValue={value("role")} className={inputClass} />
+      <Field label="Peran" hint="Mis. Ketua RT, Ronda, Posyandu">
+        <Input name="role" required defaultValue={value("role")} />
       </Field>
-      <Field label="Nomor WhatsApp (mis. 0812 3456 7890)">
-        <input
-          name="phone"
-          type="tel"
-          required
-          defaultValue={value("phone")}
-          className={inputClass}
-        />
+      <Field label="Nomor WhatsApp" hint="Mis. 0812 3456 7890">
+        <Input name="phone" type="tel" required defaultValue={value("phone")} />
       </Field>
-      <Field label="Urutan (angka kecil tampil lebih dulu)">
-        <input
-          name="sortOrder"
-          type="number"
-          min={0}
-          max={999}
-          defaultValue={value("sortOrder") ?? "0"}
-          className={inputClass}
-        />
+      <Field label="Urutan" hint="Angka kecil tampil lebih dulu">
+        <Input name="sortOrder" type="number" min={0} max={999} defaultValue={value("sortOrder") ?? "0"} />
       </Field>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : item ? "Simpan perubahan" : "Tambah kontak"}
-      </button>
+      </Button>
     </form>
   );
 }

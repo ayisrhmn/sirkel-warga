@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { PasswordInput } from "@/components/password-input";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { CircleCheck } from "lucide-react";
+import { Button } from "@/components/atoms/button";
+import { IconTile } from "@/components/atoms/icon-tile";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { PasswordInput } from "@/components/molecules/password-input";
 import { authClient, authMessage } from "@/lib/auth-client";
 import { passwordProblem } from "@/lib/password-policy";
 import { usernameToEmail } from "@/lib/username";
@@ -48,50 +53,34 @@ export function RegisterForm() {
 
   if (done) {
     return (
-      <p>
-        Pendaftaran berhasil. Akunmu menunggu persetujuan, kamu bisa masuk
-        setelah disetujui.
-      </p>
+      <div className="flex flex-col items-start gap-4">
+        <IconTile icon={CircleCheck} size="lg" />
+        <p className="text-lg text-body">
+          Pendaftaran berhasil. Akunmu menunggu persetujuan, kamu bisa masuk
+          setelah disetujui.
+        </p>
+      </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1">
-        Nama
-        <input name="name" required autoComplete="name" className={inputClass} />
-      </label>
-      <label className="flex flex-col gap-1">
-        Username
-        <input
-          name="username"
-          required
-          autoComplete="username"
-          autoCapitalize="none"
-          className={inputClass}
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        Password (minimal 8 karakter)
-        <PasswordInput
-          name="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        Ulangi password
-        <PasswordInput
-          name="confirm"
-          required
-          autoComplete="new-password"
-        />
-      </label>
-      {error && <p className={errorClass}>{error}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <Field label="Nama">
+        <Input name="name" required autoComplete="name" />
+      </Field>
+      <Field label="Username" hint="3-30 karakter: huruf kecil, angka, titik, atau garis bawah.">
+        <Input name="username" required autoComplete="username" autoCapitalize="none" />
+      </Field>
+      <Field label="Password (minimal 8 karakter)">
+        <PasswordInput name="password" required minLength={8} autoComplete="new-password" />
+      </Field>
+      <Field label="Ulangi password">
+        <PasswordInput name="confirm" required autoComplete="new-password" />
+      </Field>
+      <FormMessage state={{ error }} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Mendaftar..." : "Daftar"}
-      </button>
+      </Button>
     </form>
   );
 }

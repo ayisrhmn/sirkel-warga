@@ -1,6 +1,15 @@
+import { CalendarDays, Download } from "lucide-react";
 import { notFound } from "next/navigation";
-import { DataTable } from "@/components/data-table";
-import { DeleteButton } from "@/components/delete-button";
+import { buttonClass } from "@/components/atoms/button";
+import { Card } from "@/components/atoms/card";
+import { Chip } from "@/components/atoms/chip";
+import { BackLink } from "@/components/molecules/back-link";
+import { Banner } from "@/components/molecules/banner";
+import { DeleteButton } from "@/components/molecules/delete-button";
+import { FormPanel } from "@/components/molecules/form-panel";
+import { PageHeader } from "@/components/molecules/page-header";
+import { StatusChip } from "@/components/molecules/status-chip";
+import { DataTable } from "@/components/organisms/data-table";
 import { requireMember } from "@/lib/access";
 import type { DatasetCell, DatasetFill } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
@@ -23,50 +32,59 @@ export default async function DatasetPage({
     where: { id: community.id },
     select: { protectedPasswordHash: true },
   });
+  const rows = dataset.rows as DatasetCell[][];
 
   return (
-    <main className="flex flex-col gap-6">
+    <>
+      <BackLink href={`/admin/${community.slug}/datasets`} variant="inline">
+        Semua laporan
+      </BackLink>
+      <PageHeader
+        title={dataset.title}
+        action={
+          <div className="flex flex-wrap items-center gap-2.5">
+            {dataset.period && <Chip icon={CalendarDays}>{dataset.period}</Chip>}
+            <StatusChip status={dataset.visibility} />
+          </div>
+        }
+      />
       {dataset.visibility === "protected" && !protectedPasswordHash && (
-        <p className="rounded-md border border-yellow-500 p-3 text-sm">
+        <Banner tone="warning">
           Laporan ini Dilindungi, tapi password komunitas belum diatur sehingga
           belum bisa dibuka siapa pun. Super admin bisa mengaturnya di menu
           Pengaturan.
-        </p>
+        </Banner>
       )}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">{dataset.title}</h2>
-        <DatasetMetaForm
-          slug={community.slug}
-          item={{
-            id: dataset.id,
-            title: dataset.title,
-            period: dataset.period ?? "",
-            visibility: dataset.visibility,
-          }}
-        />
-      </section>
-      <section className="flex flex-col gap-3">
-        <p className="text-sm text-neutral-600">
-          {(dataset.rows as DatasetCell[][]).length} baris
-        </p>
-        <DataTable
-          columns={dataset.columns as string[]}
-          rows={dataset.rows as DatasetCell[][]}
-          fills={dataset.fills as DatasetFill[]}
-        />
-        <div className="flex flex-wrap gap-4">
-          <a
-            href={`/admin/${community.slug}/datasets/${dataset.id}/export`}
-            className="underline"
-          >
-            Unduh CSV
-          </a>
-          <DeleteButton
-            action={deleteDataset.bind(null, community.slug, dataset.id)}
-            confirmText={`Hapus laporan "${dataset.title}"? Tidak bisa dibatalkan.`}
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <Card className="flex min-w-0 flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[17px] font-bold">{rows.length} baris</p>
+            <div className="flex flex-wrap gap-2.5">
+              <a href={`/admin/${community.slug}/datasets/${dataset.id}/export`} className={buttonClass({ variant: "secondary", size: "sm" })}>
+                <Download aria-hidden="true" size={18} />
+                Unduh CSV
+              </a>
+              <DeleteButton
+                action={deleteDataset.bind(null, community.slug, dataset.id)}
+                confirmText={`Hapus laporan "${dataset.title}"? Tidak bisa dibatalkan.`}
+                label="Hapus laporan"
+              />
+            </div>
+          </div>
+          <DataTable columns={dataset.columns as string[]} rows={rows} fills={dataset.fills as DatasetFill[]} />
+        </Card>
+        <FormPanel title="Info laporan">
+          <DatasetMetaForm
+            slug={community.slug}
+            item={{
+              id: dataset.id,
+              title: dataset.title,
+              period: dataset.period ?? "",
+              visibility: dataset.visibility,
+            }}
           />
-        </div>
-      </section>
-    </main>
+        </FormPanel>
+      </div>
+    </>
   );
 }

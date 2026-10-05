@@ -1,9 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
-import { RichTextEditor } from "@/components/rich-text-editor";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { RadioCardGroup } from "@/components/molecules/radio-card-group";
+import { RichTextEditor } from "@/components/organisms/rich-text-editor";
 import type { FormState } from "@/lib/form-state";
 import { createAnnouncement, updateAnnouncement } from "./actions";
 
@@ -30,9 +33,9 @@ export function AnnouncementForm({
   const value = (key: keyof AnnouncementItem) => state.values?.[key] ?? item?.[key];
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-5">
       <Field label="Judul">
-        <input name="title" required defaultValue={value("title")} className={inputClass} />
+        <Input name="title" required defaultValue={value("title")} />
       </Field>
       <RichTextEditor
         name="bodyDoc"
@@ -41,17 +44,19 @@ export function AnnouncementForm({
         legacyText={item?.body}
         syncKey={state}
       />
-      <Field label="Status">
-        <select name="status" defaultValue={value("status") ?? "public"} className={inputClass}>
-          <option value="public">Publik (tampil di halaman warga)</option>
-          <option value="draft">Draft (belum tampil)</option>
-        </select>
-      </Field>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+      <RadioCardGroup
+        name="status"
+        legend="Status"
+        defaultValue={value("status") ?? "public"}
+        options={[
+          { value: "public", label: "Publik", description: "Tampil di halaman warga" },
+          { value: "draft", label: "Draft", description: "Belum tampil" },
+        ]}
+      />
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : item ? "Simpan perubahan" : "Tambah pengumuman"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -1,7 +1,9 @@
 "use client";
 
+import { RefreshCw, TriangleAlert } from "lucide-react";
 import { useEffect } from "react";
-import { buttonClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { StatusPage } from "@/components/templates/status-page";
 
 // Shown instead of a raw error when something unexpected fails (for example
 // the database is waking up). The details only go to the server log.
@@ -17,15 +19,18 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-4 py-16 text-center">
-      <h1 className="text-2xl font-bold">Terjadi kesalahan</h1>
-      <p className="text-neutral-600">
-        Halaman gagal dimuat. Coba lagi sebentar. Kalau masih gagal, hubungi
-        pengurus.
-      </p>
-      <button onClick={() => retry()} className={`${buttonClass} mx-auto max-w-48`}>
-        Coba lagi
-      </button>
-    </main>
+    <StatusPage
+      icon={TriangleAlert}
+      tone="amber"
+      title="Terjadi kesalahan"
+      action={
+        <Button icon={RefreshCw} onClick={() => retry()} className="mt-2">
+          Coba lagi
+        </Button>
+      }
+    >
+      Halaman gagal dimuat. Coba lagi sebentar. Kalau masih gagal, hubungi
+      pengurus.
+    </StatusPage>
   );
 }

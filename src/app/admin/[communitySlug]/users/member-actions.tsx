@@ -1,17 +1,14 @@
 "use client";
 
+import { KeyRound, Trash2 } from "lucide-react";
 import { useActionState } from "react";
-import { PasswordInput } from "@/components/password-input";
-import { errorClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { FormMessage } from "@/components/molecules/form-message";
+import { PasswordInput } from "@/components/molecules/password-input";
 import type { FormState } from "@/lib/form-state";
 import { removeAdmin, resetPassword } from "./actions";
 
-export function ResetPasswordForm({
-  slug,
-  userId }: {
-  slug: string;
-  userId: string;
-}) {
+export function ResetPasswordForm({ slug, userId }: { slug: string; userId: string }) {
   const [state, action, pending] = useActionState(
     resetPassword.bind(null, slug, userId),
     {} as FormState,
@@ -19,8 +16,11 @@ export function ResetPasswordForm({
 
   return (
     <details>
-      <summary className="cursor-pointer underline">Reset password</summary>
-      <form action={action} className="mt-2 flex flex-col gap-2">
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-2xl border-2 border-line-strong bg-surface px-4 text-sm font-bold hover:bg-zebra [&::-webkit-details-marker]:hidden">
+        <KeyRound aria-hidden="true" size={18} />
+        Reset password
+      </summary>
+      <form action={action} className="mt-3 flex flex-col gap-3 rounded-2xl bg-background p-4">
         <PasswordInput
           name="password"
           required
@@ -28,26 +28,16 @@ export function ResetPasswordForm({
           autoComplete="new-password"
           placeholder="Password baru (minimal 8 karakter)"
         />
-        {state.error && <p className={errorClass}>{state.error}</p>}
-        {state.ok && (
-          <p className="text-sm text-green-700">{state.ok}</p>
-        )}
-        <button type="submit" disabled={pending} className="w-fit underline">
+        <FormMessage state={state} />
+        <Button type="submit" size="sm" disabled={pending} className="self-start">
           {pending ? "Menyimpan..." : "Simpan password"}
-        </button>
+        </Button>
       </form>
     </details>
   );
 }
 
-export function RemoveAdminButton({
-  slug,
-  userId,
-  name }: {
-  slug: string;
-  userId: string;
-  name: string;
-}) {
+export function RemoveAdminButton({ slug, userId, name }: { slug: string; userId: string; name: string }) {
   return (
     <form
       action={removeAdmin.bind(null, slug, userId)}
@@ -56,9 +46,9 @@ export function RemoveAdminButton({
           e.preventDefault();
       }}
     >
-      <button className="text-red-600 underline">
+      <Button variant="danger-outline" size="sm" icon={Trash2}>
         Hapus akun
-      </button>
+      </Button>
     </form>
   );
 }

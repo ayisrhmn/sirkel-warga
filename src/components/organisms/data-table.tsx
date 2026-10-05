@@ -48,20 +48,20 @@ export function DataTable({
   // phones when a name column exists: the name already identifies the row.
   const pin = (c: number) =>
     c === pinned
-      ? "sticky left-0 z-10 border-r border-neutral-300 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] w-36 min-w-36 max-w-36 whitespace-normal break-words md:w-auto md:min-w-0 md:max-w-none md:whitespace-nowrap"
+      ? "sticky left-0 z-10 border-r border-line shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] w-36 min-w-36 max-w-36 whitespace-normal break-words md:w-auto md:min-w-0 md:max-w-none md:whitespace-nowrap"
       : "";
   const hideOnPhone = (c: number) => (narrow[c] && pinned >= 0 && c !== pinned ? "hidden md:table-cell" : "");
 
   return (
     <div className="flex flex-col gap-2">
       {columns.length > 4 && (
-        <p className="text-sm text-neutral-600 md:hidden">
+        <p className="text-sm text-muted md:hidden">
           Geser tabel ke samping untuk melihat kolom lain.
         </p>
       )}
       {/* Full width: the table fills the page, and scrolls sideways inside its
           frame when its content is wider. */}
-      <div className="overflow-x-auto rounded-md border border-neutral-300">
+      <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
         <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
@@ -69,7 +69,7 @@ export function DataTable({
                 <th
                   key={i}
                   scope="col"
-                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : numeric[i] ? "text-right" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
+                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-line bg-primary-tint text-primary-dark ${pad(i)} py-3 ${narrow[i] ? "" : numeric[i] ? "text-right" : "text-left"} font-bold ${pin(i)} ${hideOnPhone(i)}`}
                 >
                   {name}
                 </th>
@@ -78,7 +78,7 @@ export function DataTable({
           </thead>
           <tbody>
             {rows.map((row, r) => (
-              <tr key={r} className="bg-white odd:bg-neutral-100">
+              <tr key={r} className="bg-surface odd:bg-zebra">
                 {row.map((cell, c) => {
                   const fill = fillAt.get(`${r}:${c}`);
                   const negative = isNegativeCell(cell);
@@ -96,12 +96,12 @@ export function DataTable({
                         : narrow[c] && typeof cell !== "number"
                           ? "whitespace-normal break-words"
                           : "whitespace-nowrap"
-                    } bg-inherit ${pad(c)} py-2 ${
+                    } bg-inherit ${pad(c)} py-3 ${
                       narrow[c] ? "tabular-nums" : numeric[c] || isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)} ${hideOnPhone(c)}`}
                   >
                     {cell === null ? (
-                      <span className={fill ? "opacity-60" : "text-neutral-400"}>-</span>
+                      <span className={fill ? "opacity-60" : "text-muted/70"}>-</span>
                     ) : (
                       formatCell(cell)
                     )}

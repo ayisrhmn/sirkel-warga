@@ -1,3 +1,8 @@
+import { Download } from "lucide-react";
+import { buttonClass } from "@/components/atoms/button";
+import { Chip } from "@/components/atoms/chip";
+import { FormPanel } from "@/components/molecules/form-panel";
+import { PageHeader } from "@/components/molecules/page-header";
 import { requireMember } from "@/lib/access";
 import { asTimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
@@ -7,6 +12,8 @@ import {
   RenameCommunityForm,
   TimezoneForm,
 } from "./settings-forms";
+
+const note = "text-[15px] leading-relaxed text-muted";
 
 export default async function SettingsPage({
   params,
@@ -19,57 +26,58 @@ export default async function SettingsPage({
   });
 
   return (
-    <main className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Nama komunitas</h2>
-        <RenameCommunityForm slug={community.slug} name={community.name} />
-        <p className="text-sm text-neutral-600">
-          Slug <span className="font-mono">/{community.slug}</span> tidak bisa
-          diubah.
-        </p>
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Zona waktu</h2>
-        <p className="text-sm text-neutral-600">
-          Jam agenda diisi dan ditampilkan dalam zona ini. Mengubahnya hanya
-          mengubah tampilan jam, bukan waktu kejadian agenda yang sudah ada.
-        </p>
-        <TimezoneForm slug={community.slug} timezone={asTimeZone(community.timezone)} />
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Password laporan dilindungi</h2>
-        <p className="text-sm text-neutral-600">
-          {protectedPasswordHash
-            ? "Password sudah diatur. Isi di bawah untuk menggantinya."
-            : "Belum diatur: laporan berstatus Dilindungi belum bisa dibuka siapa pun."}{" "}
-          Bagikan password ini hanya ke warga yang berhak, mis. lewat grup
-          WhatsApp RT.
-        </p>
-        <ProtectedPasswordForm slug={community.slug} />
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Cadangan</h2>
-        <p className="text-sm text-neutral-600">
-          Berisi pengumuman, agenda, kontak, dan semua laporan (termasuk yang
-          dilindungi). Password dan akun tidak ikut. Simpan di tempat yang
-          aman, bukan di grup chat. Bisa dipulihkan lewat halaman Buat
-          komunitas.
-        </p>
-        <a href={`/admin/${community.slug}/backup`} className="w-fit underline">
-          Unduh cadangan lengkap (JSON)
-        </a>
-      </section>
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold text-red-600">
-          Hapus komunitas
-        </h2>
-        <p className="text-sm text-neutral-600">
-          Semua data komunitas dan akun admin-nya ikut terhapus. Tidak bisa
-          dibatalkan dari sini. <strong>Unduh cadangan lengkap di atas dulu</strong>:
-          itu satu-satunya cara memulihkannya.
-        </p>
-        <DeleteCommunityForm slug={community.slug} />
-      </section>
-    </main>
+    <>
+      <PageHeader title="Pengaturan" description="Info komunitas, password laporan, cadangan, dan penghapusan." />
+      <div className="grid max-w-5xl items-start gap-6 lg:grid-cols-2">
+        <FormPanel title="Nama komunitas">
+          <RenameCommunityForm slug={community.slug} name={community.name} />
+          <p className={note}>
+            Slug <span className="font-mono">/{community.slug}</span> tidak bisa diubah.
+          </p>
+        </FormPanel>
+        <FormPanel title="Zona waktu">
+          <p className={note}>
+            Jam agenda diisi dan ditampilkan dalam zona ini. Mengubahnya hanya
+            mengubah tampilan jam, bukan waktu kejadian agenda yang sudah ada.
+          </p>
+          <TimezoneForm slug={community.slug} timezone={asTimeZone(community.timezone)} />
+        </FormPanel>
+        <FormPanel title="Password laporan dilindungi">
+          <div>
+            {protectedPasswordHash ? <Chip tone="green">Sudah diatur</Chip> : <Chip tone="amber">Belum diatur</Chip>}
+          </div>
+          <p className={note}>
+            {protectedPasswordHash
+              ? "Isi di bawah untuk menggantinya. "
+              : "Laporan berstatus Dilindungi belum bisa dibuka siapa pun. "}
+            Bagikan password ini hanya ke warga yang berhak, mis. lewat grup
+            WhatsApp RT.
+          </p>
+          <ProtectedPasswordForm slug={community.slug} />
+        </FormPanel>
+        <FormPanel title="Cadangan">
+          <p className={note}>
+            Berisi pengumuman, agenda, kontak, dan semua laporan (termasuk yang
+            dilindungi). Password dan akun tidak ikut. Simpan di tempat yang
+            aman, bukan di grup chat. Bisa dipulihkan lewat halaman Buat
+            komunitas.
+          </p>
+          <a href={`/admin/${community.slug}/backup`} className={buttonClass({ variant: "secondary" }, "self-start")}>
+            <Download aria-hidden="true" size={20} />
+            Unduh cadangan lengkap (JSON)
+          </a>
+        </FormPanel>
+        <div className="lg:col-span-2">
+          <FormPanel title="Hapus komunitas" tone="danger">
+            <p className={note}>
+              Semua data komunitas dan akun admin-nya ikut terhapus. Tidak bisa
+              dibatalkan dari sini. <strong>Unduh cadangan lengkap di atas dulu</strong>:
+              itu satu-satunya cara memulihkannya.
+            </p>
+            <DeleteCommunityForm slug={community.slug} />
+          </FormPanel>
+        </div>
+      </div>
+    </>
   );
 }

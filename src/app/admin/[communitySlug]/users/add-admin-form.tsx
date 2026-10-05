@@ -1,8 +1,13 @@
 "use client";
 
+import { UserPlus } from "lucide-react";
 import { useActionState } from "react";
-import { PasswordInput } from "@/components/password-input";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Banner } from "@/components/molecules/banner";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { PasswordInput } from "@/components/molecules/password-input";
 import type { FormState } from "@/lib/form-state";
 import { createAdmin } from "./actions";
 
@@ -13,40 +18,21 @@ export function AddAdminForm({ slug }: { slug: string }) {
   );
 
   return (
-    <form action={action} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1">
-        Nama
-        <input
-          name="name"
-          required
-          defaultValue={state.values?.name}
-          className={inputClass}
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        Username
-        <input
-          name="username"
-          required
-          autoCapitalize="none"
-          defaultValue={state.values?.username}
-          className={inputClass}
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        Password awal (minimal 8 karakter)
-        <PasswordInput
-          name="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-        />
-      </label>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form action={action} className="flex flex-col gap-5">
+      <Field label="Nama">
+        <Input name="name" required defaultValue={state.values?.name} />
+      </Field>
+      <Field label="Username">
+        <Input name="username" required autoCapitalize="none" defaultValue={state.values?.username} />
+      </Field>
+      <Field label="Password awal (minimal 8 karakter)">
+        <PasswordInput name="password" required minLength={8} autoComplete="new-password" />
+      </Field>
+      <Banner>Kirim password awal lewat chat. Akun baru wajib ganti password saat login pertama.</Banner>
+      <FormMessage state={state} />
+      <Button type="submit" full icon={UserPlus} disabled={pending}>
         {pending ? "Membuat..." : "Buat akun admin"}
-      </button>
+      </Button>
     </form>
   );
 }

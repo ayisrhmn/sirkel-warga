@@ -1,6 +1,11 @@
-import Link from "next/link";
+import { CalendarDays, Lock } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { DataTable } from "@/components/data-table";
+import { Card } from "@/components/atoms/card";
+import { Chip } from "@/components/atoms/chip";
+import { Heading } from "@/components/atoms/heading";
+import { IconTile } from "@/components/atoms/icon-tile";
+import { DataTable } from "@/components/organisms/data-table";
+import { PublicPage } from "@/components/templates/public-page";
 import { requireUuid } from "@/lib/form";
 import { getProtectedDataset } from "@/lib/protected-dataset";
 import { SLUG_RE } from "@/lib/slug";
@@ -21,26 +26,32 @@ export default async function ProtectedDatasetPage({
   if (result.state === "public") redirect(`/${communitySlug}/datasets/${id}`);
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-8">
-      <Link href={`/${communitySlug}`} className="w-fit text-sm underline">
-        {result.communityName}
-      </Link>
-      <div>
-        <h1 className="text-2xl font-bold">{result.title}</h1>
-        {result.period && (
-          <p className="text-neutral-600">{result.period}</p>
-        )}
+    <PublicPage size="content" back={{ href: `/${communitySlug}`, label: result.communityName }}>
+      <div className="flex flex-wrap gap-2.5">
+        <Chip tone="amber" icon={Lock}>
+          Dilindungi
+        </Chip>
+        {result.period && <Chip icon={CalendarDays}>{result.period}</Chip>}
       </div>
+      <Heading as="h1" size="hero" className="text-4xl sm:text-5xl">
+        {result.title}
+      </Heading>
       {result.state === "open" ? (
         <DataTable columns={result.columns} rows={result.rows} fills={result.fills} />
-      ) : result.hasPassword ? (
-        <>
-          <p>Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.</p>
-          <UnlockForm slug={communitySlug} id={id} />
-        </>
       ) : (
-        <p>Pengurus belum menetapkan password untuk laporan ini.</p>
+        <Card padding="lg" className="mx-auto mt-4 flex w-full max-w-md flex-col gap-5 shadow-xl shadow-ink/10">
+          <IconTile icon={Lock} tone="amber" size="lg" />
+          <Heading>Laporan ini dilindungi</Heading>
+          {result.hasPassword ? (
+            <>
+              <p className="text-body">Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.</p>
+              <UnlockForm slug={communitySlug} id={id} />
+            </>
+          ) : (
+            <p className="text-body">Pengurus belum menetapkan password untuk laporan ini.</p>
+          )}
+        </Card>
       )}
-    </main>
+    </PublicPage>
   );
 }

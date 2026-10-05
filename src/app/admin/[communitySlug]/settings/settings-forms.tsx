@@ -1,39 +1,31 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import { useActionState } from "react";
-import { PasswordInput } from "@/components/password-input";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { Input, Select } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { PasswordInput } from "@/components/molecules/password-input";
 import type { FormState } from "@/lib/form-state";
 import { TIME_ZONES, type TimeZone } from "@/lib/datetime";
 import { deleteCommunity, renameCommunity, setProtectedPassword, setTimezone } from "./actions";
 
-export function RenameCommunityForm({
-  slug,
-  name,
-}: {
-  slug: string;
-  name: string;
-}) {
+export function RenameCommunityForm({ slug, name }: { slug: string; name: string }) {
   const [state, action, pending] = useActionState(
     renameCommunity.bind(null, slug),
     {} as FormState,
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3">
-      <input
-        name="name"
-        required
-        defaultValue={state.values?.name ?? name}
-        className={inputClass}
-      />
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && (
-        <p className="text-sm text-green-700">{state.ok}</p>
-      )}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form action={action} className="flex flex-col gap-4">
+      <Field label="Nama komunitas">
+        <Input name="name" required defaultValue={state.values?.name ?? name} />
+      </Field>
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : "Simpan"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -45,25 +37,20 @@ export function DeleteCommunityForm({ slug }: { slug: string }) {
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1">
-        Ketik <span className="font-mono">{slug}</span> untuk mengonfirmasi
-        <input
-          name="confirm"
-          required
-          autoComplete="off"
-          autoCapitalize="none"
-          className={inputClass}
-        />
-      </label>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-red-600 px-3 py-2 font-medium text-white disabled:opacity-50"
+    <form action={action} className="flex flex-col gap-4">
+      <Field
+        label={
+          <>
+            Ketik <span className="font-mono">{slug}</span> untuk mengonfirmasi
+          </>
+        }
       >
+        <Input name="confirm" required autoComplete="off" autoCapitalize="none" />
+      </Field>
+      <FormMessage state={state} />
+      <Button type="submit" variant="danger" full icon={Trash2} disabled={pending}>
         {pending ? "Menghapus..." : "Hapus komunitas"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -75,21 +62,14 @@ export function ProtectedPasswordForm({ slug }: { slug: string }) {
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3">
-      <PasswordInput
-        name="password"
-        required
-        minLength={8}
-        autoComplete="new-password"
-        placeholder="Password baru (8-64 karakter)"
-      />
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && (
-        <p className="text-sm text-green-700">{state.ok}</p>
-      )}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form action={action} className="flex flex-col gap-4">
+      <Field label="Password baru">
+        <PasswordInput name="password" required minLength={8} autoComplete="new-password" placeholder="8-64 karakter" />
+      </Field>
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : "Simpan password"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -98,19 +78,20 @@ export function TimezoneForm({ slug, timezone }: { slug: string; timezone: TimeZ
   const [state, action, pending] = useActionState(setTimezone.bind(null, slug), {} as FormState);
 
   return (
-    <form action={action} className="flex flex-col gap-3">
-      <select name="timezone" defaultValue={timezone} className={inputClass}>
-        {(Object.keys(TIME_ZONES) as TimeZone[]).map((zone) => (
-          <option key={zone} value={zone}>
-            {TIME_ZONES[zone].label} (UTC+{TIME_ZONES[zone].offsetHours})
-          </option>
-        ))}
-      </select>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form action={action} className="flex flex-col gap-4">
+      <Field label="Zona waktu">
+        <Select name="timezone" defaultValue={timezone}>
+          {(Object.keys(TIME_ZONES) as TimeZone[]).map((zone) => (
+            <option key={zone} value={zone}>
+              {TIME_ZONES[zone].label} (UTC+{TIME_ZONES[zone].offsetHours})
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : "Simpan zona waktu"}
-      </button>
+      </Button>
     </form>
   );
 }

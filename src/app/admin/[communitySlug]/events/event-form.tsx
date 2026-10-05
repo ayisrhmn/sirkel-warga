@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
-import { RichTextEditor } from "@/components/rich-text-editor";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { RichTextEditor } from "@/components/organisms/rich-text-editor";
 import type { FormState } from "@/lib/form-state";
 import { createEvent, updateEvent } from "./actions";
 
@@ -33,21 +35,15 @@ export function EventForm({
   const value = (key: keyof EventItem) => state.values?.[key] ?? item?.[key];
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-5">
       <Field label="Judul">
-        <input name="title" required defaultValue={value("title")} className={inputClass} />
+        <Input name="title" required defaultValue={value("title")} />
       </Field>
       <Field label={`Tanggal dan jam (${zoneLabel})`}>
-        <input
-          name="startsAt"
-          type="datetime-local"
-          required
-          defaultValue={value("startsAt")}
-          className={inputClass}
-        />
+        <Input name="startsAt" type="datetime-local" required defaultValue={value("startsAt")} />
       </Field>
       <Field label="Lokasi (opsional)">
-        <input name="location" defaultValue={value("location")} className={inputClass} />
+        <Input name="location" defaultValue={value("location")} />
       </Field>
       <RichTextEditor
         name="descriptionDoc"
@@ -56,11 +52,10 @@ export function EventForm({
         legacyText={item?.description}
         syncKey={state}
       />
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : item ? "Simpan perubahan" : "Tambah agenda"}
-      </button>
+      </Button>
     </form>
   );
 }

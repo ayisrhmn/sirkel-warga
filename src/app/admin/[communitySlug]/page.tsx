@@ -1,4 +1,9 @@
-import Link from "next/link";
+import { Archive, CalendarDays, ExternalLink, Megaphone, Phone, Plus, Table2, Upload } from "lucide-react";
+import { ButtonLink, buttonClass } from "@/components/atoms/button";
+import { FormPanel } from "@/components/molecules/form-panel";
+import { PageHeader } from "@/components/molecules/page-header";
+import { StatTile } from "@/components/molecules/stat-tile";
+import { ShareLinkCard } from "@/components/organisms/share-link-card";
 import { requireMember } from "@/lib/access";
 import { getDb } from "@/lib/db";
 
@@ -6,7 +11,7 @@ export default async function CommunityAdminPage({
   params,
 }: PageProps<"/admin/[communitySlug]">) {
   const { communitySlug } = await params;
-  const { community, role } = await requireMember(communitySlug);
+  const { user, community, role } = await requireMember(communitySlug);
 
   const where = { communityId: community.id };
   const db = getDb();
@@ -20,47 +25,47 @@ export default async function CommunityAdminPage({
   const base = `/admin/${community.slug}`;
 
   return (
-    <main className="flex flex-col gap-4">
-      <p>
-        Link untuk dibagikan ke warga:{" "}
-        <span className="font-mono">/{community.slug}</span>
-      </p>
-      <ul className="flex flex-col gap-1">
-        <li>
-          <Link href={`${base}/announcements`} className="underline">
-            Pengumuman
-          </Link>
-          : {announcements} publik, {drafts} draft
-        </li>
-        <li>
-          <Link href={`${base}/events`} className="underline">
-            Agenda
-          </Link>
-          : {events}
-        </li>
-        <li>
-          <Link href={`${base}/contacts`} className="underline">
-            Kontak
-          </Link>
-          : {contacts}
-        </li>
-        <li>
-          <Link href={`${base}/datasets`} className="underline">
-            Laporan
-          </Link>
-          : {datasets}
-        </li>
-      </ul>
-      {role === "owner" && (
-        <p className="text-sm">
-          <a href={`${base}/backup`} className="underline">
-            Unduh cadangan lengkap
-          </a>{" "}
-          <span className="text-neutral-600">
-            sebelum perubahan besar dan secara berkala.
-          </span>
-        </p>
-      )}
-    </main>
+    <>
+      <PageHeader
+        title={`Halo, ${user.name}`}
+        description={community.name}
+        action={
+          <ButtonLink href={`/${community.slug}`} variant="secondary" size="sm" icon={ExternalLink}>
+            Lihat halaman publik
+          </ButtonLink>
+        }
+      />
+      <ShareLinkCard slug={community.slug} />
+      <div className="flex flex-wrap gap-4">
+        <StatTile href={`${base}/announcements`} icon={Megaphone} tone="green" value={announcements} label="Pengumuman publik" note={`${drafts} draft`} />
+        <StatTile href={`${base}/events`} icon={CalendarDays} tone="amber" value={events} label="Agenda" />
+        <StatTile href={`${base}/contacts`} icon={Phone} tone="green" value={contacts} label="Kontak penting" />
+        <StatTile href={`${base}/datasets`} icon={Table2} tone="amber" value={datasets} label="Laporan" />
+      </div>
+      <div className="grid items-start gap-5 md:grid-cols-2">
+        <FormPanel title="Tambah cepat">
+          <div className="flex flex-col gap-2.5">
+            <ButtonLink href={`${base}/announcements`} variant="secondary" icon={Plus} align="start">
+              Tulis pengumuman
+            </ButtonLink>
+            <ButtonLink href={`${base}/events`} variant="secondary" icon={Plus} align="start">
+              Tambah agenda
+            </ButtonLink>
+            <ButtonLink href={`${base}/datasets/import`} variant="secondary" icon={Upload} align="start">
+              Impor laporan dari Excel
+            </ButtonLink>
+          </div>
+        </FormPanel>
+        {role === "owner" && (
+          <FormPanel title="Cadangan lengkap">
+            <p className="text-[15px] text-muted">Unduh sebelum perubahan besar dan secara berkala.</p>
+            <a href={`${base}/backup`} className={buttonClass({ variant: "secondary" }, "self-start")}>
+              <Archive aria-hidden="true" size={20} />
+              Unduh cadangan lengkap
+            </a>
+          </FormPanel>
+        )}
+      </div>
+    </>
   );
 }

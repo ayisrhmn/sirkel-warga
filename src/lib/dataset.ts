@@ -41,6 +41,12 @@ export const VISIBILITY_LABEL: Record<Visibility, string> = {
   protected: "Dilindungi password",
 };
 
+export const VISIBILITY_HINT: Record<Visibility, string> = {
+  draft: "Belum tampil di halaman warga",
+  public: "Siapa pun yang punya link bisa melihat",
+  protected: "Tampil di daftar, isinya terkunci password",
+};
+
 export type DatasetInput = {
   title: string;
   period: string | null;

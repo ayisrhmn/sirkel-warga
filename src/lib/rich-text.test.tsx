@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RichText } from "@/components/rich-text";
+import { RichText } from "@/components/organisms/rich-text";
 import { docOf, excerpt, parseRichDoc, safeHref, textToDoc } from "./rich-text";
 
 const opts = { maxText: 5000 };

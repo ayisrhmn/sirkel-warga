@@ -1,8 +1,16 @@
-import { MessageCircle } from "lucide-react";
-import Link from "next/link";
-import { CommunityNotFound } from "@/components/community-not-found";
+import { CalendarDays, Megaphone, Phone, Table2 } from "lucide-react";
+import { Container } from "@/components/atoms/container";
+import { EmptyState } from "@/components/molecules/empty-state";
+import { PageSection } from "@/components/molecules/page-section";
+import { AnnouncementCard } from "@/components/organisms/announcement-card";
+import { CommunityHero } from "@/components/organisms/community-hero";
+import { ContactCard } from "@/components/organisms/contact-card";
+import { EventCard } from "@/components/organisms/event-card";
+import { ReportCard } from "@/components/organisms/report-card";
+import { SiteFooter } from "@/components/organisms/site-footer";
+import { CommunityNotFound } from "@/components/templates/community-not-found";
 import { getCommunity } from "@/lib/communities";
-import { asTimeZone, formatDate, formatDateTime } from "@/lib/datetime";
+import { asTimeZone, calendarTile, formatDate, formatTime } from "@/lib/datetime";
 import { whatsappUrl } from "@/lib/phone";
 import { getPublicContent } from "@/lib/public-content";
 import { SLUG_RE } from "@/lib/slug";
@@ -30,95 +38,65 @@ export default async function CommunityPage({
 
   const { announcements, events, contacts, datasets } = await getPublicContent(community);
   const zone = asTimeZone(community.timezone);
-  const muted = "text-neutral-600";
-  const card = "rounded-md border border-neutral-300 p-3";
+  const base = `/${community.slug}`;
+  const sections = [
+    { id: "pengumuman", label: "Pengumuman", icon: Megaphone },
+    { id: "agenda", label: "Agenda", icon: CalendarDays },
+    ...(datasets.length > 0 ? [{ id: "laporan", label: "Laporan", icon: Table2 }] : []),
+    { id: "kontak", label: "Kontak", icon: Phone },
+  ];
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-8">
-      <h1 className="text-2xl font-bold">{community.name}</h1>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Pengumuman</h2>
-        {announcements.length === 0 && <p className={muted}>Belum ada pengumuman.</p>}
-        {announcements.map((a) => (
-          <article key={a.id} className={card}>
-            <h3 className="font-medium">
-              <Link href={`/${community.slug}/announcements/${a.id}`} className="underline">
-                {a.title}
-              </Link>
-            </h3>
-            <p className={`text-sm ${muted}`}>{formatDate(a.publishedAt, zone)}</p>
-            {a.excerpt && <p className="mt-2">{a.excerpt}</p>}
-            <Link href={`/${community.slug}/announcements/${a.id}`} className="mt-2 inline-block text-sm underline">
-              Baca selengkapnya
-            </Link>
-          </article>
-        ))}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Agenda</h2>
-        {events.length === 0 && <p className={muted}>Belum ada agenda.</p>}
-        {events.map((e) => (
-          <article key={e.id} className={card}>
-            <h3 className="font-medium">
-              <Link href={`/${community.slug}/events/${e.id}`} className="underline">
-                {e.title}
-              </Link>
-            </h3>
-            <p className={`text-sm ${muted}`}>{formatDateTime(e.startsAt, zone)}</p>
-            {e.location && <p className="text-sm">{e.location}</p>}
-            {e.excerpt && <p className="mt-2">{e.excerpt}</p>}
-            <Link href={`/${community.slug}/events/${e.id}`} className="mt-2 inline-block text-sm underline">
-              Baca selengkapnya
-            </Link>
-          </article>
-        ))}
-      </section>
-
-      {datasets.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold">Laporan</h2>
-          {datasets.map((d) => (
-            <Link
-              key={d.id}
-              href={`/${community.slug}/${d.visibility === "protected" ? "protected" : "datasets"}/${d.id}`}
-              className={`${card} flex items-center justify-between gap-3 underline`}
-            >
-              <span>
-                {d.title}
-                {d.period && <span className={`block text-sm no-underline ${muted}`}>{d.period}</span>}
-              </span>
-              {d.visibility === "protected" && (
-                <span className={`text-sm no-underline ${muted}`}>Dilindungi</span>
-              )}
-            </Link>
-          ))}
-        </section>
-      )}
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold">Kontak penting</h2>
-        {contacts.length === 0 && <p className={muted}>Belum ada kontak.</p>}
-        {contacts.map((c) => (
-          <article key={c.id} className={`${card} flex items-center justify-between gap-3`}>
-            <div>
-              <h3 className="font-medium">{c.name}</h3>
-              <p className={`text-sm ${muted}`}>{c.role}</p>
-            </div>
-            <a
-              href={whatsappUrl(c.phone)}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Chat WhatsApp ${c.name}, ${c.phone}`}
-              className="flex shrink-0 items-center gap-2 rounded-md border border-neutral-300 px-3 py-2"
-            >
-              <MessageCircle aria-hidden="true" size={18} />
-              {c.phone}
-            </a>
-          </article>
-        ))}
-      </section>
-    </main>
+    <>
+      <CommunityHero name={community.name} sections={sections} />
+      <Container className="py-8 lg:py-12">
+        <main className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+          <div className="flex flex-col gap-12">
+            <PageSection id="pengumuman" icon={Megaphone} title="Pengumuman">
+              {announcements.length === 0 && <EmptyState>Belum ada pengumuman.</EmptyState>}
+              {announcements.map((a) => (
+                <AnnouncementCard key={a.id} href={`${base}/announcements/${a.id}`} title={a.title} date={formatDate(a.publishedAt, zone)} excerpt={a.excerpt} />
+              ))}
+            </PageSection>
+            <PageSection id="agenda" icon={CalendarDays} tone="amber" title="Agenda">
+              {events.length === 0 && <EmptyState>Belum ada agenda.</EmptyState>}
+              {events.map((e) => (
+                <EventCard
+                  key={e.id}
+                  href={`${base}/events/${e.id}`}
+                  title={e.title}
+                  tile={calendarTile(e.startsAt, zone)}
+                  time={formatTime(e.startsAt, zone)}
+                  location={e.location}
+                  excerpt={e.excerpt}
+                />
+              ))}
+            </PageSection>
+          </div>
+          <div className="flex flex-col gap-12">
+            {datasets.length > 0 && (
+              <PageSection id="laporan" icon={Table2} title="Laporan">
+                {datasets.map((d) => (
+                  <ReportCard
+                    key={d.id}
+                    href={`${base}/${d.visibility === "protected" ? "protected" : "datasets"}/${d.id}`}
+                    title={d.title}
+                    period={d.period}
+                    locked={d.visibility === "protected"}
+                  />
+                ))}
+              </PageSection>
+            )}
+            <PageSection id="kontak" icon={Phone} tone="amber" title="Kontak penting">
+              {contacts.length === 0 && <EmptyState>Belum ada kontak.</EmptyState>}
+              {contacts.map((c) => (
+                <ContactCard key={c.id} name={c.name} role={c.role} phone={c.phone} whatsappHref={whatsappUrl(c.phone)} />
+              ))}
+            </PageSection>
+          </div>
+        </main>
+      </Container>
+      <SiteFooter />
+    </>
   );
 }

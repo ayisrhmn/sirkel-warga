@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { PasswordInput } from "@/components/password-input";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { PasswordInput } from "@/components/molecules/password-input";
 import { authClient, authMessage } from "@/lib/auth-client";
 
 export function LoginForm() {
@@ -30,29 +33,17 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1">
-        Username
-        <input
-          name="username"
-          required
-          autoComplete="username"
-          autoCapitalize="none"
-          className={inputClass}
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        Password
-        <PasswordInput
-          name="password"
-          required
-          autoComplete="current-password"
-        />
-      </label>
-      {error && <p className={errorClass}>{error}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <Field label="Username">
+        <Input name="username" required autoComplete="username" autoCapitalize="none" />
+      </Field>
+      <Field label="Password">
+        <PasswordInput name="password" required autoComplete="current-password" />
+      </Field>
+      <FormMessage state={{ error }} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Masuk..." : "Masuk"}
-      </button>
+      </Button>
     </form>
   );
 }

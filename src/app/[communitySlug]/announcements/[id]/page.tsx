@@ -1,6 +1,11 @@
-import Link from "next/link";
+import { CalendarDays, Megaphone } from "lucide-react";
 import { notFound } from "next/navigation";
-import { RichText } from "@/components/rich-text";
+import { Chip } from "@/components/atoms/chip";
+import { Heading } from "@/components/atoms/heading";
+import { Card } from "@/components/atoms/card";
+import { MetaItem } from "@/components/molecules/meta-item";
+import { RichText } from "@/components/organisms/rich-text";
+import { PublicPage } from "@/components/templates/public-page";
 import { getCommunity } from "@/lib/communities";
 import { asTimeZone, formatDate } from "@/lib/datetime";
 import { requireUuid } from "@/lib/form";
@@ -25,17 +30,19 @@ export default async function AnnouncementPage({
   if (!announcement) notFound();
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-8">
-      <Link href={`/${community.slug}`} className="w-fit text-sm underline">
-        {community.name}
-      </Link>
+    <PublicPage back={{ href: `/${community.slug}`, label: community.name }}>
       <div>
-        <h1 className="text-2xl font-bold">{announcement.title}</h1>
-        <p className="text-neutral-600">
-          {formatDate(announcement.publishedAt, asTimeZone(community.timezone))}
-        </p>
+        <Chip tone="green" icon={Megaphone}>
+          Pengumuman
+        </Chip>
       </div>
-      <RichText doc={announcement.bodyDoc} text={announcement.body} />
-    </main>
+      <Heading as="h1" size="hero" className="text-4xl sm:text-5xl">
+        {announcement.title}
+      </Heading>
+      <MetaItem icon={CalendarDays}>{formatDate(announcement.publishedAt, asTimeZone(community.timezone))}</MetaItem>
+      <Card padding="lg" className="mt-2">
+        <RichText doc={announcement.bodyDoc} text={announcement.body} />
+      </Card>
+    </PublicPage>
   );
 }

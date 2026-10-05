@@ -1,6 +1,9 @@
-import Link from "next/link";
+import { CalendarDays, Table2 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-import { DataTable } from "@/components/data-table";
+import { Chip } from "@/components/atoms/chip";
+import { Heading } from "@/components/atoms/heading";
+import { DataTable } from "@/components/organisms/data-table";
+import { PublicPage } from "@/components/templates/public-page";
 import { getCommunity } from "@/lib/communities";
 import { requireUuid } from "@/lib/form";
 import { getPublicDataset } from "@/lib/public-dataset";
@@ -27,17 +30,19 @@ export default async function DatasetPage({
     redirect(`/${community.slug}/protected/${dataset.id}`);
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-8">
-      <Link href={`/${community.slug}`} className="w-fit text-sm underline">
-        {community.name}
-      </Link>
-      <div>
-        <h1 className="text-2xl font-bold">{dataset.title}</h1>
+    <PublicPage size="content" back={{ href: `/${community.slug}`, label: community.name }}>
+      <div className="flex flex-wrap gap-2.5">
+        <Chip tone="green" icon={Table2}>
+          Laporan
+        </Chip>
         {dataset.period && (
-          <p className="text-neutral-600">{dataset.period}</p>
+          <Chip icon={CalendarDays}>{dataset.period}</Chip>
         )}
       </div>
+      <Heading as="h1" size="hero" className="text-4xl sm:text-5xl">
+        {dataset.title}
+      </Heading>
       <DataTable columns={dataset.columns} rows={dataset.rows} fills={dataset.fills} />
-    </main>
+    </PublicPage>
   );
 }

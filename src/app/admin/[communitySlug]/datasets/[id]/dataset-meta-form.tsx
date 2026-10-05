@@ -1,9 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
-import { VISIBILITIES, VISIBILITY_LABEL, type Visibility } from "@/lib/dataset";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { VisibilityField } from "@/components/molecules/visibility-field";
+import type { Visibility } from "@/lib/dataset";
 import type { FormState } from "@/lib/form-state";
 import { updateDatasetMeta } from "../actions";
 
@@ -22,27 +25,18 @@ export function DatasetMetaForm({ slug, item }: { slug: string; item: DatasetMet
   const value = (key: keyof DatasetMeta) => state.values?.[key] ?? item[key];
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-5">
       <Field label="Judul">
-        <input name="title" required defaultValue={value("title")} className={inputClass} />
+        <Input name="title" required defaultValue={value("title")} />
       </Field>
       <Field label="Periode (opsional)">
-        <input name="period" defaultValue={value("period")} className={inputClass} />
+        <Input name="period" defaultValue={value("period")} />
       </Field>
-      <Field label="Tampilan">
-        <select name="visibility" defaultValue={value("visibility")} className={inputClass}>
-          {VISIBILITIES.map((v) => (
-            <option key={v} value={v}>
-              {VISIBILITY_LABEL[v]}
-            </option>
-          ))}
-        </select>
-      </Field>
-      {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>
+      <VisibilityField defaultValue={value("visibility") as Visibility} />
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : "Simpan perubahan"}
-      </button>
+      </Button>
     </form>
   );
 }

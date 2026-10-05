@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import type { WorkBook } from "xlsx";
-import { DataTable } from "@/components/data-table";
-import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
-import {
-  formatCell,
-  validateDatasetInput,
-  VISIBILITIES,
-  VISIBILITY_LABEL,
-  type Visibility,
-} from "@/lib/dataset";
+import { Button } from "@/components/atoms/button";
+import { Input } from "@/components/atoms/input";
+import { Banner } from "@/components/molecules/banner";
+import { Field } from "@/components/molecules/field";
+import { FormMessage } from "@/components/molecules/form-message";
+import { SegmentedControl } from "@/components/molecules/segmented-control";
+import { StepCard } from "@/components/molecules/step-card";
+import { VisibilityField } from "@/components/molecules/visibility-field";
+import { DataTable } from "@/components/organisms/data-table";
+import { cx } from "@/lib/cx";
+import { formatCell, validateDatasetInput, type Visibility } from "@/lib/dataset";
 import {
   buildDataset,
   type BuildOptions,
@@ -120,56 +121,63 @@ export function ImportDataset({ slug }: { slug: string }) {
     });
   }
 
+  const multipleSheets = (workbook?.SheetNames.length ?? 0) > 1;
+  // The sheet step only exists when there is more than one sheet.
+  const stepNo = (n: number) => (multipleSheets ? n : n - 1);
+  const picking = options.from !== undefined || options.to !== undefined;
+
   return (
-    <div className="flex flex-col gap-6">
-      <Field label="1. Pilih file Excel (.xlsx, .xls, atau .csv)">
-        <input type="file" accept=".xlsx,.xls,.csv" onChange={onFile} className={inputClass} />
-      </Field>
-      <p className="text-sm text-neutral-600">
-        File dibaca di browser kamu dan tidak diunggah. Yang disimpan hanya
-        tabel hasilnya, setelah kamu setujui pratinjau.
-      </p>
+    <div className="flex max-w-4xl flex-col gap-5">
+      <StepCard
+        step={1}
+        done={!!workbook}
+        title="Pilih file Excel"
+        description="File dibaca di browser kamu dan tidak diunggah. Yang disimpan hanya tabel hasilnya, setelah kamu setujui pratinjau."
+      >
+        <Field label="File (.xlsx, .xls, atau .csv)">
+          <Input type="file" accept=".xlsx,.xls,.csv" onChange={onFile} />
+        </Field>
+        {!workbook && <FormMessage state={{ error }} />}
+      </StepCard>
 
       {workbook && (
         <>
-          {workbook.SheetNames.length > 1 && (
-            <Field label="2. Pilih sheet">
-              <select
-                value={sheet}
-                onChange={(e) => openSheet(workbook, e.target.value)}
-                className={inputClass}
-              >
+          {multipleSheets && (
+            <StepCard step={2} done title="Pilih sheet" description={`File ini punya ${workbook.SheetNames.length} sheet.`}>
+              <div className="flex flex-wrap gap-2">
                 {workbook.SheetNames.map((name) => (
-                  <option key={name}>{name}</option>
+                  <button
+                    key={name}
+                    type="button"
+                    aria-pressed={name === sheet}
+                    onClick={() => openSheet(workbook, name)}
+                    className={cx(
+                      "min-h-11 cursor-pointer rounded-full border-[1.5px] px-4.5 text-[15px] font-bold",
+                      name === sheet ? "border-primary bg-primary-tint text-primary-dark" : "border-line-strong bg-surface text-ink hover:bg-zebra",
+                    )}
+                  >
+                    {name}
+                  </button>
                 ))}
-              </select>
-            </Field>
+              </div>
+            </StepCard>
           )}
 
-          <section className="flex flex-col gap-2">
-            <h3 className="font-medium">3. Pilih baris judul kolom</h3>
-            <p className="text-sm text-neutral-600">
-              Baris di atasnya (judul laporan, dll.) tidak ikut disimpan. Bila
-              judul kolomnya bertingkat (mis. &ldquo;Iuran&rdquo; di atas &ldquo;Kebersihan&rdquo;),
-              pilih baris paling atas dan naikkan jumlah baris judul.
-            </p>
-            <Field label="Jumlah baris judul">
-              <select
-                value={headerRows}
-                onChange={(e) => {
-                  setHeaderRows(Number(e.target.value));
-                  setExcluded(new Set());
-                }}
-                className={inputClass}
-              >
-                {[1, 2, 3].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <div className="max-h-80 overflow-auto rounded-md border border-neutral-300">
+          <StepCard
+            step={stepNo(3)}
+            title="Pilih baris judul kolom"
+            description="Baris di atasnya (judul laporan, dll.) tidak ikut disimpan. Bila judul kolomnya bertingkat (mis. “Iuran” di atas “Kebersihan”), pilih baris paling atas dan naikkan jumlah baris judul."
+          >
+            <SegmentedControl
+              legend="Jumlah baris judul"
+              options={["1", "2", "3"]}
+              value={String(headerRows)}
+              onChange={(value) => {
+                setHeaderRows(Number(value));
+                setExcluded(new Set());
+              }}
+            />
+            <div className="max-h-80 overflow-auto rounded-2xl border border-line">
               <table className="w-full text-sm">
                 <tbody>
                   {grid.slice(0, PICKER_ROWS).map((row, r) => (
@@ -177,15 +185,15 @@ export function ImportDataset({ slug }: { slug: string }) {
                       key={r}
                       className={
                         r >= headerIndex && r < headerIndex + headerRows
-                          ? "bg-yellow-100"
-                          : options.from !== undefined || options.to !== undefined
+                          ? "bg-accent-tint"
+                          : picking
                             ? r + 1 >= (options.from ?? 0) && r + 1 <= (options.to ?? Infinity) && r >= headerIndex + headerRows
-                              ? "bg-green-50"
-                              : "text-neutral-400"
+                              ? "bg-primary-tint/60"
+                              : "text-muted/60"
                             : ""
                       }
                     >
-                      <td className="px-2 py-1">
+                      <td className="px-3 py-2">
                         <input
                           type="radio"
                           name="header"
@@ -195,11 +203,12 @@ export function ImportDataset({ slug }: { slug: string }) {
                             setExcluded(new Set());
                           }}
                           aria-label={`Baris ${r + 1} sebagai judul kolom`}
+                          className="size-5 accent-primary"
                         />
                       </td>
-                      <td className="px-2 py-1 text-neutral-500">{r + 1}</td>
+                      <td className="px-2 py-2 text-muted">{r + 1}</td>
                       {row.slice(0, PICKER_COLUMNS).map((cell, c) => (
-                        <td key={c} className="whitespace-nowrap px-2 py-1">
+                        <td key={c} className="px-3 py-2 whitespace-nowrap">
                           {formatCell(cell)}
                         </td>
                       ))}
@@ -208,47 +217,31 @@ export function ImportDataset({ slug }: { slug: string }) {
                 </tbody>
               </table>
             </div>
-          </section>
+          </StepCard>
 
-          <section className="flex flex-col gap-2">
-            <h3 className="font-medium">4. Baris yang disimpan (opsional)</h3>
-            <p className="text-sm text-neutral-600">
-              Kosongkan untuk menyimpan semua baris di bawah judul. Isi bila satu
-              sheet berisi lebih dari satu tabel, mis. daftar warga di baris 3
-              sampai 22 dan ringkasan kas di baris 23 sampai 26. Nomor baris
-              sesuai kolom nomor di daftar di atas. Baris yang dipilih berwarna
-              hijau muda.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
+          <StepCard
+            step={stepNo(4)}
+            title="Baris yang disimpan (opsional)"
+            description="Kosongkan untuk menyimpan semua baris di bawah judul. Isi bila satu sheet berisi lebih dari satu tabel, mis. daftar warga di baris 3 sampai 22 dan ringkasan kas di baris 23 sampai 26. Nomor baris sesuai kolom nomor di daftar di atas. Baris yang dipilih berwarna hijau muda."
+          >
+            <div className="grid grid-cols-2 gap-4">
               <Field label="Dari baris">
-                <input
-                  inputMode="numeric"
-                  value={fromRow}
-                  onChange={(e) => setFromRow(e.target.value)}
-                  className={inputClass}
-                />
+                <Input inputMode="numeric" value={fromRow} onChange={(e) => setFromRow(e.target.value)} />
               </Field>
               <Field label="Sampai baris">
-                <input
-                  inputMode="numeric"
-                  value={toRow}
-                  onChange={(e) => setToRow(e.target.value)}
-                  className={inputClass}
-                />
+                <Input inputMode="numeric" value={toRow} onChange={(e) => setToRow(e.target.value)} />
               </Field>
             </div>
-          </section>
+          </StepCard>
 
-          <section className="flex flex-col gap-2">
-            <h3 className="font-medium">5. Kolom yang disimpan</h3>
-            <p className="text-sm text-neutral-600">
-              Hilangkan centang pada kolom yang tidak perlu ditampilkan, mis.
-              nomor telepon. Nama kolom bisa diubah, mis. &ldquo;Blok&rdquo; menjadi
-              &ldquo;Keterangan&rdquo; untuk tabel ringkasan.
-            </p>
-            <ul className="flex flex-col gap-1">
+          <StepCard
+            step={stepNo(5)}
+            title="Kolom yang disimpan"
+            description="Hilangkan centang pada kolom yang tidak perlu ditampilkan, mis. nomor telepon. Nama kolom bisa diubah, mis. “Blok” menjadi “Keterangan” untuk tabel ringkasan."
+          >
+            <ul className="flex flex-col gap-2.5">
               {candidates.map((c) => (
-                <li key={c.index} className="flex items-center gap-2">
+                <li key={c.index} className={cx("flex items-center gap-3.5", excluded.has(c.index) && "opacity-55")}>
                   <input
                     type="checkbox"
                     checked={!excluded.has(c.index)}
@@ -259,82 +252,64 @@ export function ImportDataset({ slug }: { slug: string }) {
                       setExcluded(next);
                     }}
                     aria-label={`Simpan kolom ${c.name}`}
+                    className="size-6 shrink-0 accent-primary"
                   />
-                  <input
+                  <Input
                     value={renames.get(c.index) ?? c.name}
                     placeholder={c.name}
                     onChange={(e) => setRenames(new Map(renames).set(c.index, e.target.value))}
                     aria-label={`Nama kolom ${c.name}`}
-                    className={`${inputClass} py-1`}
+                    className="min-h-11"
                   />
                 </li>
               ))}
             </ul>
-          </section>
+          </StepCard>
 
-          <section className="flex flex-col gap-2">
-            <h3 className="font-medium">6. Pratinjau</h3>
+          <StepCard step={stepNo(6)} title="Pratinjau">
             {built.columns.length === 0 || built.rows.length === 0 ? (
-              <p className={errorClass}>Tidak ada data pada baris yang dipilih.</p>
+              <FormMessage state={{ error: "Tidak ada data pada baris yang dipilih." }} />
             ) : (
               <>
-                <p className="text-sm text-neutral-600">
+                <p className="text-[15px] text-muted">
                   {built.rows.length} baris, {built.columns.length} kolom
                   {built.rows.length > PREVIEW_ROWS && ` (menampilkan ${PREVIEW_ROWS} baris pertama)`}
                 </p>
-                <DataTable
-                  columns={built.columns}
-                  rows={built.rows.slice(0, PREVIEW_ROWS)}
-                  fills={built.fills}
-                />
+                <DataTable columns={built.columns} rows={built.rows.slice(0, PREVIEW_ROWS)} fills={built.fills} />
               </>
             )}
-          </section>
+          </StepCard>
 
-          <section className="flex flex-col gap-3">
-            <h3 className="font-medium">7. Simpan</h3>
-            <Field label="Judul laporan">
-              <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Periode (opsional, mis. Oktober 2026)">
-              <input value={period} onChange={(e) => setPeriod(e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Tampilan">
-              <select
-                value={visibility}
-                onChange={(e) => setVisibility(e.target.value as Visibility)}
-                className={inputClass}
-              >
-                {VISIBILITIES.map((v) => (
-                  <option key={v} value={v}>
-                    {VISIBILITY_LABEL[v]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            {error && <p className={errorClass}>{error}</p>}
-            {notice && (
-              <p className="text-sm text-green-700">
-                {notice}{" "}
-                <Link href={`/admin/${slug}/datasets`} className="underline">
-                  Lihat daftar laporan
-                </Link>
-              </p>
-            )}
-            <button onClick={() => onSave(false)} disabled={saving} className={buttonClass}>
-              {saving ? "Menyimpan..." : "Simpan laporan"}
-            </button>
-            <button
-              onClick={() => onSave(true)}
-              disabled={saving}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 font-medium disabled:opacity-50"
-            >
-              Simpan, lalu buat laporan lain dari file ini
-            </button>
-          </section>
+          <StepCard step={stepNo(7)} title="Simpan">
+            <div className="flex flex-col gap-5">
+              <Field label="Judul laporan">
+                <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+              </Field>
+              <Field label="Periode (opsional)" hint="Mis. Oktober 2026">
+                <Input value={period} onChange={(e) => setPeriod(e.target.value)} />
+              </Field>
+              <VisibilityField value={visibility} onChange={setVisibility} />
+              <FormMessage state={{ error }} />
+              {notice && (
+                <Banner>
+                  {notice}{" "}
+                  <Link href={`/admin/${slug}/datasets`} className="font-bold underline">
+                    Lihat daftar laporan
+                  </Link>
+                </Banner>
+              )}
+              <div className="flex flex-col gap-3">
+                <Button onClick={() => onSave(false)} disabled={saving} full>
+                  {saving ? "Menyimpan..." : "Simpan laporan"}
+                </Button>
+                <Button variant="secondary" onClick={() => onSave(true)} disabled={saving} full>
+                  Simpan, lalu buat laporan lain dari file ini
+                </Button>
+              </div>
+            </div>
+          </StepCard>
         </>
       )}
-      {!workbook && error && <p className={errorClass}>{error}</p>}
     </div>
   );
 }

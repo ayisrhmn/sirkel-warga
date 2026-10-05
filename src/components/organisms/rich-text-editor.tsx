@@ -82,7 +82,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   ];
 
   return (
-    <div role="toolbar" aria-label="Format teks" className="flex flex-wrap gap-1 border-b border-neutral-300 p-1">
+    <div role="toolbar" aria-label="Format teks" className="flex flex-wrap gap-1 border-b border-line bg-zebra p-1.5">
       {buttons.map(({ label, icon: Icon, on, disabled, run }) => (
         <button
           key={label}
@@ -92,7 +92,7 @@ function Toolbar({ editor }: { editor: Editor }) {
           aria-pressed={on}
           disabled={disabled}
           onClick={run}
-          className={`flex h-9 w-9 items-center justify-center rounded-md disabled:opacity-40 ${on ? "bg-neutral-900 text-white" : "hover:bg-neutral-100"}`}
+          className={`flex size-10 cursor-pointer items-center justify-center rounded-lg disabled:opacity-40 ${on ? "bg-primary text-white" : "hover:bg-primary-tint"}`}
         >
           <Icon aria-hidden="true" size={18} />
         </button>
@@ -127,7 +127,7 @@ export function RichTextEditor({
     immediatelyRender: false, // the page is server rendered
     editorProps: {
       attributes: {
-        class: "rich-text min-h-32 p-2 outline-none",
+        class: "rich-text min-h-40 p-4 text-base outline-none",
         role: "textbox",
         "aria-multiline": "true",
         "aria-label": label,
@@ -149,9 +149,9 @@ export function RichTextEditor({
   }, [syncKey]);
 
   return (
-    <div className="flex flex-col gap-1">
-      <span>{label}</span>
-      <div className="rounded-md border border-neutral-300 focus-within:border-neutral-900">
+    <div className="flex flex-col gap-2">
+      <span className="text-[15px] font-semibold">{label}</span>
+      <div className="overflow-hidden rounded-xl border-[1.5px] border-line-strong bg-surface focus-within:border-primary">
         {editor && <Toolbar editor={editor} />}
         <EditorContent editor={editor} />
       </div>
