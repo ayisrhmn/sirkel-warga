@@ -10,10 +10,10 @@ export function DataTable({
   rows: DatasetCell[][];
 }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-neutral-300 dark:border-neutral-700">
+    <div className="overflow-x-auto rounded-md border border-neutral-300">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-neutral-300 dark:border-neutral-700">
+          <tr className="border-b border-neutral-300">
             {columns.map((name, i) => (
               <th key={i} scope="col" className="whitespace-nowrap px-3 py-2 text-left font-medium">
                 {name}
@@ -23,7 +23,7 @@ export function DataTable({
         </thead>
         <tbody>
           {rows.map((row, r) => (
-            <tr key={r} className="odd:bg-neutral-100 dark:odd:bg-neutral-900">
+            <tr key={r} className="odd:bg-neutral-100">
               {row.map((cell, c) => (
                 <td
                   key={c}

@@ -1,5 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+// Tells the browser to draw its own controls light as well.
+export const viewport: Viewport = { colorScheme: "light" };
 
 export const metadata: Metadata = {
   title: "Sirkel",

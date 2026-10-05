@@ -28,8 +28,8 @@ export default async function CommunityPage({
 
   const { announcements, events, contacts, datasets } = await getPublicContent(community);
   const zone = asTimeZone(community.timezone);
-  const muted = "text-neutral-600 dark:text-neutral-400";
-  const card = "rounded-md border border-neutral-300 p-3 dark:border-neutral-700";
+  const muted = "text-neutral-600";
+  const card = "rounded-md border border-neutral-300 p-3";
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-8">

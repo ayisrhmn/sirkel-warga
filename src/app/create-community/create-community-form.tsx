@@ -41,7 +41,7 @@ export function CreateCommunityForm() {
           }}
           className={inputClass}
         />
-        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+        <span className="text-sm text-neutral-600">
           Tidak bisa diubah setelah dibuat. Link: /{slug || "slug-komunitas"}
         </span>
       </label>

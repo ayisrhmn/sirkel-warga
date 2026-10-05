@@ -32,7 +32,7 @@ export function ResetPasswordForm({
         />
         {state.error && <p className={errorClass}>{state.error}</p>}
         {state.ok && (
-          <p className="text-sm text-green-700 dark:text-green-400">{state.ok}</p>
+          <p className="text-sm text-green-700">{state.ok}</p>
         )}
         <button type="submit" disabled={pending} className="w-fit underline">
           {pending ? "Menyimpan..." : "Simpan password"}
@@ -59,7 +59,7 @@ export function RemoveAdminButton({
           e.preventDefault();
       }}
     >
-      <button className="text-red-600 underline dark:text-red-400">
+      <button className="text-red-600 underline">
         Hapus akun
       </button>
     </form>

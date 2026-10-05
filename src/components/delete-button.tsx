@@ -16,7 +16,7 @@ export function DeleteButton({
         if (!confirm(confirmText)) e.preventDefault();
       }}
     >
-      <button className="text-red-600 underline dark:text-red-400">{label}</button>
+      <button className="text-red-600 underline">{label}</button>
     </form>
   );
 }

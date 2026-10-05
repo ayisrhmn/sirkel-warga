@@ -26,17 +26,17 @@ export default async function AnnouncementsPage({
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Pengumuman ({items.length})</h2>
         {items.length === 0 && (
-          <p className="text-neutral-600 dark:text-neutral-400">Belum ada pengumuman.</p>
+          <p className="text-neutral-600">Belum ada pengumuman.</p>
         )}
         <ul className="flex flex-col gap-3">
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex flex-col gap-2 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
+              className="flex flex-col gap-2 rounded-md border border-neutral-300 p-3"
             >
               <div>
                 <p className="font-medium">{item.title}</p>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {item.status === "public"
                     ? `Publik · ${formatDate(item.publishedAt, asTimeZone(community.timezone))}`
                     : "Draft"}

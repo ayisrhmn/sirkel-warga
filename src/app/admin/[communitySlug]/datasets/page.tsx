@@ -34,18 +34,18 @@ export default async function DatasetsPage({
         </Link>
       </div>
       {items.length === 0 && (
-        <p className="text-neutral-600 dark:text-neutral-400">Belum ada laporan.</p>
+        <p className="text-neutral-600">Belum ada laporan.</p>
       )}
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex flex-col gap-1 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
+            className="flex flex-col gap-1 rounded-md border border-neutral-300 p-3"
           >
             <Link href={`${base}/${item.id}`} className="font-medium underline">
               {item.title}
             </Link>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-600">
               {[
                 item.period,
                 VISIBILITY_LABEL[item.visibility],

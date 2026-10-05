@@ -441,9 +441,9 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 - Throttling "Slow 4G" dan "Fast 3G", buka halaman komunitas. Catat waktu hingga isi tampil dan ukuran transfer. Halaman publik tidak boleh memuat library Excel (cek tab Network: tidak ada chunk besar berisi "xlsx" di halaman publik).
 - [ ] Lolos
 
-**H3. Mode gelap**
-- Ubah tema sistem ke gelap (atau emulasi `prefers-color-scheme: dark` di DevTools → Rendering). Telusuri halaman publik dan admin.
-- Diharapkan: teks terbaca, garis tepi kartu dan tabel terlihat, pesan error merah dan sukses hijau terbaca.
+**H3. Selalu terang, walau perangkat memakai mode gelap**
+- Ubah tema sistem ke gelap (atau di DevTools: Command Menu, "Emulate CSS prefers-color-scheme: dark"). Telusuri halaman publik, login, dan admin.
+- Diharapkan: tampilan **tetap terang** (latar putih, teks gelap), tidak ada bagian yang berubah gelap atau teks terang di atas putih. Kolom isian, pemilih tanggal, dan scrollbar juga tetap terang. Ini disengaja: pengguna utamanya orang tua yang tidak nyaman dengan mode gelap.
 - [ ] Lolos
 
 **H4. Halaman error yang ramah**

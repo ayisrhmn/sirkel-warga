@@ -19,7 +19,7 @@ export default function ErrorPage({
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-4 py-16 text-center">
       <h1 className="text-2xl font-bold">Terjadi kesalahan</h1>
-      <p className="text-neutral-600 dark:text-neutral-400">
+      <p className="text-neutral-600">
         Halaman gagal dimuat. Coba lagi sebentar. Kalau masih gagal, hubungi
         pengurus.
       </p>

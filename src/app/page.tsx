@@ -10,12 +10,12 @@ export default function Home() {
           Tempat warga lihat pengumuman, agenda, kontak penting, dan laporan
           lingkungan.
         </p>
-        <p className="mt-4 text-neutral-600 dark:text-neutral-400">
+        <p className="mt-4 text-neutral-600">
           Buka lewat link yang dibagikan pengurus RT-mu. Belum punya link? Tanya
           pengurus lingkunganmu.
         </p>
       </main>
-      <footer className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-6 text-sm text-neutral-600 dark:text-neutral-400">
+      <footer className="mx-auto flex w-full max-w-md items-center justify-between px-4 py-6 text-sm text-neutral-600">
         <Link href="/login" prefetch={false} className="underline">
           Login pengurus
         </Link>

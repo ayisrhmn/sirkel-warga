@@ -46,7 +46,7 @@ export default async function DatasetPage({
         />
       </section>
       <section className="flex flex-col gap-3">
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           {(dataset.rows as DatasetCell[][]).length} baris
         </p>
         <DataTable

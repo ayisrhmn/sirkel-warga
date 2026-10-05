@@ -34,7 +34,7 @@ export default async function DatasetPage({
       <div>
         <h1 className="text-2xl font-bold">{dataset.title}</h1>
         {dataset.period && (
-          <p className="text-neutral-600 dark:text-neutral-400">{dataset.period}</p>
+          <p className="text-neutral-600">{dataset.period}</p>
         )}
       </div>
       <DataTable columns={dataset.columns} rows={dataset.rows} />

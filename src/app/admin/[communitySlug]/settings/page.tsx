@@ -23,14 +23,14 @@ export default async function SettingsPage({
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Nama komunitas</h2>
         <RenameCommunityForm slug={community.slug} name={community.name} />
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Slug <span className="font-mono">/{community.slug}</span> tidak bisa
           diubah.
         </p>
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Zona waktu</h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Jam agenda diisi dan ditampilkan dalam zona ini. Mengubahnya hanya
           mengubah tampilan jam, bukan waktu kejadian agenda yang sudah ada.
         </p>
@@ -38,7 +38,7 @@ export default async function SettingsPage({
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Password laporan dilindungi</h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           {protectedPasswordHash
             ? "Password sudah diatur. Isi di bawah untuk menggantinya."
             : "Belum diatur: laporan berstatus Dilindungi belum bisa dibuka siapa pun."}{" "}
@@ -49,7 +49,7 @@ export default async function SettingsPage({
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Cadangan</h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Berisi pengumuman, agenda, kontak, dan semua laporan (termasuk yang
           dilindungi). Password dan akun tidak ikut. Simpan di tempat yang
           aman, bukan di grup chat. Bisa dipulihkan lewat halaman Buat
@@ -60,10 +60,10 @@ export default async function SettingsPage({
         </a>
       </section>
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-bold text-red-600 dark:text-red-400">
+        <h2 className="text-lg font-bold text-red-600">
           Hapus komunitas
         </h2>
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-neutral-600">
           Semua data komunitas dan akun admin-nya ikut terhapus. Tidak bisa
           dibatalkan dari sini. <strong>Unduh cadangan lengkap di atas dulu</strong>:
           itu satu-satunya cara memulihkannya.

@@ -50,7 +50,7 @@ export function ContactForm({ slug, item }: { slug: string; item?: ContactItem }
         />
       </Field>
       {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700 dark:text-green-400">{state.ok}</p>}
+      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Menyimpan..." : item ? "Simpan perubahan" : "Tambah kontak"}
       </button>

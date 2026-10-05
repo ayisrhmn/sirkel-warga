@@ -28,7 +28,7 @@ export function RenameCommunityForm({
       />
       {state.error && <p className={errorClass}>{state.error}</p>}
       {state.ok && (
-        <p className="text-sm text-green-700 dark:text-green-400">{state.ok}</p>
+        <p className="text-sm text-green-700">{state.ok}</p>
       )}
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Menyimpan..." : "Simpan"}
@@ -86,7 +86,7 @@ export function ProtectedPasswordForm({ slug }: { slug: string }) {
       />
       {state.error && <p className={errorClass}>{state.error}</p>}
       {state.ok && (
-        <p className="text-sm text-green-700 dark:text-green-400">{state.ok}</p>
+        <p className="text-sm text-green-700">{state.ok}</p>
       )}
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Menyimpan..." : "Simpan password"}
@@ -108,7 +108,7 @@ export function TimezoneForm({ slug, timezone }: { slug: string; timezone: TimeZ
         ))}
       </select>
       {state.error && <p className={errorClass}>{state.error}</p>}
-      {state.ok && <p className="text-sm text-green-700 dark:text-green-400">{state.ok}</p>}
+      {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Menyimpan..." : "Simpan zona waktu"}
       </button>

@@ -56,7 +56,7 @@ export default async function CommunityAdminPage({
           <a href={`${base}/backup`} className="underline">
             Unduh cadangan lengkap
           </a>{" "}
-          <span className="text-neutral-600 dark:text-neutral-400">
+          <span className="text-neutral-600">
             sebelum perubahan besar dan secara berkala.
           </span>
         </p>

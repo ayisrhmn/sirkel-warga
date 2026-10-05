@@ -101,7 +101,7 @@ export function ImportDataset({ slug }: { slug: string }) {
       <Field label="1. Pilih file Excel (.xlsx, .xls, atau .csv)">
         <input type="file" accept=".xlsx,.xls,.csv" onChange={onFile} className={inputClass} />
       </Field>
-      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+      <p className="text-sm text-neutral-600">
         File dibaca di browser kamu dan tidak diunggah. Yang disimpan hanya
         tabel hasilnya, setelah kamu setujui pratinjau.
       </p>
@@ -124,7 +124,7 @@ export function ImportDataset({ slug }: { slug: string }) {
 
           <section className="flex flex-col gap-2">
             <h3 className="font-medium">3. Pilih baris judul kolom</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-600">
               Baris di atasnya (judul laporan, dll.) tidak ikut disimpan. Bila
               judul kolomnya bertingkat (mis. &ldquo;Iuran&rdquo; di atas &ldquo;Kebersihan&rdquo;),
               pilih baris paling atas dan naikkan jumlah baris judul.
@@ -145,7 +145,7 @@ export function ImportDataset({ slug }: { slug: string }) {
                 ))}
               </select>
             </Field>
-            <div className="overflow-x-auto rounded-md border border-neutral-300 dark:border-neutral-700">
+            <div className="overflow-x-auto rounded-md border border-neutral-300">
               <table className="w-full text-sm">
                 <tbody>
                   {grid.slice(0, PICKER_ROWS).map((row, r) => (
@@ -153,7 +153,7 @@ export function ImportDataset({ slug }: { slug: string }) {
                       key={r}
                       className={
                         r >= headerIndex && r < headerIndex + headerRows
-                          ? "bg-yellow-100 dark:bg-yellow-900/40"
+                          ? "bg-yellow-100"
                           : ""
                       }
                     >
@@ -184,7 +184,7 @@ export function ImportDataset({ slug }: { slug: string }) {
 
           <section className="flex flex-col gap-2">
             <h3 className="font-medium">4. Kolom yang disimpan</h3>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="text-sm text-neutral-600">
               Hilangkan centang pada kolom yang tidak perlu ditampilkan, mis.
               nomor telepon.
             </p>
@@ -215,7 +215,7 @@ export function ImportDataset({ slug }: { slug: string }) {
               <p className={errorClass}>Tidak ada data di bawah baris judul yang dipilih.</p>
             ) : (
               <>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   {built.rows.length} baris, {built.columns.length} kolom
                   {built.rows.length > PREVIEW_ROWS && ` (menampilkan ${PREVIEW_ROWS} baris pertama)`}
                 </p>

@@ -28,7 +28,7 @@ export default async function ProtectedDatasetPage({
       <div>
         <h1 className="text-2xl font-bold">{result.title}</h1>
         {result.period && (
-          <p className="text-neutral-600 dark:text-neutral-400">{result.period}</p>
+          <p className="text-neutral-600">{result.period}</p>
         )}
       </div>
       {result.state === "open" ? (

@@ -17,7 +17,7 @@ export default async function PlatformPage() {
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 py-8">
       <h1 className="text-2xl font-bold">Persetujuan akun</h1>
       {pending.length === 0 ? (
-        <p className="text-neutral-600 dark:text-neutral-400">
+        <p className="text-neutral-600">
           Tidak ada akun yang menunggu.
         </p>
       ) : (
@@ -25,11 +25,11 @@ export default async function PlatformPage() {
           {pending.map((u) => (
             <li
               key={u.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
+              className="flex items-center justify-between gap-3 rounded-md border border-neutral-300 p-3"
             >
               <div>
                 <p className="font-medium">{u.name}</p>
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-neutral-600">
                   @{u.username}
                 </p>
               </div>
@@ -38,7 +38,7 @@ export default async function PlatformPage() {
                   <button className="underline">Setujui</button>
                 </form>
                 <form action={rejectUser.bind(null, u.id)}>
-                  <button className="text-red-600 underline dark:text-red-400">
+                  <button className="text-red-600 underline">
                     Tolak
                   </button>
                 </form>
