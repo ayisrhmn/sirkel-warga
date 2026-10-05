@@ -34,8 +34,32 @@ model Community {
   events                Event[]
   contacts              Contact[]
   datasets              Dataset[]
+  memberships           Membership[]
 
   @@map("communities")
+}
+
+enum MembershipRole {
+  owner
+  admin
+
+  @@map("membership_role")
+}
+
+model Membership {
+  id          String         @id @default(uuid()) @db.Uuid
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityId String         @map("community_id") @db.Uuid
+  community   Community      @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role        MembershipRole
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  // Also in the migration SQL as partial unique indexes (Prisma cannot express
+  // them): one owner per community, and one owned community per user.
+  @@unique([userId, communityId])
+  @@index([communityId])
+  @@map("memberships")
 }
 
 model Announcement {
@@ -115,6 +139,7 @@ model User {
   mustChangePassword Boolean   @default(false)
   sessions           Session[]
   accounts           Account[]
+  memberships        Membership[]
 
   @@unique([email])
   @@unique([username])

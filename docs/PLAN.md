@@ -141,7 +141,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 - Rate limit di database, konfigurasi header IP.
 - Selesai bila: user baru tidak bisa login sebelum disetujui, setelah disetujui bisa login dan logout, dan percobaan login berulang kena rate limit.
 
-### Fase 1B — Komunitas, role, dan pengguna
+### Fase 1B — Komunitas, role, dan pengguna (selesai)
 - Tabel `memberships`, pengecekan `requireMember(slug, role?)`.
 - `/create-community` dengan slug otomatis dari nama, validasi slug termasuk daftar terlarang, pembuat menjadi super admin. `revalidateTag` dan `revalidatePath` saat komunitas dibuat (agar 404 yang ter-cache tidak menetap).
 - `/admin` (daftar komunitas milik user), `/admin/[slug]/settings` (ubah nama), `/admin/[slug]/users` (tambah admin, reset password, hapus user), `/change-password`.

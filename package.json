@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "test": "bun --env-file=.env.local test",
     "user:promote": "bun --env-file=.env.local prisma/promote.ts"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bun": "^1.4.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
