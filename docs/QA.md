@@ -362,16 +362,13 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Coba juga: Dari baris diisi lebih kecil dari baris judul (mis. `1`): tetap tidak mengambil baris judul; Dari baris `50` (di luar data): "Tidak ada data pada baris yang dipilih."; nama kolom dikosongkan: kembali ke nama aslinya; dua kolom diberi nama sama: yang kedua menjadi "... (2)".
 - [ ] Lolos
 
-**F6d. [Prioritas] Tabel lebar enak dibaca di HP**
+**F6d. [Prioritas] Tabel lebar di HP**
 - Buka laporan hasil F6c (rincian, setelah memasukkan password) dan ringkasan, di emulasi HP lebar 360px (DevTools, device toolbar), lalu di HP sungguhan bila ada.
-- Di layar kecil (di bawah 768px), tabel yang kolomnya **lebih dari 4** tampil sebagai **kartu, satu per baris**, **tanpa geser ke samping**. Di atas daftar ada tulisan "Ketuk nama untuk melihat rincian."
-- Kartu yang tertutup hanya menampilkan nomor dan nama, mis. `1. Bapak Robi & Ibu Vania (AH2-28)`, dengan panah di kanan. Mengetuknya **membuka** rincian: daftar kolom lain (Januari, Februari, dst.) dengan nilainya di kanan, dan `-` untuk sel kosong. Panah berputar saat terbuka, mengetuk lagi **menutup**. Beberapa kartu bisa terbuka bersamaan.
-- Pada ringkasan, kartunya berjudul "TOTAL", "PENGELUARAN", "PEMASUKAN", "SALDO" dan rinciannya per bulan. Angka besar berformat titik ribuan.
-- Halaman tidak ikut bergeser ke samping sama sekali, dan tidak ada tabel yang bisa digeser di layar kecil.
-- Perbesar layar (768px ke atas, atau buka di laptop): tampil **tabel biasa** seperti sebelumnya. Kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) tetap menempel di kiri saat tabel digeser, kolom "No" ramping, dan baris selang-seling terlihat. **Garis tepi di kanan kolom yang menempel tetap terlihat (beserta bayangan tipis) saat tabel digeser**, sehingga jelas di mana kolom nama berakhir dan kolom bulan yang lewat di belakangnya mulai. Garis di bawah judul kolom juga tetap ada.
-- Tabel sempit (2 sampai 4 kolom, mis. "Ringkasan kas" dari `2-ringkasan-kas.xlsx`) tetap berupa tabel di semua ukuran layar, tanpa kartu.
-- Pratinjau di layar impor memakai tampilan yang sama (kartu di layar kecil).
-- Kartu bekerja walau JavaScript dimatikan (DevTools, "Disable JavaScript"): ketuk tetap membuka dan menutup.
+- Tabel tetap **tabel** di semua ukuran layar (tidak ada tampilan kartu), dengan semua baris dan kolom terlihat, termasuk baris TOTAL, PENGELUARAN, PEMASUKAN, SALDO. Di layar kecil ada tulisan "Geser tabel ke samping untuk melihat kolom lain." (tidak tampil di layar lebar, dan tidak tampil untuk tabel sempit).
+- Geser tabel ke kanan: kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) **tetap menempel di kiri**, sedangkan kolom lain bergeser di belakangnya. **Garis tepi di kanan kolom yang menempel tetap terlihat (beserta bayangan tipis) saat digeser**, jadi jelas di mana kolom nama berakhir. Garis di bawah judul kolom juga tetap ada. Teks di bawah kolom yang menempel tidak tembus terlihat.
+- Kolom "No" ramping (selebar angkanya) dan ikut bergeser pergi (bukan yang menempel). Baris selang-seling tetap terlihat, termasuk di kolom yang menempel.
+- Halaman itu sendiri tidak ikut bergeser ke samping; hanya tabelnya.
+- **Catatan untuk dinilai:** pada HP kecil, kolom nama bisa terlalu lebar (nama gabungan panjang) sehingga sisa ruang untuk kolom bulan sempit. Catat seberapa mengganggu: berapa kolom bulan yang terlihat sekaligus.
 - [ ] Lolos
 
 **F6e. Kolom nama digabung dan kolom "No" ramping**
