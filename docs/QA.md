@@ -356,7 +356,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 **F6c. [Prioritas] Satu file, dua laporan (rincian dilindungi, ringkasan publik)**
 - Impor `7-kas-bulanan-contoh.xlsx`. Daftar baris mentah bisa di-scroll sampai baris 28 (tidak berhenti di baris 15). Baris 2 terdeteksi sebagai judul.
 - **Laporan 1, rincian:** di bagian "Baris yang disimpan" isi Dari baris `3`, Sampai baris `22`. Baris 3 sampai 22 berwarna hijau muda, baris lainnya dan di luar rentang menjadi abu-abu. Pratinjau menampilkan 20 baris. Judul "Rincian iuran", tampilan **Dilindungi password**, klik **"Simpan, lalu buat laporan lain dari file ini"**.
-- Diharapkan: tetap di layar yang sama, muncul pesan hijau "Laporan "Rincian iuran" tersimpan..." dengan link "Lihat daftar laporan". Kolom judul dikosongkan dan tampilan kembali ke Draft; file dan pilihan lain tetap.
+- Diharapkan: tetap di layar yang sama, muncul pesan hijau "Laporan "Rincian iuran" tersimpan..." dengan link "Lihat daftar laporan". Kolom judul dikosongkan dan tampilan kembali ke Draft; file dan pilihan lain tetap. (Di langkah rincian, bagian "Kolom yang disimpan" memuat kotak gabungan yang dijelaskan di F6e; biarkan tercentang.)
 - **Laporan 2, ringkasan:** Dari baris `23`, Sampai baris `26`. Kolom "No", "Bapak", dan "Ibu" **hilang sendiri** dari daftar kolom (kosong di baris itu). Ubah nama kolom "Blok" menjadi "Keterangan" di kolom isian di sebelah kotak centang. Pratinjau: 4 baris (TOTAL, PENGELUARAN, PEMASUKAN, SALDO), kolom pertama berjudul "Keterangan". Judul "Ringkasan kas", tampilan **Publik**, klik **"Simpan laporan"** (yang biasa): dialihkan ke daftar laporan.
 - Di daftar ada dua laporan. Sebagai warga (Incognito): halaman komunitas menampilkan "Ringkasan kas" (tabel terbuka) dan "Rincian iuran" berlabel "Dilindungi" (hanya judul; tanpa password tidak ada nama warga di mana pun, termasuk View Source).
 - Coba juga: Dari baris diisi lebih kecil dari baris judul (mis. `1`): tetap tidak mengambil baris judul; Dari baris `50` (di luar data): "Tidak ada data pada baris yang dipilih."; nama kolom dikosongkan: kembali ke nama aslinya; dua kolom diberi nama sama: yang kedua menjadi "... (2)".
@@ -365,10 +365,20 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 **F6d. [Prioritas] Tabel lebar enak dibaca di HP**
 - Buka laporan hasil F6c (rincian, setelah memasukkan password) dan ringkasan, di emulasi HP lebar 360px (DevTools, device toolbar), lalu di HP sungguhan bila ada.
 - Di atas tabel ada tulisan "Geser tabel ke samping untuk melihat kolom lain." (hanya tampil di layar sempit, tidak di layar lebar).
-- Geser tabel ke kanan: kolom **"Bapak"** (rincian) atau **"Keterangan"** (ringkasan) **tetap menempel di kiri** dengan garis pemisah, sedangkan kolom lain bergeser di bawahnya. Teks di bawah kolom yang menempel tidak tembus terlihat. Kolom "No" ikut bergeser pergi (bukan yang menempel).
+- Geser tabel ke kanan: kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) **tetap menempel di kiri** dengan garis pemisah, sedangkan kolom lain bergeser di bawahnya. Teks di bawah kolom yang menempel tidak tembus terlihat. Kolom "No" ikut bergeser pergi (bukan yang menempel), dan kolomnya hanya selebar angkanya.
 - Warna selang-seling baris tetap terlihat, termasuk di kolom yang menempel. Judul kolom ikut menempel.
 - Laporan sempit (hanya 2 sampai 4 kolom, mis. "Ringkasan kas" dari `2-ringkasan-kas.xlsx`) tidak menampilkan petunjuk dan tidak punya kolom menempel.
 - Halaman itu sendiri tidak ikut bergeser ke samping; hanya tabelnya.
+- [ ] Lolos
+
+**F6e. Kolom nama digabung dan kolom "No" ramping**
+- Impor `7-kas-bulanan-contoh.xlsx`, rentang baris 3 sampai 22. Di bagian "Kolom yang disimpan" muncul kotak: "Gabungkan kolom "Bapak", "Ibu", "Blok" menjadi satu kolom "Nama", mis. Bapak Fulan & Ibu Fulana (AH2-28)...", dalam keadaan **tercentang**.
+- Daftar kolom hanya memuat "No", "Nama", dan bulan-bulan (tidak ada "Bapak", "Ibu", "Blok" lagi). Pratinjau: kolom Nama berisi `Bapak Warga 1 & Ibu Ibu 1 (AH2-11)` dan sejenisnya. Baris yang hanya punya satu nama (di file contoh, setiap warga kelipatan 4 tidak punya Ibu) hanya menampilkan satu: `Bapak Warga 4 (AH5-14)`. Tidak ada tanda `&` atau tanda kurung kosong yang menggantung.
+- Hilangkan centang kotak itu: kolom Bapak, Ibu, dan Blok muncul lagi seperti semula. Centang lagi: kembali digabung. Kolom "Nama" bisa diberi nama lain di kolom isiannya (mis. "Warga").
+- Pilih rentang baris 23 sampai 26 (ringkasan): **tidak ada** kolom "Nama", yang ada tetap kolom label (TOTAL, PENGELUARAN, PEMASUKAN, SALDO) yang bisa diberi nama "Keterangan". Kotak gabungan boleh tetap tercentang, tidak berpengaruh di sini.
+- Tanpa rentang (seluruh sheet): baris TOTAL, PENGELUARAN, PEMASUKAN, SALDO tetap muncul di kolom Nama dengan tulisan aslinya (bukan "Bapak TOTAL"), dan baris saldo awal tidak menjadi "Bapak 72000".
+- Setelah disimpan, lihat laporan di halaman publik: kolom **"No" selebar angkanya saja** (tidak melebar sama seperti kolom lain), kolom "Nama" tetap menempel di kiri saat digeser (F6d), dan nama panjang tidak terpotong.
+- File yang judulnya tidak memuat dua kolom seperti Bapak dan Ibu (mis. `2-ringkasan-kas.xlsx`) tidak menampilkan kotak gabungan sama sekali.
 - [ ] Lolos
 
 **F7. Edit metadata dan hapus**
@@ -530,7 +540,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | C. Komunitas | 5 | | | |
 | D. Role, isolasi, cadangan, akses darurat, dan platform admin | 11 | | | |
 | E. Konten publik | 7 | | | |
-| F. Laporan dari Excel | 13 | | | |
+| F. Laporan dari Excel | 14 | | | |
 | G. Laporan dilindungi | 8 | | | |
 | H. Tampilan, error, dan HP | 5 | | | |
 | I. Keamanan dan akses | 5 | | | |

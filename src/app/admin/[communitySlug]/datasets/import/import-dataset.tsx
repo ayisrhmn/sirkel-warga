@@ -17,6 +17,7 @@ import {
   buildDataset,
   type BuildOptions,
   describeColumns,
+  detectNameMerge,
   guessHeaderIndex,
   looksLikeSpreadsheet,
   readWorkbook,
@@ -41,6 +42,7 @@ export function ImportDataset({ slug }: { slug: string }) {
   const [toRow, setToRow] = useState("");
   const [renames, setRenames] = useState<Map<number, string>>(new Map());
   const [notice, setNotice] = useState("");
+  const [mergeNames, setMergeNames] = useState(true);
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("draft");
@@ -57,6 +59,7 @@ export function ImportDataset({ slug }: { slug: string }) {
     setFromRow("");
     setToRow("");
     setRenames(new Map());
+    setMergeNames(true);
     setNotice("");
   }
 
@@ -82,10 +85,12 @@ export function ImportDataset({ slug }: { slug: string }) {
     }
   }
 
+  // "Bapak", "Ibu" and "Blok" columns can be shown as one name column.
+  const nameMerge = useMemo(() => detectNameMerge(grid, headerIndex, headerRows), [grid, headerIndex, headerRows]);
   const options = useMemo<BuildOptions>(() => {
     const row = (text: string) => (/^\d+$/.test(text.trim()) ? Number(text) : undefined);
-    return { headerRows, from: row(fromRow), to: row(toRow), renames };
-  }, [headerRows, fromRow, toRow, renames]);
+    return { headerRows, from: row(fromRow), to: row(toRow), renames, merge: mergeNames && nameMerge ? nameMerge : undefined };
+  }, [headerRows, fromRow, toRow, renames, mergeNames, nameMerge]);
   const candidates = useMemo(
     () => describeColumns(grid, headerIndex, options),
     [grid, headerIndex, options],
@@ -242,6 +247,25 @@ export function ImportDataset({ slug }: { slug: string }) {
               nomor telepon. Nama kolom bisa diubah, mis. &ldquo;Blok&rdquo; menjadi
               &ldquo;Keterangan&rdquo; untuk tabel ringkasan.
             </p>
+            {nameMerge && (
+              <label className="flex items-start gap-2 rounded-md border border-neutral-300 p-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={mergeNames}
+                  onChange={(e) => setMergeNames(e.target.checked)}
+                  className="mt-1"
+                />
+                <span>
+                  Gabungkan kolom{" "}
+                  {[...nameMerge.people, ...(nameMerge.place === undefined ? [] : [nameMerge.place])]
+                    .map((c) => `"${String(grid[headerIndex]?.[c] ?? "").trim()}"`)
+                    .join(", ")}{" "}
+                  menjadi satu kolom &ldquo;Nama&rdquo;, mis.{" "}
+                  <span className="font-medium">Bapak Fulan &amp; Ibu Fulana (AH2-28)</span>. Bila hanya ada
+                  satu, hanya itu yang tampil. Baris tanpa nama (mis. TOTAL) tetap memakai tulisannya.
+                </span>
+              </label>
+            )}
             <ul className="flex flex-col gap-1">
               {candidates.map((c) => (
                 <li key={c.index} className="flex items-center gap-2">

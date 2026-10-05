@@ -97,6 +97,14 @@ export function pinnedColumn(columns: string[], rows: DatasetCell[][]): number {
   return -1;
 }
 
+// A running number ("No") only needs as much width as its digits: shrink it
+// instead of letting the table stretch it like every other column.
+export function isIndexColumn(name: string, rows: DatasetCell[][], c: number): boolean {
+  if (!/^(no|no\.|nomor|#)$/i.test(name.trim())) return false;
+  const cells = rows.map((row) => row[c]).filter((cell) => cell !== null);
+  return cells.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 10000);
+}
+
 export const formatCell = (cell: DatasetCell) =>
   cell === null ? "" : typeof cell === "number" ? numberFormat.format(cell) : cell;
 

@@ -141,7 +141,12 @@ export function guessHeaderIndex(grid: Grid): number {
   return Math.max(index, 0);
 }
 
-export type ColumnInfo = { index: number; name: string };
+// Several columns shown as one, e.g. "Bapak", "Ibu" and "Blok" as
+// "Bapak Fulan & Ibu Fulana (AH2-28)". Each person column is prefixed with its
+// own header; the place goes in parentheses; empty parts are left out.
+export type NameMerge = { name: string; people: number[]; place?: number };
+
+export type ColumnInfo = { index: number; name: string; merged?: boolean };
 
 export type BuildOptions = {
   // How many rows the header spans (1 to 3). "Iuran" over "Kebersihan" becomes
@@ -153,6 +158,7 @@ export type BuildOptions = {
   to?: number;
   // New names for columns, by original column index.
   renames?: ReadonlyMap<number, string>;
+  merge?: NameMerge;
 };
 
 function headerName(grid: Grid, headerIndex: number, headerRows: number, c: number) {
@@ -162,6 +168,38 @@ function headerName(grid: Grid, headerIndex: number, headerRows: number, c: numb
     if (text && text !== parts[parts.length - 1]) parts.push(text);
   }
   return parts.join(" ");
+}
+
+// Finds the usual "Bapak / Ibu / Blok" columns of a household list, or null.
+// Needs at least two person columns, so ordinary tables are never touched.
+export function detectNameMerge(grid: Grid, headerIndex: number, headerRows = 1): NameMerge | null {
+  const width = Math.max(0, ...grid.map((row) => row.length));
+  const people: number[] = [];
+  let place: number | undefined;
+  for (let c = 0; c < width; c++) {
+    const name = headerName(grid, headerIndex, headerRows, c);
+    if (/^(bapak|ibu|suami|istri)$/i.test(name)) people.push(c);
+    else if (place === undefined && /^(blok|alamat|rumah|no\.? ?rumah)$/i.test(name)) place = c;
+  }
+  return people.length >= 2 ? { name: "Nama", people, place } : null;
+}
+
+const textOf = (value: DatasetCell | undefined) => (value === null || value === undefined ? "" : String(value).trim());
+
+function mergedCell(row: DatasetCell[], headers: string[], merge: NameMerge): DatasetCell {
+  // A number in a person column is not a name (e.g. an opening balance placed
+  // under "Bapak"): keep it as it is, without the "Bapak" prefix.
+  const people = merge.people
+    .map((c) => {
+      const text = textOf(row[c]);
+      if (!text) return "";
+      return typeof row[c] === "number" ? text : `${headers[c]} ${text}`;
+    })
+    .filter(Boolean);
+  const place = merge.place === undefined ? "" : textOf(row[merge.place]);
+  // Without any person, the place cell is a label of its own (TOTAL, SALDO).
+  if (people.length === 0) return place || null;
+  return place ? `${people.join(" & ")} (${place})` : people.join(" & ");
 }
 
 // The rows below the header that are kept (blank ones are dropped later).
@@ -184,19 +222,41 @@ export function describeColumns(
   // column) is kept. With a range, the header may belong to another block of
   // the sheet, so only columns that have data in the kept rows stay.
   const rangeChosen = options.from !== undefined || options.to !== undefined;
-  const seen = new Map<string, number>();
-  const columns: ColumnInfo[] = [];
+  const entries: { index: number; name: string; merged?: boolean }[] = [];
 
   for (let c = 0; c < width; c++) {
     const original = headerName(grid, headerIndex, headerRows, c);
     const hasData = body.some((row) => !isEmpty(row[c] ?? null));
     if (!hasData && (rangeChosen || !original)) continue;
-    const base = options.renames?.get(c)?.trim() || original || `Kolom ${c + 1}`;
-    const count = (seen.get(base) ?? 0) + 1;
-    seen.set(base, count);
-    columns.push({ index: c, name: count === 1 ? base : `${base} (${count})` });
+    entries.push({ index: c, name: options.renames?.get(c)?.trim() || original || `Kolom ${c + 1}` });
   }
-  return columns;
+
+  // The merge only applies when the kept rows hold people: a summary block
+  // (TOTAL, SALDO ...) keeps its own label column.
+  const merge = options.merge;
+  const mergeActive =
+    merge !== undefined && body.some((row) => merge.people.some((c) => textOf(row[c]) !== ""));
+  let columns = entries;
+  if (merge && mergeActive) {
+    const first = Math.min(...merge.people);
+    const sources = new Set([...merge.people, ...(merge.place === undefined ? [] : [merge.place])]);
+    columns = entries
+      .filter((e) => !sources.has(e.index) || e.index === first)
+      .map((e) =>
+        e.index === first
+          ? { index: first, name: options.renames?.get(first)?.trim() || merge.name, merged: true }
+          : e,
+      );
+    if (!columns.some((e) => e.merged))
+      columns.push({ index: first, name: merge.name, merged: true });
+  }
+
+  const seen = new Map<string, number>();
+  return columns.map((e) => {
+    const count = (seen.get(e.name) ?? 0) + 1;
+    seen.set(e.name, count);
+    return { ...e, name: count === 1 ? e.name : `${e.name} (${count})` };
+  });
 }
 
 // The final table: the chosen header, then every non-blank kept row below it.
@@ -206,11 +266,18 @@ export function buildDataset(
   excluded: ReadonlySet<number> = new Set(),
   options: BuildOptions = {},
 ) {
+  const headerRows = options.headerRows ?? 1;
   const columns = describeColumns(grid, headerIndex, options).filter(
     (c) => !excluded.has(c.index),
   );
+  const width = Math.max(0, ...grid.map((row) => row.length));
+  const headers = Array.from({ length: width }, (_, c) => headerName(grid, headerIndex, headerRows, c));
   const rows = dataRows(grid, headerIndex, options)
-    .map((row) => columns.map((c) => row[c.index] ?? null))
+    .map((row) =>
+      columns.map((c) =>
+        c.merged && options.merge ? mergedCell(row, headers, options.merge) : (row[c.index] ?? null),
+      ),
+    )
     .filter((row) => row.some((v) => !isEmpty(v)));
   return { columns: columns.map((c) => c.name), rows };
 }

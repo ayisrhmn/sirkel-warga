@@ -1,4 +1,4 @@
-import { formatCell, isNumericCell, pinnedColumn, type DatasetCell } from "@/lib/dataset";
+import { formatCell, isIndexColumn, isNumericCell, pinnedColumn, type DatasetCell } from "@/lib/dataset";
 
 // Wide tables scroll sideways inside their own container, so the page itself
 // never scrolls horizontally on a phone. One column that names the rows stays
@@ -11,6 +11,10 @@ export function DataTable({
   rows: DatasetCell[][];
 }) {
   const pinned = pinnedColumn(columns, rows);
+  // A running number needs only its digits: `w-px` with no-wrap shrinks the
+  // column to its content while the other columns share the rest.
+  const narrow = columns.map((name, c) => isIndexColumn(name, rows, c));
+  const pad = (c: number) => (narrow[c] ? "w-px px-2 text-center" : "px-3");
   // Sticky cells need their own opaque background, or the cells scrolling
   // underneath show through them.
   const pin = (c: number) =>
@@ -31,7 +35,7 @@ export function DataTable({
                 <th
                   key={i}
                   scope="col"
-                  className={`whitespace-nowrap bg-white px-3 py-2 text-left font-medium ${pin(i)}`}
+                  className={`whitespace-nowrap bg-white ${pad(i)} py-2 ${narrow[i] ? "" : "text-left"} font-medium ${pin(i)}`}
                 >
                   {name}
                 </th>
@@ -44,8 +48,8 @@ export function DataTable({
                 {row.map((cell, c) => (
                   <td
                     key={c}
-                    className={`whitespace-nowrap bg-inherit px-3 py-2 ${
-                      isNumericCell(cell) ? "text-right tabular-nums" : ""
+                    className={`whitespace-nowrap bg-inherit ${pad(c)} py-2 ${
+                      narrow[c] ? "tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)}`}
                   >
                     {formatCell(cell)}
