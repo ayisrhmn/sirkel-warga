@@ -5,7 +5,7 @@
 // become the small set of elements the renderer knows. No sanitizer needed,
 // and no `dangerouslySetInnerHTML` anywhere.
 
-export type RichMark = { type: "bold" | "italic" } | { type: "link"; attrs: { href: string } };
+export type RichMark = { type: "bold" | "italic" | "underline" } | { type: "link"; attrs: { href: string } };
 export type RichNode = {
   type: string;
   attrs?: { level?: number };
@@ -52,7 +52,7 @@ function cleanMarks(value: unknown): RichMark[] | undefined {
   const marks: RichMark[] = [];
   for (const mark of value) {
     if (!isObj(mark)) continue;
-    if (mark.type === "bold" || mark.type === "italic") marks.push({ type: mark.type });
+    if (mark.type === "bold" || mark.type === "italic" || mark.type === "underline") marks.push({ type: mark.type });
     else if (mark.type === "link" && isObj(mark.attrs)) {
       const href = safeHref(mark.attrs.href);
       if (href) marks.push({ type: "link", attrs: { href } });

@@ -7,6 +7,7 @@ function inline(node: RichNode, key: number): ReactNode {
   for (const mark of node.marks ?? []) {
     if (mark.type === "bold") out = <strong>{out}</strong>;
     else if (mark.type === "italic") out = <em>{out}</em>;
+    else if (mark.type === "underline") out = <u>{out}</u>;
     else if (mark.type === "link") {
       const href = safeHref(mark.attrs.href); // checked again at render time
       if (href)

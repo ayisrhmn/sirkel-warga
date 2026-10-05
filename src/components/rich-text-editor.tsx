@@ -12,6 +12,7 @@ import {
   ListOrdered,
   Quote,
   Redo2,
+  Underline as UnderlineIcon,
   Undo2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -25,7 +26,6 @@ const extensions = [
     code: false,
     codeBlock: false,
     strike: false,
-    underline: false,
     horizontalRule: false,
     link: { openOnClick: false, autolink: true, defaultProtocol: "https", protocols: ["mailto", "tel"] },
   }),
@@ -46,6 +46,7 @@ function Toolbar({ editor }: { editor: Editor }) {
     selector: ({ editor: e }) => ({
       bold: e.isActive("bold"),
       italic: e.isActive("italic"),
+      underline: e.isActive("underline"),
       h2: e.isActive("heading", { level: 2 }),
       h3: e.isActive("heading", { level: 3 }),
       bullet: e.isActive("bulletList"),
@@ -69,6 +70,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   const buttons = [
     { label: "Tebal", icon: Bold, on: active.bold, run: () => editor.chain().focus().toggleBold().run() },
     { label: "Miring", icon: Italic, on: active.italic, run: () => editor.chain().focus().toggleItalic().run() },
+    { label: "Garis bawah", icon: UnderlineIcon, on: active.underline, run: () => editor.chain().focus().toggleUnderline().run() },
     { label: "Judul besar", icon: Heading2, on: active.h2, run: () => editor.chain().focus().toggleHeading({ level: 2 }).run() },
     { label: "Judul kecil", icon: Heading3, on: active.h3, run: () => editor.chain().focus().toggleHeading({ level: 3 }).run() },
     { label: "Daftar poin", icon: List, on: active.bullet, run: () => editor.chain().focus().toggleBulletList().run() },

@@ -290,9 +290,9 @@ Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau 
 - [ ] Lolos
 
 **E4b. [Prioritas] Editor teks dan halaman detail**
-- Di form tambah pengumuman, editor punya tombol: tebal, miring, judul besar, judul kecil, daftar poin, daftar angka, kutipan, tautan, urungkan, ulangi. Tombol yang sedang aktif di posisi kursor berwarna gelap.
-- Tulis: satu judul besar, satu paragraf dengan kata **tebal** dan *miring*, daftar poin dua butir, daftar angka, dan satu tautan (pilih teks, klik tombol tautan, isi `https://example.com`). Status Publik, simpan.
-- Di halaman komunitas, klik judul pengumuman atau "Baca selengkapnya": halaman `/dawis-matahari-sektor-3/announcements/<id>` menampilkan judul, tanggal, dan isi **dengan format yang sama** (judul besar, tebal, miring, poin, angka). Tautan terbuka di tab baru.
+- Di form tambah pengumuman, editor punya tombol: tebal, miring, garis bawah (juga Ctrl+U), judul besar, judul kecil, daftar poin, daftar angka, kutipan, tautan, urungkan, ulangi. Tombol yang sedang aktif di posisi kursor berwarna gelap.
+- Tulis: satu judul besar, satu paragraf dengan kata **tebal**, *miring*, dan <u>bergaris bawah</u>, daftar poin dua butir, daftar angka, dan satu tautan (pilih teks, klik tombol tautan, isi `https://example.com`). Status Publik, simpan.
+- Di halaman komunitas, klik judul pengumuman atau "Baca selengkapnya": halaman `/dawis-matahari-sektor-3/announcements/<id>` menampilkan judul, tanggal, dan isi **dengan format yang sama** (judul besar, tebal, miring, garis bawah, poin, angka). Tautan terbuka di tab baru.
 - Tautan dengan `javascript:alert(1)`: tidak jadi tautan (teksnya saja). Tempel teks `<script>alert(1)</script>` di editor: tampil sebagai teks biasa, tidak menjalankan apa pun.
 - Pengumuman Draft: alamat detailnya memberi 404 bagi warga (Incognito).
 - Ulangi untuk Agenda: keterangan memakai editor yang sama (opsional, boleh kosong), dan `/dawis-matahari-sektor-3/events/<id>` menampilkan tanggal, lokasi, dan keterangan. Agenda yang sudah lewat tetap bisa dibuka lewat alamatnya walau tidak tampil di daftar.

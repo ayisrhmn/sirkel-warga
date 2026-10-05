@@ -13,14 +13,14 @@ describe("parseRichDoc", () => {
     const result = parseRichDoc(
       doc(
         { type: "heading", attrs: { level: 2 }, content: [text("Rapat")] },
-        p(text("Bawa ", [{ type: "bold" }]), text("senter", [{ type: "italic" }])),
+        p(text("Bawa ", [{ type: "bold" }]), text("senter", [{ type: "italic" }]), text("!", [{ type: "underline" }])),
         { type: "bulletList", content: [{ type: "listItem", content: [p(text("kursi"))] }, { type: "listItem", content: [p(text("tikar"))] }] },
         { type: "orderedList", content: [{ type: "listItem", content: [p(text("satu"))] }] },
         { type: "blockquote", content: [p(text("kutipan"))] },
       ),
       opts,
     );
-    expect("doc" in result && result.text).toBe("Rapat\nBawa senter\n• kursi\n• tikar\n1. satu\nkutipan");
+    expect("doc" in result && result.text).toBe("Rapat\nBawa senter!\n• kursi\n• tikar\n1. satu\nkutipan");
   });
 
   test("accepts the JSON string a form submits", () => {
@@ -38,7 +38,7 @@ describe("parseRichDoc", () => {
           text("a", [{ type: "link", attrs: { href: "javascript:alert(1)" } }]),
           text("b", [{ type: "link", attrs: { href: "data:text/html,<script>1</script>" } }]),
           text("c", [{ type: "link", attrs: { href: "https://ok.example/path", onclick: "x()" } }]),
-          text("d", [{ type: "underline" }, { type: "textStyle", attrs: { color: "red" } }]),
+          text("d", [{ type: "strike" }, { type: "textStyle", attrs: { color: "red" } }]),
           { type: "text", text: "e", marks: [{ type: "bold" }], onclick: "x()", attrs: { id: "x" } },
           { type: "script", content: [text("alert(1)")] },
         ),
@@ -48,7 +48,7 @@ describe("parseRichDoc", () => {
     expect("error" in result).toBe(false);
     if ("error" in result) return;
     const json = JSON.stringify(result.doc);
-    for (const bad of ["image", "codeBlock", "javascript", "data:", "onclick", "underline", "textStyle", "script", "alert"])
+    for (const bad of ["image", "codeBlock", "javascript", "data:", "onclick", "strike", "textStyle", "script", "alert"])
       expect(json).not.toContain(bad);
     expect(json).toContain('"level":2'); // level 1 is not offered: falls back to 2
     expect(json).toContain("https://ok.example/path");
@@ -90,7 +90,7 @@ describe("RichText", () => {
         text={null}
         doc={doc(
           { type: "heading", attrs: { level: 3 }, content: [text("<b>Judul</b>")] },
-          p(text("klik", [{ type: "bold" }, { type: "link", attrs: { href: "https://a.example" } }]), { type: "hardBreak" }, text("baris dua")),
+          p(text("klik", [{ type: "bold" }, { type: "link", attrs: { href: "https://a.example" } }]), { type: "hardBreak" }, text("baris dua", [{ type: "underline" }])),
           { type: "bulletList", content: [{ type: "listItem", content: [p(text("poin"))] }] },
         )}
       />,
@@ -98,6 +98,7 @@ describe("RichText", () => {
     expect(html).toContain("<h3><span>&lt;b&gt;Judul&lt;/b&gt;</span></h3>");
     expect(html).toContain('<a href="https://a.example/" target="_blank" rel="noopener noreferrer nofollow"><strong>klik</strong></a>');
     expect(html).toContain("<br/>");
+    expect(html).toContain("<u>baris dua</u>");
     expect(html).toContain("<ul><li><p><span>poin</span></p></li></ul>");
   });
 
