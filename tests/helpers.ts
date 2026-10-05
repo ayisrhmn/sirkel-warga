@@ -2,6 +2,7 @@
 // a separate database (`sirkel_test`, created and migrated automatically);
 // only Next.js request APIs are faked.
 import { Client } from "pg";
+import { textToDoc } from "../src/lib/rich-text";
 import { beforeAll, expect, mock } from "bun:test";
 
 // --- Fake Next.js request context ------------------------------------------
@@ -57,6 +58,7 @@ export type Modules = {
   events: typeof import("../src/app/admin/[communitySlug]/events/actions");
   contacts: typeof import("../src/app/admin/[communitySlug]/contacts/actions");
   getPublicContent: typeof import("../src/lib/public-content").getPublicContent;
+  publicDetail: typeof import("../src/lib/public-detail");
   datasets: typeof import("../src/app/admin/[communitySlug]/datasets/actions");
   exportAll: typeof import("../src/app/admin/[communitySlug]/datasets/export/route").GET;
   exportCsv: typeof import("../src/app/admin/[communitySlug]/datasets/[id]/export/route").GET;
@@ -101,6 +103,7 @@ async function setup() {
     events: await import("../src/app/admin/[communitySlug]/events/actions"),
     contacts: await import("../src/app/admin/[communitySlug]/contacts/actions"),
     getPublicContent: (await import("../src/lib/public-content")).getPublicContent,
+    publicDetail: await import("../src/lib/public-detail"),
     datasets: await import("../src/app/admin/[communitySlug]/datasets/actions"),
     exportAll: (await import("../src/app/admin/[communitySlug]/datasets/export/route")).GET,
     exportCsv: (await import("../src/app/admin/[communitySlug]/datasets/[id]/export/route")).GET,
@@ -118,6 +121,8 @@ async function setup() {
 
 // --- Helpers ----------------------------------------------------------------
 
+// The JSON an editor field would submit for these lines of text.
+export const doc = (text: string) => JSON.stringify(textToDoc(text));
 export const PASSWORD = "password-awal-1";
 export const form = (fields: Record<string, string>) => {
   const data = new FormData();

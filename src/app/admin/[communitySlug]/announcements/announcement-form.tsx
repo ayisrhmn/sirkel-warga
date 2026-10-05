@@ -3,13 +3,15 @@
 import { useActionState } from "react";
 import { Field } from "@/components/field";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import type { FormState } from "@/lib/form-state";
 import { createAnnouncement, updateAnnouncement } from "./actions";
 
 export type AnnouncementItem = {
   id: string;
   title: string;
-  body: string;
+  body: string; // plain text, for rows that have no document yet
+  bodyDoc: string; // JSON of the editor document, or ""
   status: "draft" | "public";
 };
 
@@ -32,15 +34,13 @@ export function AnnouncementForm({
       <Field label="Judul">
         <input name="title" required defaultValue={value("title")} className={inputClass} />
       </Field>
-      <Field label="Isi">
-        <textarea
-          name="body"
-          required
-          rows={5}
-          defaultValue={value("body")}
-          className={inputClass}
-        />
-      </Field>
+      <RichTextEditor
+        name="bodyDoc"
+        label="Isi"
+        defaultValue={value("bodyDoc") ?? ""}
+        legacyText={item?.body}
+        syncKey={state}
+      />
       <Field label="Status">
         <select name="status" defaultValue={value("status") ?? "public"} className={inputClass}>
           <option value="public">Publik (tampil di halaman warga)</option>

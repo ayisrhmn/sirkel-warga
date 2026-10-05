@@ -7,18 +7,22 @@ import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { getString, requireUuid } from "@/lib/form";
 import { revalidateCommunity } from "@/lib/revalidate";
+import { parseRichDoc } from "@/lib/rich-text";
 
 function parse(formData: FormData) {
   const title = getString(formData, "title");
-  const body = getString(formData, "body");
+  const bodyJson = getString(formData, "bodyDoc");
   const status = getString(formData, "status") === "public" ? "public" : "draft";
-  const values = { title, body, status };
+  const values = { title, bodyDoc: bodyJson, status };
 
   if (title.length < 3 || title.length > 120)
     return { error: "Judul 3-120 karakter.", values };
-  if (body.length < 1 || body.length > 5000)
-    return { error: "Isi pengumuman 1-5000 karakter.", values };
-  return { data: { title, body, status } as const, values };
+  // The document is rebuilt from an allow-list, so only what the editor can
+  // make is stored; `body` keeps its plain text.
+  const parsed = parseRichDoc(bodyJson, { maxText: 5000 });
+  if ("error" in parsed)
+    return { error: `Isi pengumuman: ${parsed.error.toLowerCase()}`, values };
+  return { data: { title, body: parsed.text, bodyDoc: parsed.doc, status } as const, values };
 }
 
 function refresh(slug: string) {

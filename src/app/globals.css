@@ -17,3 +17,42 @@ body {
   color: var(--foreground);
   font-family: system-ui, sans-serif;
 }
+
+/* Rich text written in the editor (announcements and events), on the public
+   pages and inside the editor itself. Tailwind's reset removes list bullets
+   and heading sizes, so they are set here. */
+.rich-text > * + * {
+  margin-top: 0.75rem;
+}
+.rich-text h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.rich-text h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.rich-text ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.rich-text ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+.rich-text li > * + * {
+  margin-top: 0.25rem;
+}
+.rich-text blockquote {
+  border-left: 3px solid #d4d4d4;
+  padding-left: 0.75rem;
+  color: #525252;
+}
+.rich-text a {
+  text-decoration: underline;
+  color: #1d4ed8;
+  overflow-wrap: anywhere;
+}
+.rich-text {
+  overflow-wrap: anywhere;
+}

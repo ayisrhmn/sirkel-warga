@@ -1,4 +1,5 @@
 import { DeleteButton } from "@/components/delete-button";
+import { EditDisclosure } from "@/components/edit-disclosure";
 import { requireMember } from "@/lib/access";
 import { asTimeZone, formatDateTime, TIME_ZONES, toLocalInput } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
@@ -22,6 +23,7 @@ export default async function EventsPage({
       startsAt: true,
       location: true,
       description: true,
+      descriptionDoc: true,
     },
   });
 
@@ -48,22 +50,20 @@ export default async function EventsPage({
                   {formatDateTime(item.startsAt, zone)}
                 </p>
               </div>
-              <details>
-                <summary className="cursor-pointer underline">Edit</summary>
-                <div className="mt-3">
-                  <EventForm
-                    slug={community.slug}
-                    zoneLabel={zoneLabel}
-                    item={{
-                      id: item.id,
-                      title: item.title,
-                      startsAt: toLocalInput(item.startsAt, zone),
-                      location: item.location ?? "",
-                      description: item.description ?? "",
-                    }}
-                  />
-                </div>
-              </details>
+              <EditDisclosure summary="Edit">
+                <EventForm
+                  slug={community.slug}
+                  zoneLabel={zoneLabel}
+                  item={{
+                    id: item.id,
+                    title: item.title,
+                    startsAt: toLocalInput(item.startsAt, zone),
+                    location: item.location ?? "",
+                    description: item.description ?? "",
+                    descriptionDoc: item.descriptionDoc ? JSON.stringify(item.descriptionDoc) : "",
+                  }}
+                />
+              </EditDisclosure>
               <DeleteButton
                 action={deleteEvent.bind(null, community.slug, item.id)}
                 confirmText={`Hapus agenda "${item.title}"?`}

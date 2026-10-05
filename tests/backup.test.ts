@@ -2,7 +2,7 @@
 // Run with: bun run test
 import { describe, expect, test } from "bun:test";
 import type { Prisma } from "../src/generated/prisma/client";
-import { form, jar, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
+import { doc, form, jar, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
 
 setupTestEnv();
 
@@ -31,9 +31,9 @@ describe("backup", () => {
     await m.settings.setProtectedPassword(slugA, {}, form({ password: "rahasia-rt" }));
     await m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Makassar" }));
 
-    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", body: "Minggu pagi\nbawa sapu", status: "public" }));
-    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Rencana", body: "belum final", status: "draft" }));
-    await m.events.createEvent(slugA, {}, form({ title: "Ronda malam", startsAt: "2030-01-15T19:30", location: "Pos ronda", description: "Bawa senter" }));
+    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", bodyDoc: doc("Minggu pagi\nbawa sapu"), status: "public" }));
+    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Rencana", bodyDoc: doc("belum final"), status: "draft" }));
+    await m.events.createEvent(slugA, {}, form({ title: "Ronda malam", startsAt: "2030-01-15T19:30", location: "Pos ronda", descriptionDoc: doc("Bawa senter") }));
     await m.contacts.createContact(slugA, {}, form({ name: "Ani", role: "Ketua RT", phone: "0812-3456-7890", sortOrder: "1" }));
     for (const [title, visibility] of [["Ringkasan kas", "public"], ["Rincian nunggak", "protected"], ["Draft laporan", "draft"]]) {
       await rejects(
@@ -94,8 +94,8 @@ describe("restore", () => {
 
     const content = await m.getPublicContent(community);
     expect(content.announcements.map((a) => a.title)).toEqual(["Kerja bakti"]);
-    expect(content.announcements[0].body).toBe("Minggu pagi\nbawa sapu");
-    expect(content.events[0]).toMatchObject({ title: "Ronda malam", location: "Pos ronda", description: "Bawa senter" });
+    expect(content.announcements[0].excerpt).toBe("Minggu pagi bawa sapu");
+    expect(content.events[0]).toMatchObject({ title: "Ronda malam", location: "Pos ronda", excerpt: "Bawa senter" });
     expect(content.contacts).toEqual([expect.objectContaining({ name: "Ani", role: "Ketua RT", phone: "0812-3456-7890" })]);
     expect(content.datasets.map((d) => d.title).sort()).toEqual(["Rincian nunggak", "Ringkasan kas"]);
 

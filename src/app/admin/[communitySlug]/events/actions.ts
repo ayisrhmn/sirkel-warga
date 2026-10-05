@@ -8,28 +8,32 @@ import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { getString, requireUuid } from "@/lib/form";
 import { revalidateCommunity } from "@/lib/revalidate";
+import { parseRichDoc } from "@/lib/rich-text";
+import { Prisma } from "@/generated/prisma/client";
 
 function parse(formData: FormData, zone: TimeZone) {
   const title = getString(formData, "title");
   const startsAtInput = getString(formData, "startsAt");
   const location = getString(formData, "location");
-  const description = getString(formData, "description");
-  const values = { title, startsAt: startsAtInput, location, description };
+  const descriptionJson = getString(formData, "descriptionDoc");
+  const values = { title, startsAt: startsAtInput, location, descriptionDoc: descriptionJson };
 
   if (title.length < 3 || title.length > 120)
     return { error: "Judul 3-120 karakter.", values };
   const startsAt = parseLocalInput(startsAtInput, zone);
   if (!startsAt) return { error: "Tanggal dan jam tidak valid.", values };
   if (location.length > 120) return { error: "Lokasi maksimal 120 karakter.", values };
-  if (description.length > 1000)
-    return { error: "Keterangan maksimal 1000 karakter.", values };
+  const description = parseRichDoc(descriptionJson, { maxText: 5000, allowEmpty: true });
+  if ("error" in description)
+    return { error: `Keterangan: ${description.error.toLowerCase()}`, values };
 
   return {
     data: {
       title,
       startsAt,
       location: location || null,
-      description: description || null,
+      description: description.text || null,
+      descriptionDoc: description.text ? description.doc : Prisma.DbNull,
     },
     values,
   };

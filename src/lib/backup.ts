@@ -1,5 +1,6 @@
 import { validateDatasetInput, type DatasetInput } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
+import { parseRichDoc, type RichDoc } from "@/lib/rich-text";
 
 // A full backup of one community. It holds the content, not the secrets: no
 // password hashes and no accounts, only a list of who the members were. That
@@ -13,6 +14,7 @@ export type Backup = {
   announcements: {
     title: string;
     body: string;
+    bodyDoc?: RichDoc | null; // absent in backups made before rich text
     status: "draft" | "public";
     publishedAt: string;
   }[];
@@ -21,6 +23,7 @@ export type Backup = {
     startsAt: string;
     location: string | null;
     description: string | null;
+    descriptionDoc?: RichDoc | null;
   }[];
   contacts: { name: string; role: string; phone: string; sortOrder: number }[];
   datasets: DatasetInput[];
@@ -45,12 +48,12 @@ export async function buildBackup(community: {
     db.announcement.findMany({
       where,
       orderBy: { createdAt: "asc" },
-      select: { title: true, body: true, status: true, publishedAt: true },
+      select: { title: true, body: true, bodyDoc: true, status: true, publishedAt: true },
     }),
     db.event.findMany({
       where,
       orderBy: { startsAt: "asc" },
-      select: { title: true, startsAt: true, location: true, description: true },
+      select: { title: true, startsAt: true, location: true, description: true, descriptionDoc: true },
     }),
     db.contact.findMany({
       where,
@@ -72,9 +75,14 @@ export async function buildBackup(community: {
     members: members.map((m) => ({ ...m.user, role: m.role })),
     announcements: announcements.map((a) => ({
       ...a,
+      bodyDoc: a.bodyDoc as RichDoc | null,
       publishedAt: a.publishedAt.toISOString(),
     })),
-    events: events.map((e) => ({ ...e, startsAt: e.startsAt.toISOString() })),
+    events: events.map((e) => ({
+      ...e,
+      descriptionDoc: e.descriptionDoc as RichDoc | null,
+      startsAt: e.startsAt.toISOString(),
+    })),
     contacts,
     datasets: datasets.map((d) => ({
       title: d.title,
@@ -95,6 +103,12 @@ const text = (v: unknown, min: number, max: number) =>
   typeof v === "string" && v.length >= min && v.length <= max;
 const optionalText = (v: unknown, max: number) => v === null || text(v, 0, max);
 const isoDate = (v: unknown) => typeof v === "string" && !Number.isNaN(Date.parse(v));
+
+const cleanDoc = (value: unknown): RichDoc | null => {
+  if (value == null) return null;
+  const parsed = parseRichDoc(value, { maxText: 5000, allowEmpty: true });
+  return "doc" in parsed && parsed.text !== "" ? parsed.doc : null;
+};
 
 // Reads a backup file. Everything in it is validated again with the same
 // rules as the forms: the file may have been edited or come from anywhere.
@@ -124,7 +138,7 @@ export function parseBackup(raw: string): { error: string } | { data: Backup } {
   }
   for (const e of events) {
     if (!isObj(e) || !text(e.title, 3, 120) || !isoDate(e.startsAt) ||
-        !optionalText(e.location, 120) || !optionalText(e.description, 1000))
+        !optionalText(e.location, 120) || !optionalText(e.description, 5000))
       return bad;
   }
   for (const c of contacts) {
@@ -152,8 +166,15 @@ export function parseBackup(raw: string): { error: string } | { data: Backup } {
         timezone: typeof community.timezone === "string" ? community.timezone : undefined,
       },
       members: [], // informational only, never restored
-      announcements: announcements as Backup["announcements"],
-      events: events as Backup["events"],
+      // The documents are rebuilt from the allow-list, like on every save.
+      announcements: (announcements as Obj[]).map((a): Backup["announcements"][number] => ({
+        ...(a as Backup["announcements"][number]),
+        bodyDoc: cleanDoc(a.bodyDoc),
+      })),
+      events: (events as Obj[]).map((e): Backup["events"][number] => ({
+        ...(e as Backup["events"][number]),
+        descriptionDoc: cleanDoc(e.descriptionDoc),
+      })),
       contacts: contacts as Backup["contacts"],
       datasets: checked,
     },

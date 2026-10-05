@@ -2,16 +2,18 @@ import { unstable_cache } from "next/cache";
 import { communityTag } from "@/lib/communities";
 import { asTimeZone, startOfToday } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
+import { excerpt } from "@/lib/rich-text";
 
 // Dates are ISO strings: cached values go through JSON.
 export type PublicContent = {
-  announcements: { id: string; title: string; body: string; publishedAt: string }[];
+  // Previews only: the full text is on the detail page.
+  announcements: { id: string; title: string; excerpt: string; publishedAt: string }[];
   events: {
     id: string;
     title: string;
     startsAt: string;
     location: string | null;
-    description: string | null;
+    excerpt: string;
   }[];
   contacts: { id: string; name: string; role: string; phone: string }[];
   // Titles only: the rows of a dataset are fetched on its own page.
@@ -59,11 +61,16 @@ export function getPublicContent(community: { id: string; slug: string; timezone
         }),
       ]);
       return {
-        announcements: announcements.map((a) => ({
+        announcements: announcements.map(({ body, ...a }) => ({
           ...a,
+          excerpt: excerpt(body),
           publishedAt: a.publishedAt.toISOString(),
         })),
-        events: events.map((e) => ({ ...e, startsAt: e.startsAt.toISOString() })),
+        events: events.map(({ description, ...e }) => ({
+          ...e,
+          excerpt: excerpt(description),
+          startsAt: e.startsAt.toISOString(),
+        })),
         contacts,
         datasets: datasets.map((d) => ({
           ...d,

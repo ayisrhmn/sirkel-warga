@@ -265,8 +265,8 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau admin.
 
 **E1. Pengumuman: draft dan publik**
-- Menu "Pengumuman": buat "Kerja bakti" isi dua baris ("Minggu pagi" lalu baris baru "bawa sapu"), status Publik. Buat "Rencana rahasia", status Draft.
-- Buka `/dawis-matahari-sektor-3`. Diharapkan: hanya "Kerja bakti" tampil, tanggalnya hari ini (format "5 Oktober 2026"), dan baris baru terjaga. "Rencana rahasia" tidak tampil.
+- Menu "Pengumuman": buat "Kerja bakti" isi dua paragraf ("Minggu pagi", Enter, "bawa sapu") di editor teks, status Publik. Buat "Rencana rahasia", status Draft.
+- Buka `/dawis-matahari-sektor-3`. Diharapkan: hanya "Kerja bakti" tampil dengan cuplikan isinya ("Minggu pagi bawa sapu"), tanggalnya hari ini (format "5 Oktober 2026"), dan tautan "Baca selengkapnya". "Rencana rahasia" tidak tampil.
 - [ ] Lolos
 
 **E2. [Prioritas] Perubahan langsung tampil di halaman publik**
@@ -276,8 +276,8 @@ Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau 
 - [ ] Lolos
 
 **E3. Validasi pengumuman**
-- Judul "ab" → "Judul 3-120 karakter." Isi kosong tidak bisa dikirim. Saat error, isi form tidak hilang.
-- Setelah simpan sukses di form tambah, pesan "Pengumuman disimpan." muncul dan form kosong kembali.
+- Judul "ab" → "Judul 3-120 karakter." Isi dikosongkan → pesan merah "Isi pengumuman: isi tidak boleh kosong." Saat error, judul dan isi editor tidak hilang.
+- Setelah simpan sukses di form tambah, pesan "Pengumuman disimpan." muncul dan form kosong kembali, **termasuk editor teksnya**.
 - [ ] Lolos
 
 **E4. Agenda dan zona waktu**
@@ -287,6 +287,17 @@ Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau 
 - Tanggal dikosongkan → ditolak browser (kolom wajib diisi).
 - Buka form Edit agenda: tanggal dan jam yang terisi sama dengan yang diinput (tidak bergeser).
 - Label kolom tanggal berbunyi "Tanggal dan jam (WIB)". Di Pengaturan → "Zona waktu", pilih WITA lalu simpan: label berubah jadi WITA dan jam agenda yang ditampilkan bertambah satu jam (momen kejadiannya sama). Agenda baru yang diisi 19:30 tampil sebagai 19.30 WITA. Kembalikan ke WIB setelahnya. Buat komunitas baru: ada pilihan zona waktu di formulirnya.
+- [ ] Lolos
+
+**E4b. [Prioritas] Editor teks dan halaman detail**
+- Di form tambah pengumuman, editor punya tombol: tebal, miring, judul besar, judul kecil, daftar poin, daftar angka, kutipan, tautan, urungkan, ulangi. Tombol yang sedang aktif di posisi kursor berwarna gelap.
+- Tulis: satu judul besar, satu paragraf dengan kata **tebal** dan *miring*, daftar poin dua butir, daftar angka, dan satu tautan (pilih teks, klik tombol tautan, isi `https://example.com`). Status Publik, simpan.
+- Di halaman komunitas, klik judul pengumuman atau "Baca selengkapnya": halaman `/dawis-matahari-sektor-3/announcements/<id>` menampilkan judul, tanggal, dan isi **dengan format yang sama** (judul besar, tebal, miring, poin, angka). Tautan terbuka di tab baru.
+- Tautan dengan `javascript:alert(1)`: tidak jadi tautan (teksnya saja). Tempel teks `<script>alert(1)</script>` di editor: tampil sebagai teks biasa, tidak menjalankan apa pun.
+- Pengumuman Draft: alamat detailnya memberi 404 bagi warga (Incognito).
+- Ulangi untuk Agenda: keterangan memakai editor yang sama (opsional, boleh kosong), dan `/dawis-matahari-sektor-3/events/<id>` menampilkan tanggal, lokasi, dan keterangan. Agenda yang sudah lewat tetap bisa dibuka lewat alamatnya walau tidak tampil di daftar.
+- Buka "Edit" pada pengumuman lama (dibuat sebelum editor ada): isinya muncul di editor, tiap baris menjadi satu paragraf. Daftar edit tidak berat: editor baru dimuat setelah "Edit" dibuka.
+- Setelah "Simpan perubahan", pesan hijau muncul dan isi editor tetap. Unduh cadangan lalu pulihkan di komunitas baru: format isinya tetap.
 - [ ] Lolos
 
 **E5. Kontak penting**
@@ -542,7 +553,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | B. Akun dan persetujuan | 8 | | | |
 | C. Komunitas | 5 | | | |
 | D. Role, isolasi, cadangan, akses darurat, dan platform admin | 11 | | | |
-| E. Konten publik | 7 | | | |
+| E. Konten publik | 8 | | | |
 | F. Laporan dari Excel | 13 | | | |
 | G. Laporan dilindungi | 8 | | | |
 | H. Tampilan, error, dan HP | 5 | | | |

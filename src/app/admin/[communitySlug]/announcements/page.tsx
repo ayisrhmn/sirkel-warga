@@ -1,4 +1,5 @@
 import { DeleteButton } from "@/components/delete-button";
+import { EditDisclosure } from "@/components/edit-disclosure";
 import { requireMember } from "@/lib/access";
 import { asTimeZone, formatDate } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
@@ -14,7 +15,7 @@ export default async function AnnouncementsPage({
   const items = await getDb().announcement.findMany({
     where: { communityId: community.id },
     orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, body: true, status: true, publishedAt: true },
+    select: { id: true, title: true, body: true, bodyDoc: true, status: true, publishedAt: true },
   });
 
   return (
@@ -42,20 +43,18 @@ export default async function AnnouncementsPage({
                     : "Draft"}
                 </p>
               </div>
-              <details>
-                <summary className="cursor-pointer underline">Edit</summary>
-                <div className="mt-3">
-                  <AnnouncementForm
-                    slug={community.slug}
-                    item={{
-                      id: item.id,
-                      title: item.title,
-                      body: item.body,
-                      status: item.status,
-                    }}
-                  />
-                </div>
-              </details>
+              <EditDisclosure summary="Edit">
+                <AnnouncementForm
+                  slug={community.slug}
+                  item={{
+                    id: item.id,
+                    title: item.title,
+                    body: item.body,
+                    bodyDoc: item.bodyDoc ? JSON.stringify(item.bodyDoc) : "",
+                    status: item.status,
+                  }}
+                />
+              </EditDisclosure>
               <DeleteButton
                 action={deleteAnnouncement.bind(null, community.slug, item.id)}
                 confirmText={`Hapus pengumuman "${item.title}"?`}

@@ -42,9 +42,16 @@ export default async function CommunityPage({
         {announcements.length === 0 && <p className={muted}>Belum ada pengumuman.</p>}
         {announcements.map((a) => (
           <article key={a.id} className={card}>
-            <h3 className="font-medium">{a.title}</h3>
+            <h3 className="font-medium">
+              <Link href={`/${community.slug}/announcements/${a.id}`} className="underline">
+                {a.title}
+              </Link>
+            </h3>
             <p className={`text-sm ${muted}`}>{formatDate(a.publishedAt, zone)}</p>
-            <p className="mt-2 whitespace-pre-line">{a.body}</p>
+            {a.excerpt && <p className="mt-2">{a.excerpt}</p>}
+            <Link href={`/${community.slug}/announcements/${a.id}`} className="mt-2 inline-block text-sm underline">
+              Baca selengkapnya
+            </Link>
           </article>
         ))}
       </section>
@@ -54,12 +61,17 @@ export default async function CommunityPage({
         {events.length === 0 && <p className={muted}>Belum ada agenda.</p>}
         {events.map((e) => (
           <article key={e.id} className={card}>
-            <h3 className="font-medium">{e.title}</h3>
+            <h3 className="font-medium">
+              <Link href={`/${community.slug}/events/${e.id}`} className="underline">
+                {e.title}
+              </Link>
+            </h3>
             <p className={`text-sm ${muted}`}>{formatDateTime(e.startsAt, zone)}</p>
             {e.location && <p className="text-sm">{e.location}</p>}
-            {e.description && (
-              <p className="mt-2 whitespace-pre-line">{e.description}</p>
-            )}
+            {e.excerpt && <p className="mt-2">{e.excerpt}</p>}
+            <Link href={`/${community.slug}/events/${e.id}`} className="mt-2 inline-block text-sm underline">
+              Baca selengkapnya
+            </Link>
           </article>
         ))}
       </section>

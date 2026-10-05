@@ -1,7 +1,7 @@
 // Integration test for the platform admin: no communities of their own, but
 // forced access to any community. Run with: bun run test
 import { describe, expect, test } from "bun:test";
-import { form, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
+import { doc, form, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
 
 setupTestEnv();
 
@@ -26,7 +26,7 @@ describe("platform admin", () => {
       await rejects(m.createCommunity({}, form({ name, slug })), `REDIRECT:/admin/${slug}`);
     }
     await login("owner_a");
-    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", body: "Minggu pagi", status: "public" }));
+    await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", bodyDoc: doc("Minggu pagi"), status: "public" }));
 
     await register("ops");
     await m.db.user.update({ where: { username: "ops" }, data: { isPlatformAdmin: true } });
@@ -63,7 +63,7 @@ describe("platform admin", () => {
     expect((await m.settings.setTimezone(slugB, {}, form({ timezone: "Asia/Makassar" }))).ok).toBeDefined();
     expect((await m.db.community.findUniqueOrThrow({ where: { slug: slugB } })).name).toBe("RT 05 Melati Baru");
 
-    expect((await m.announcements.createAnnouncement(slugB, {}, form({ title: "Dari platform", body: "isi", status: "public" }))).ok).toBeDefined();
+    expect((await m.announcements.createAnnouncement(slugB, {}, form({ title: "Dari platform", bodyDoc: doc("isi"), status: "public" }))).ok).toBeDefined();
     const created = await m.users.createAdmin(slugB, {}, form({ name: "Admin B", username: "adm_b", password: PASSWORD }));
     expect(created.ok).toBeDefined();
 

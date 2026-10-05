@@ -70,7 +70,10 @@ model Announcement {
   communityId String             @map("community_id") @db.Uuid
   community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
   title       String
+  // Plain text of the document below; also what older rows have on their own.
   body        String
+  // Rich text document from the editor (see src/lib/rich-text.ts); null for old rows.
+  bodyDoc     Json?              @map("body_doc")
   publishedAt DateTime           @default(now()) @map("published_at") @db.Timestamptz(6)
   status      AnnouncementStatus @default(draft)
   createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -81,15 +84,17 @@ model Announcement {
 }
 
 model Event {
-  id          String    @id @default(uuid()) @db.Uuid
-  communityId String    @map("community_id") @db.Uuid
-  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  title       String
-  startsAt    DateTime  @map("starts_at") @db.Timestamptz(6)
-  location    String?
-  description String?
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid()) @db.Uuid
+  communityId    String    @map("community_id") @db.Uuid
+  community      Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  title          String
+  startsAt       DateTime  @map("starts_at") @db.Timestamptz(6)
+  location       String?
+  // Plain text of the document below; also what older rows have on their own.
+  description    String?
+  descriptionDoc Json?     @map("description_doc")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([communityId])
   @@map("events")
@@ -130,18 +135,18 @@ model Dataset {
 }
 
 model User {
-  id                 String    @id
+  id                 String       @id
   name               String
   email              String
-  emailVerified      Boolean   @default(false)
+  emailVerified      Boolean      @default(false)
   image              String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
   username           String?
   displayUsername    String?
-  approved           Boolean   @default(false)
-  isPlatformAdmin    Boolean   @default(false)
-  mustChangePassword Boolean   @default(false)
+  approved           Boolean      @default(false)
+  isPlatformAdmin    Boolean      @default(false)
+  mustChangePassword Boolean      @default(false)
   sessions           Session[]
   accounts           Account[]
   memberships        Membership[]

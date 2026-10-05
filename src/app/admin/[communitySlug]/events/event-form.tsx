@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Field } from "@/components/field";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import type { FormState } from "@/lib/form-state";
 import { createEvent, updateEvent } from "./actions";
 
@@ -11,7 +12,8 @@ export type EventItem = {
   title: string;
   startsAt: string; // datetime-local value in the community's zone
   location: string;
-  description: string;
+  description: string; // plain text, for rows that have no document yet
+  descriptionDoc: string; // JSON of the editor document, or ""
 };
 
 // Creates a new event, or edits `item` when given.
@@ -47,14 +49,13 @@ export function EventForm({
       <Field label="Lokasi (opsional)">
         <input name="location" defaultValue={value("location")} className={inputClass} />
       </Field>
-      <Field label="Keterangan (opsional)">
-        <textarea
-          name="description"
-          rows={3}
-          defaultValue={value("description")}
-          className={inputClass}
-        />
-      </Field>
+      <RichTextEditor
+        name="descriptionDoc"
+        label="Keterangan (opsional)"
+        defaultValue={value("descriptionDoc") ?? ""}
+        legacyText={item?.description}
+        syncKey={state}
+      />
       {state.error && <p className={errorClass}>{state.error}</p>}
       {state.ok && <p className="text-sm text-green-700">{state.ok}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>

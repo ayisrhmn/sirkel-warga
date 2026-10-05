@@ -71,6 +71,7 @@ Aturan:
 |---|---|---|
 | `/` | Landing page statis, teks persis sesuai spesifikasi | Static, cache penuh, tanpa DB |
 | `/[communitySlug]` | Halaman komunitas: pengumuman, agenda, kontak, daftar laporan | ISR, revalidate saat admin mengubah data |
+| `/[communitySlug]/announcements/[id]`, `/[communitySlug]/events/[id]` | Halaman detail pengumuman (hanya yang publik) dan agenda. Isi ditulis di editor teks (Tiptap) dan disimpan sebagai dokumen JSON yang disaring dengan daftar yang diizinkan, lalu dirender sebagai elemen React (tanpa HTML mentah) | ISR |
 | `/[communitySlug]/datasets/[id]` | Tampilan dataset `public` (tabel). Untuk `protected` hanya pemberitahuan, barisnya tidak pernah dimuat. Draft: 404 | ISR |
 | `/[communitySlug]/protected/[id]` (Fase 3) | Tampilan dataset `protected` setelah password benar | Dynamic penuh, `no-store`. Dipisah dari route publik supaya route publik tetap bisa di-cache (membaca cookie membuat seluruh route dinamis) |
 | `/register` | Pendaftaran akun (status menunggu persetujuan) | Dynamic, `noindex` |

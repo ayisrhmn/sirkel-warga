@@ -97,12 +97,18 @@ export async function restoreCommunity(
         await tx.announcement.createMany({
           data: backup.announcements.map((a) => ({
             ...a,
+            bodyDoc: a.bodyDoc ?? undefined,
             publishedAt: new Date(a.publishedAt),
             communityId,
           })),
         });
         await tx.event.createMany({
-          data: backup.events.map((e) => ({ ...e, startsAt: new Date(e.startsAt), communityId })),
+          data: backup.events.map((e) => ({
+            ...e,
+            descriptionDoc: e.descriptionDoc ?? undefined,
+            startsAt: new Date(e.startsAt),
+            communityId,
+          })),
         });
         await tx.contact.createMany({
           data: backup.contacts.map((c) => ({ ...c, communityId })),

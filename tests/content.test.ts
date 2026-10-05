@@ -1,7 +1,7 @@
 // Integration test for announcements, events, contacts, and the public page
 // data. Run with: bun run test
 import { describe, expect, test } from "bun:test";
-import { form, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
+import { doc, form, login, m, PASSWORD, register, rejects, setupTestEnv } from "./helpers";
 
 setupTestEnv();
 
@@ -37,9 +37,9 @@ describe("setup", () => {
 describe("announcements", () => {
   test("only public announcements reach the public page; admins can manage them", async () => {
     await login("adm_a");
-    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "ab", body: "x", status: "public" }))).error).toBeDefined();
-    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", body: "Minggu pagi\nbawa sapu", status: "public" }))).ok).toBeDefined();
-    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "Rencana rahasia", body: "belum final", status: "draft" }))).ok).toBeDefined();
+    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "ab", bodyDoc: doc("x"), status: "public" }))).error).toBeDefined();
+    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", bodyDoc: doc("Minggu pagi\nbawa sapu"), status: "public" }))).ok).toBeDefined();
+    expect((await m.announcements.createAnnouncement(slugA, {}, form({ title: "Rencana rahasia", bodyDoc: doc("belum final"), status: "draft" }))).ok).toBeDefined();
 
     expect((await publicOf(slugA)).announcements.map((a) => a.title)).toEqual(["Kerja bakti"]);
   });
@@ -47,7 +47,7 @@ describe("announcements", () => {
   test("publishing a draft shows it and sets its public date", async () => {
     const draft = await m.db.announcement.findFirstOrThrow({ where: { title: "Rencana rahasia" } });
     const before = draft.publishedAt;
-    const result = await m.announcements.updateAnnouncement(slugA, draft.id, {}, form({ title: "Rencana final", body: "sudah final", status: "public" }));
+    const result = await m.announcements.updateAnnouncement(slugA, draft.id, {}, form({ title: "Rencana final", bodyDoc: doc("sudah final"), status: "public" }));
     expect(result.ok).toBeDefined();
 
     const updated = await m.db.announcement.findUniqueOrThrow({ where: { id: draft.id } });
@@ -66,14 +66,14 @@ describe("announcements", () => {
 
 describe("events", () => {
   test("only upcoming events reach the public page, in WIB", async () => {
-    await m.events.createEvent(slugA, {}, form({ title: "Ronda malam", startsAt: day(3), location: "Pos ronda", description: "" }));
-    await m.events.createEvent(slugA, {}, form({ title: "Posyandu lama", startsAt: day(-10), location: "", description: "" }));
-    expect((await m.events.createEvent(slugA, {}, form({ title: "Rusak", startsAt: "besok", location: "", description: "" }))).error).toBeDefined();
+    await m.events.createEvent(slugA, {}, form({ title: "Ronda malam", startsAt: day(3), location: "Pos ronda", descriptionDoc: doc("") }));
+    await m.events.createEvent(slugA, {}, form({ title: "Posyandu lama", startsAt: day(-10), location: "", descriptionDoc: doc("") }));
+    expect((await m.events.createEvent(slugA, {}, form({ title: "Rusak", startsAt: "besok", location: "", descriptionDoc: doc("") }))).error).toBeDefined();
 
     const events = (await publicOf(slugA)).events;
     expect(events.map((e) => e.title)).toEqual(["Ronda malam"]);
     expect(events[0].location).toBe("Pos ronda");
-    expect(events[0].description).toBeNull();
+    expect(events[0].excerpt).toBe("");
     // 19:30 WIB is 12:30 UTC.
     expect(new Date(events[0].startsAt).getUTCHours()).toBe(12);
   });
@@ -99,14 +99,14 @@ describe("isolation between communities", () => {
 
     // Through A's slug: not a member.
     await rejects(m.announcements.deleteAnnouncement(slugA, announcement.id), NOT_FOUND);
-    await rejects(m.events.updateEvent(slugA, event.id, {}, form({ title: "Hijack", startsAt: day(1), location: "", description: "" })), NOT_FOUND);
+    await rejects(m.events.updateEvent(slugA, event.id, {}, form({ title: "Hijack", startsAt: day(1), location: "", descriptionDoc: doc("") })), NOT_FOUND);
     await rejects(m.contacts.createContact(slugA, {}, form({ name: "Evil", role: "Spy", phone: "0000000", sortOrder: "0" })), NOT_FOUND);
 
     // Through B's own slug but A's row ids: the row is not in B.
     await rejects(m.announcements.deleteAnnouncement(slugB, announcement.id), NOT_FOUND);
-    await rejects(m.announcements.updateAnnouncement(slugB, announcement.id, {}, form({ title: "Hijacked", body: "x", status: "public" })), NOT_FOUND);
+    await rejects(m.announcements.updateAnnouncement(slugB, announcement.id, {}, form({ title: "Hijacked", bodyDoc: doc("x"), status: "public" })), NOT_FOUND);
     await rejects(m.events.deleteEvent(slugB, event.id), NOT_FOUND);
-    await rejects(m.events.updateEvent(slugB, event.id, {}, form({ title: "Hijack", startsAt: day(1), location: "", description: "" })), NOT_FOUND);
+    await rejects(m.events.updateEvent(slugB, event.id, {}, form({ title: "Hijack", startsAt: day(1), location: "", descriptionDoc: doc("") })), NOT_FOUND);
     await rejects(m.contacts.deleteContact(slugB, contact.id), NOT_FOUND);
     await rejects(m.contacts.updateContact(slugB, contact.id, {}, form({ name: "Hijack", role: "Spy", phone: "0000000", sortOrder: "0" })), NOT_FOUND);
 
@@ -117,7 +117,7 @@ describe("isolation between communities", () => {
   });
 
   test("each public page only contains its own community's content", async () => {
-    await m.announcements.createAnnouncement(slugB, {}, form({ title: "Rapat RT 05", body: "Jumat malam", status: "public" }));
+    await m.announcements.createAnnouncement(slugB, {}, form({ title: "Rapat RT 05", bodyDoc: doc("Jumat malam"), status: "public" }));
     expect((await publicOf(slugB)).announcements.map((a) => a.title)).toEqual(["Rapat RT 05"]);
     expect((await publicOf(slugB)).contacts).toEqual([]);
     expect((await publicOf(slugA)).announcements.map((a) => a.title)).toEqual(["Kerja bakti"]);
@@ -140,7 +140,7 @@ describe("time zone per community", () => {
 
   test("event times are read in the community's zone and stored as exact moments", async () => {
     await login("owner_a");
-    await m.events.createEvent(slugA, {}, form({ title: "Rapat WITA", startsAt: day(5), location: "", description: "" }));
+    await m.events.createEvent(slugA, {}, form({ title: "Rapat WITA", startsAt: day(5), location: "", descriptionDoc: doc("") }));
     const stored = await m.db.event.findFirstOrThrow({ where: { title: "Rapat WITA" } });
     // 19:30 in WITA (UTC+8) is 11:30 UTC; in WIB it was 12:30 UTC.
     expect(stored.startsAt.getUTCHours()).toBe(11);
