@@ -38,12 +38,25 @@ export default async function SettingsPage({
         <ProtectedPasswordForm slug={community.slug} />
       </section>
       <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-bold">Cadangan</h2>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          Berisi pengumuman, agenda, kontak, dan semua laporan (termasuk yang
+          dilindungi). Password dan akun tidak ikut. Simpan di tempat yang
+          aman, bukan di grup chat. Bisa dipulihkan lewat halaman Buat
+          komunitas.
+        </p>
+        <a href={`/admin/${community.slug}/backup`} className="w-fit underline">
+          Unduh cadangan lengkap (JSON)
+        </a>
+      </section>
+      <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-red-600 dark:text-red-400">
           Hapus komunitas
         </h2>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           Semua data komunitas dan akun admin-nya ikut terhapus. Tidak bisa
-          dibatalkan.
+          dibatalkan dari sini. <strong>Unduh cadangan lengkap di atas dulu</strong>:
+          itu satu-satunya cara memulihkannya.
         </p>
         <DeleteCommunityForm slug={community.slug} />
       </section>

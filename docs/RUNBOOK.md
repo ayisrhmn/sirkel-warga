@@ -84,14 +84,28 @@ Hal lain yang bisa dilakukan lewat database bila perlu:
 | Menyetujui akun yang menunggu | Halaman `/platform`, atau `bun run user:promote <username>` (ini sekaligus menjadikannya platform admin, jadi pakai `/platform` untuk akun biasa). |
 | Melihat apakah migrasi sudah diterapkan | `DIRECT_URL='...' bunx prisma migrate status` |
 
-## 5. Cadangan
+## 5. Cadangan dan pemulihan
 
-Paket Free Neon tidak bisa diandalkan sebagai cadangan. Satu-satunya cadangan yang kita punya adalah ekspor dari aplikasi:
+Paket Free Neon tidak bisa diandalkan sebagai cadangan, jadi cadangan dari aplikasi adalah satu-satunya pengaman.
 
-- **Semua laporan satu komunitas (JSON):** menu **Laporan**, link **Unduh cadangan semua laporan (JSON)**.
-- **Satu laporan (CSV):** halaman detail laporan, link **Unduh CSV**.
+| Cadangan | Siapa | Di mana | Isi |
+|---|---|---|---|
+| **Cadangan lengkap (JSON)** | Super admin | Menu **Pengaturan**, atau link di ringkasan admin | Info komunitas, pengumuman (termasuk draft), agenda, kontak, semua laporan (termasuk Dilindungi dan draft), dan daftar nama anggota |
+| Cadangan laporan (JSON) | Semua pengurus | Menu **Laporan** | Semua laporan komunitas |
+| CSV satu laporan | Semua pengurus | Detail laporan | Satu tabel, bisa dibuka di Excel |
 
-Pengumuman, agenda, kontak, dan akun belum punya ekspor. Kebiasaan yang disarankan: unduh cadangan laporan setiap kali selesai mengimpor laporan penting, dan simpan di tempat yang aman (jangan di repo).
+Yang **tidak** ada di cadangan, dengan sengaja: password (hash password laporan dilindungi maupun akun) dan akun pengguna. Dengan begitu file cadangan tidak membocorkan kredensial. Tetap simpan di tempat yang aman, bukan di grup chat, karena isinya memuat data laporan yang dilindungi.
+
+### Memulihkan komunitas
+1. Super admin yang komunitasnya terhapus (atau database baru) login, lalu buka `/create-community`. Halaman ini hanya bisa dipakai akun yang belum punya komunitas.
+2. Di bagian **Atau pulihkan dari cadangan**, pilih file `.json`. Kosongkan kolom slug untuk memakai slug di cadangan, atau isi slug lain bila slug lama sudah dipakai.
+3. Komunitas kembali dengan semua isinya, dan pemulih menjadi super admin-nya. Halaman publik langsung tampil.
+4. Setelah itu, lakukan dua hal karena keduanya tidak ada di cadangan: atur lagi **password laporan dilindungi** di Pengaturan, dan buat ulang **akun admin** di menu Pengguna (daftar nama anggota lama ada di dalam file cadangan sebagai pengingat).
+
+### Kebiasaan yang disarankan
+- Unduh cadangan lengkap sebelum perubahan besar (impor laporan, hapus data) dan secara berkala, mis. awal tiap bulan.
+- Setiap super admin menyimpan cadangan komunitasnya sendiri. Platform admin tidak otomatis punya salinan semua komunitas, jadi bila seluruh database hilang, pemulihan dilakukan per komunitas dari file masing-masing.
+- Uji pemulihan sekali di awal (lihat skenario D9 di [QA.md](QA.md)), supaya prosesnya sudah dikenal sebelum dibutuhkan.
 
 ## 6. Perilaku yang wajar
 

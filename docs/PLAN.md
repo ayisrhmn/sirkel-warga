@@ -183,7 +183,7 @@ Login warga, pembayaran iuran, chart, notifikasi, role selain super admin dan ad
 
 - **Excel bendahara berantakan.** Struktur bisa berubah tiap bulan. Preview dan pemilihan header manual adalah mitigasinya.
 - **Cold start Neon Free.** Compute tertidur setelah 5 menit idle, sehingga request pertama bisa lambat. ISR mengurangi dampaknya untuk halaman publik.
-- **Tanpa backup otomatis.** Tombol export di Fase 2 adalah satu-satunya cadangan. Perlu rutinitas manual atau penjadwalan di kemudian hari.
+- **Tanpa backup otomatis.** Pengaman yang ada: cadangan lengkap per komunitas (JSON, super admin) yang bisa dipulihkan lewat `/create-community`, plus ekspor laporan. Cadangan tidak berisi password dan akun, dan tetap manual: perlu kebiasaan mengunduh secara berkala. Penjadwalan otomatis belum ada.
 - **Kebocoran data `protected` lewat cache.** Dimitigasi dengan dynamic rendering, `no-store`, dan pengujian eksplisit di Fase 3.
 - **Kebocoran data antar komunitas.** Risiko terbesar dari sistem multi-komunitas: satu query tanpa filter `community_id` membocorkan data. Dimitigasi dengan satu pintu `requireMember` dan pengujian lintas komunitas di Fase 1B.
 - **Tidak ada reset password lewat email.** Super admin yang lupa password harus direset manual oleh platform admin. Password awal admin dikirim lewat chat, sehingga wajib diganti saat login pertama.

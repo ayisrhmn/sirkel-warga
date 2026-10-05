@@ -6,7 +6,7 @@ export default async function CommunityAdminPage({
   params,
 }: PageProps<"/admin/[communitySlug]">) {
   const { communitySlug } = await params;
-  const { community } = await requireMember(communitySlug);
+  const { community, role } = await requireMember(communitySlug);
 
   const where = { communityId: community.id };
   const db = getDb();
@@ -51,6 +51,16 @@ export default async function CommunityAdminPage({
           : {datasets}
         </li>
       </ul>
+      {role === "owner" && (
+        <p className="text-sm">
+          <a href={`${base}/backup`} className="underline">
+            Unduh cadangan lengkap
+          </a>{" "}
+          <span className="text-neutral-600 dark:text-neutral-400">
+            sebelum perubahan besar dan secara berkala.
+          </span>
+        </p>
+      )}
     </main>
   );
 }

@@ -147,7 +147,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 
 ---
 
-## D. Role dan isolasi komunitas
+## D. Role, isolasi, dan cadangan
 
 Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komunitas satu pengumuman agar ada data (lihat bagian E).
 
@@ -201,6 +201,18 @@ Siapkan: Komunitas 1 (`qa_owner1`) dan Komunitas 2 (`qa_owner2`). Beri tiap komu
 **D8. Menghapus komunitas**
 - Buat admin baru `qa_admin_hapus` di Komunitas 1. Lalu di "Pengaturan" bagian "Hapus komunitas": ketik slug yang salah → "Ketik slug komunitas dengan benar untuk menghapus."; ketik slug benar → klik hapus.
 - Diharapkan: dialihkan ke `/admin` ("Kamu belum punya komunitas."), `/dawis-matahari-sektor-3` menjadi 404, akun `qa_admin_hapus` tidak bisa login, akun `qa_owner1` masih bisa login dan boleh membuat komunitas baru. Komunitas 2 tetap utuh.
+- Bagian "Hapus komunitas" memuat peringatan untuk mengunduh cadangan lengkap dulu. Lakukan D9 sebelum skenario ini bila ingin menguji pemulihan.
+- [ ] Lolos
+
+**D9. [Prioritas] Cadangan lengkap dan pemulihan**
+- Siapkan Komunitas 1 dengan isi: pengumuman publik dan draft, agenda, kontak, satu laporan Publik, satu Dilindungi, satu Draft, password laporan dilindungi sudah diatur, dan satu admin.
+- Sebagai `qa_owner1`: Pengaturan → "Unduh cadangan lengkap (JSON)". Link yang sama ada di ringkasan admin. Diharapkan unduhan `dawis-matahari-sektor-3-cadangan-<tanggal>.json`.
+- Buka file itu di editor teks. Harus ada: pengumuman (termasuk draft), agenda, kontak, ketiga laporan, dan daftar nama anggota. **Tidak boleh ada**: kata "scrypt", password apa pun, atau id internal.
+- Sebagai `qa_admin1` (admin biasa): buka `/admin/dawis-matahari-sektor-3/backup` langsung → 404. Tanpa login → `/login`. Super admin komunitas lain → 404.
+- Hapus Komunitas 1 (D8). Lalu, masih login sebagai `qa_owner1`, buka `/create-community` dan di bagian "Atau pulihkan dari cadangan" pilih file tadi, klik "Pulihkan komunitas".
+- Diharapkan: masuk ke `/admin/dawis-matahari-sektor-3`. Pengumuman publik dan draft, agenda, kontak, dan ketiga laporan kembali persis seperti semula (status Publik/Dilindungi/Draft sama, isi tabel sama). Halaman publik `/dawis-matahari-sektor-3` langsung tampil. Yang **tidak** kembali: password laporan dilindungi (Pengaturan menyatakan belum diatur) dan akun `qa_admin1`.
+- Coba pulihkan lagi saat sudah punya komunitas: "Kamu sudah punya komunitas." Dengan akun lain tanpa komunitas, memakai file yang sama dan slug yang sudah dipakai: "Slug sudah dipakai. Isi slug lain di bawah." lalu isi slug lain, berhasil.
+- File yang bukan cadangan (mis. `5-bukan-excel.xlsx` atau JSON sembarang): "File cadangan tidak valid." dan tidak ada komunitas baru.
 - [ ] Lolos
 
 ---
@@ -311,7 +323,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 
 **F10. Ekspor cadangan**
 - Di detail laporan: "Unduh CSV" → file `.csv`, buka di Excel/Sheets: kolom benar, huruf dan angka utuh (baris TOTAL ada).
-- Di daftar laporan: "Unduh cadangan semua laporan (JSON)" → file `.json` berisi komunitas, dan semua laporan lengkap dengan kolom dan baris (termasuk yang draft dan dilindungi).
+- Di daftar laporan: "Unduh cadangan semua laporan (JSON)" → file `.json` berisi komunitas, dan semua laporan lengkap dengan kolom dan baris (termasuk yang draft dan dilindungi). Cadangan seluruh komunitas ada di skenario D9.
 - Tanpa login, buka URL export langsung: dialihkan ke `/login`. Login sebagai user komunitas lain lalu buka URL export komunitas ini: 404.
 - [ ] Lolos
 
@@ -435,7 +447,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | A. Halaman publik dasar | 3 | | | |
 | B. Akun dan persetujuan | 8 | | | |
 | C. Komunitas | 5 | | | |
-| D. Role dan isolasi | 8 | | | |
+| D. Role, isolasi, dan cadangan | 9 | | | |
 | E. Konten publik | 7 | | | |
 | F. Laporan dari Excel | 10 | | | |
 | G. Laporan dilindungi | 8 | | | |

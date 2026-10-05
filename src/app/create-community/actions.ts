@@ -3,6 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
+import { BACKUP_MAX_BYTES, parseBackup } from "@/lib/backup";
 import { communityTag } from "@/lib/communities";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
@@ -45,6 +46,74 @@ export async function createCommunity(
   }
 
   // Drop any cached "not found" for this slug so the public page shows up now.
+  updateTag(communityTag(slug));
+  revalidatePath(`/${slug}`);
+  redirect(`/admin/${slug}`);
+}
+
+// Recreates a community from a backup file: the uploader becomes its owner.
+// Accounts are not part of a backup, so admins must be created again.
+export async function restoreCommunity(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser();
+  const db = getDb();
+  if ((await db.membership.count({ where: { userId: user.id } })) > 0)
+    return { error: "Kamu sudah punya komunitas." };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0)
+    return { error: "Pilih file cadangan (.json)." };
+  if (file.size > BACKUP_MAX_BYTES) return { error: "File terlalu besar." };
+
+  const parsed = parseBackup(await file.text());
+  if ("error" in parsed) return { error: parsed.error };
+  const backup = parsed.data;
+
+  const slug = (String(formData.get("slug") ?? "").trim() || backup.community.slug).toLowerCase();
+  const slugError = validateSlug(slug);
+  if (slugError) return { error: slugError, values: { slug } };
+
+  try {
+    await db.$transaction(
+      async (tx) => {
+        const community = await tx.community.create({
+          data: {
+            slug,
+            name: backup.community.name,
+            memberships: { create: { userId: user.id, role: "owner" } },
+          },
+        });
+        const communityId = community.id;
+        await tx.announcement.createMany({
+          data: backup.announcements.map((a) => ({
+            ...a,
+            publishedAt: new Date(a.publishedAt),
+            communityId,
+          })),
+        });
+        await tx.event.createMany({
+          data: backup.events.map((e) => ({ ...e, startsAt: new Date(e.startsAt), communityId })),
+        });
+        await tx.contact.createMany({
+          data: backup.contacts.map((c) => ({ ...c, communityId })),
+        });
+        await tx.dataset.createMany({
+          data: backup.datasets.map((d) => ({ ...d, communityId })),
+        });
+      },
+      { timeout: 30_000 },
+    );
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    )
+      return { error: "Slug sudah dipakai. Isi slug lain di bawah.", values: { slug } };
+    throw error;
+  }
+
   updateTag(communityTag(slug));
   revalidatePath(`/${slug}`);
   redirect(`/admin/${slug}`);

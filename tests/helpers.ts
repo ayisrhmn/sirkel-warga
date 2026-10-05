@@ -64,6 +64,8 @@ export type Modules = {
   unlockDatasets: typeof import("../src/app/[communitySlug]/protected/[id]/actions").unlockDatasets;
   getProtectedDataset: typeof import("../src/lib/protected-dataset").getProtectedDataset;
   access: typeof import("../src/lib/protected-access");
+  restoreCommunity: typeof import("../src/app/create-community/actions").restoreCommunity;
+  backupRoute: typeof import("../src/app/admin/[communitySlug]/backup/route").GET;
 };
 export let m: Modules;
 
@@ -106,6 +108,8 @@ async function setup() {
     unlockDatasets: (await import("../src/app/[communitySlug]/protected/[id]/actions")).unlockDatasets,
     getProtectedDataset: (await import("../src/lib/protected-dataset")).getProtectedDataset,
     access: await import("../src/lib/protected-access"),
+    restoreCommunity: (await import("../src/app/create-community/actions")).restoreCommunity,
+    backupRoute: (await import("../src/app/admin/[communitySlug]/backup/route")).GET,
   };
   await m.db.$executeRawUnsafe('TRUNCATE "user", "communities", "rateLimit" CASCADE');
   jar.clear();
