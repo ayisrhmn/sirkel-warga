@@ -50,6 +50,33 @@ describe("DataTable", () => {
     expect(html).toMatch(/<th[^>]*px-3[^>]*>Januari<\/th>/);
   });
 
+  test("on phones the pinned name column is capped at 9rem and wraps; from md up it is one line", () => {
+    const table = render(wide.columns, wide.rows).split("<table")[1];
+    const pinnedCells = table.match(/<(th|td)[^>]*sticky left-0[^>]*>/g) ?? [];
+    expect(pinnedCells.length).toBe(1 + wide.rows.length);
+    for (const cell of pinnedCells) {
+      for (const cls of ["w-36", "min-w-36", "max-w-36", "whitespace-normal", "break-words"]) expect(cell).toContain(cls);
+      for (const cls of ["md:w-auto", "md:max-w-none", "md:whitespace-nowrap"]) expect(cell).toContain(cls);
+    }
+    // Other columns still never wrap.
+    expect(table).toMatch(/<th[^>]*whitespace-nowrap[^>]*>Januari<\/th>/);
+    expect(table).not.toMatch(/<th[^>]*whitespace-nowrap[^>]*sticky/);
+  });
+
+  test("the running number is hidden on phones when a name column exists", () => {
+    const html = render(wide.columns, wide.rows);
+    expect(html).toMatch(/<th[^>]*hidden md:table-cell[^>]*>No<\/th>/);
+    const bodyRow = html.split("<tbody>")[1].split("</tr>")[0];
+    expect(bodyRow.match(/hidden md:table-cell/g)?.length).toBe(1); // only its No cell
+    expect(html).not.toMatch(/<th[^>]*hidden md:table-cell[^>]*>Nama<\/th>/);
+  });
+
+  test("without a name column the running number stays visible on phones", () => {
+    const html = render(["No", "Jan", "Feb", "Mar", "Apr"], [[1, 10, 20, 30, 40], [2, 11, 21, 31, 41]]);
+    expect(html).not.toContain("hidden md:table-cell");
+    expect(html).not.toContain("sticky");
+  });
+
   test("a narrow table has no hint and no pinned column", () => {
     const html = render(["Keterangan", "Jumlah"], [["Pemasukan", 1500000], ["Saldo", 549999.5]]);
     expect(html).not.toContain("Geser tabel");

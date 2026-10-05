@@ -21,8 +21,16 @@ export function DataTable({
   // underneath show through them. Their right edge is drawn with a border, which
   // only stays with a sticky cell when the table uses `border-separate`: in the
   // default collapsed model the borders belong to the table and scroll away.
+  // On a phone the pinned name column would take most of the screen (a long
+  // "Bapak X & Ibu Y (AH2-28)" on one line), leaving no room for the other
+  // columns. There it is fixed at 9rem and may wrap onto several lines; from md
+  // up it is one line as wide as it needs. The running number is hidden on
+  // phones when a name column exists: the name already identifies the row.
   const pin = (c: number) =>
-    c === pinned ? "sticky left-0 z-10 border-r border-neutral-300 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" : "";
+    c === pinned
+      ? "sticky left-0 z-10 border-r border-neutral-300 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)] w-36 min-w-36 max-w-36 whitespace-normal break-words md:w-auto md:min-w-0 md:max-w-none md:whitespace-nowrap"
+      : "";
+  const hideOnPhone = (c: number) => (narrow[c] && pinned >= 0 && c !== pinned ? "hidden md:table-cell" : "");
 
   return (
     <div className="flex flex-col gap-2">
@@ -39,7 +47,7 @@ export function DataTable({
                 <th
                   key={i}
                   scope="col"
-                  className={`whitespace-nowrap border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : "text-left"} font-medium ${pin(i)}`}
+                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
                 >
                   {name}
                 </th>
@@ -53,10 +61,14 @@ export function DataTable({
                   <td
                     key={c}
                     className={`${
-                      narrow[c] && typeof cell !== "number" ? "whitespace-normal break-words" : "whitespace-nowrap"
+                      c === pinned
+                        ? ""
+                        : narrow[c] && typeof cell !== "number"
+                          ? "whitespace-normal break-words"
+                          : "whitespace-nowrap"
                     } bg-inherit ${pad(c)} py-2 ${
                       narrow[c] ? "tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
-                    } ${pin(c)}`}
+                    } ${pin(c)} ${hideOnPhone(c)}`}
                   >
                     {formatCell(cell)}
                   </td>

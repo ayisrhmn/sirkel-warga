@@ -368,7 +368,8 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Geser tabel ke kanan: kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) **tetap menempel di kiri**, sedangkan kolom lain bergeser di belakangnya. **Garis tepi di kanan kolom yang menempel tetap terlihat (beserta bayangan tipis) saat digeser**, jadi jelas di mana kolom nama berakhir. Garis di bawah judul kolom juga tetap ada. Teks di bawah kolom yang menempel tidak tembus terlihat.
 - Kolom "No" ramping (selebar angkanya) dan ikut bergeser pergi (bukan yang menempel). Baris selang-seling tetap terlihat, termasuk di kolom yang menempel.
 - Halaman itu sendiri tidak ikut bergeser ke samping; hanya tabelnya.
-- **Catatan untuk dinilai:** pada HP kecil, kolom nama bisa terlalu lebar (nama gabungan panjang) sehingga sisa ruang untuk kolom bulan sempit. Catat seberapa mengganggu: berapa kolom bulan yang terlihat sekaligus.
+- **Kolom nama di HP:** di bawah 768px, kolom nama (yang menempel) dikunci selebar sekitar 144px dan teksnya **turun baris** (2 sampai 3 baris, mis. `Bapak Robi &` / `Ibu Vania` / `(AH2-28)`), bukan satu baris panjang. Kolom "No" **disembunyikan** di HP bila ada kolom nama. Catat berapa kolom bulan yang terlihat sekaligus di HP 360px (harapannya 2 sampai 3) dan apakah barisnya masih enak dibaca walau lebih tinggi. Di layar 768px ke atas, kolom nama tetap satu baris dan kolom No tampil.
+- Tabel tanpa kolom nama (mis. semua angka) tidak berubah: kolom No tetap tampil di HP.
 - [ ] Lolos
 
 **F6e. Kolom nama digabung dan kolom "No" ramping**
