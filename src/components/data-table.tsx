@@ -17,7 +17,8 @@ export function DataTable({
   // column to its content while the other columns share the rest.
   const narrow = columns.map((name, c) => isIndexColumn(name, rows, c));
   const pad = (c: number) => (narrow[c] ? "w-px px-2 text-center" : "px-3");
-  // A column of amounts is centred: its header and its numbers line up in the middle.
+  // A column of amounts (most cells are numbers) is right-aligned, header and
+  // numbers alike, so the header sits right above the numbers.
   const numeric = columns.map((_, c) => {
     const cells = rows.map((row) => row[c]).filter((cell) => cell !== null);
     return !narrow[c] && cells.length > 0 && cells.filter(isNumericCell).length >= cells.length * 0.6;
@@ -54,7 +55,7 @@ export function DataTable({
                 <th
                   key={i}
                   scope="col"
-                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : numeric[i] ? "text-center" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
+                  className={`${i === pinned ? "" : "whitespace-nowrap"} border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : numeric[i] ? "text-right" : "text-left"} font-medium ${pin(i)} ${hideOnPhone(i)}`}
                 >
                   {name}
                 </th>
@@ -74,7 +75,7 @@ export function DataTable({
                           ? "whitespace-normal break-words"
                           : "whitespace-nowrap"
                     } bg-inherit ${pad(c)} py-2 ${
-                      narrow[c] ? "tabular-nums" : numeric[c] ? "text-center tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
+                      narrow[c] ? "tabular-nums" : numeric[c] || isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)} ${hideOnPhone(c)}`}
                   >
                     {formatCell(cell)}

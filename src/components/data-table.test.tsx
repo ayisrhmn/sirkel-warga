@@ -33,16 +33,30 @@ describe("DataTable", () => {
     expect(table).not.toContain("w-max");
   });
 
-  test("a column of amounts is centred, header and numbers alike; text columns stay on the left", () => {
+  test("a column of amounts is right-aligned, header and numbers alike; text columns stay on the left", () => {
     const html = render(wide.columns, wide.rows);
-    for (const name of ["Januari", "Februari", "Maret"]) expect(html).toMatch(new RegExp(`<th[^>]*text-center[^>]*>${name}</th>`));
+    for (const name of ["Januari", "Februari", "Maret"]) expect(html).toMatch(new RegExp(`<th[^>]*text-right[^>]*>${name}</th>`));
     expect(html).toMatch(/<th[^>]*text-left[^>]*>Nama<\/th>/);
-    expect(html).not.toMatch(/<th[^>]*text-center[^>]*>Nama<\/th>/);
-    // The numbers are centred too (none is right-aligned any more), and the name cells are not.
+    expect(html).not.toMatch(/<th[^>]*text-right[^>]*>Nama<\/th>/);
     const body = html.split("<tbody>")[1];
-    expect(body).not.toContain("text-right");
-    expect((body.match(/text-center tabular-nums/g) ?? []).length).toBeGreaterThanOrEqual(wide.rows.length * 3 - 2);
-    expect(body).not.toMatch(/<td[^>]*text-center[^>]*>Bapak/);
+    expect((body.match(/text-right tabular-nums/g) ?? []).length).toBeGreaterThanOrEqual(wide.rows.length * 3 - 2);
+    expect(body).not.toMatch(/<td[^>]*text-right[^>]*>Bapak/); // names are not right-aligned
+    // The only centred cells are those of the running-number column (narrow, `w-px`).
+    const centred = body.match(/<td[^>]*text-center[^>]*>/g) ?? [];
+    expect(centred.length).toBe(wide.rows.length);
+    for (const cell of centred) expect(cell).toContain("w-px");
+  });
+
+  test("detection is per column: a mostly-numeric column follows its numbers, a text column does not", () => {
+    // "Catatan" has one stray number among text, "Jumlah" has one stray text among numbers.
+    const html = render(["Nama", "Jumlah", "Catatan", "A", "B"], [
+      ["Budi", 1000, "lunas", 1, 2],
+      ["Ani", 2000, "belum", 3, 4],
+      ["Cici", 3000, "menunggu", 5, 6],
+      ["Dodi", "-", 7, 7, 8],
+    ]);
+    expect(html).toMatch(/<th[^>]*text-right[^>]*>Jumlah<\/th>/); // 3 of 4 cells are numbers
+    expect(html).toMatch(/<th[^>]*text-left[^>]*>Catatan<\/th>/); // 1 of 4
   });
 
   test("the container scrolls sideways and a hint appears on small screens only", () => {
