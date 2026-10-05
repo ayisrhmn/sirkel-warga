@@ -202,6 +202,22 @@ function mergedCell(row: DatasetCell[], headers: string[], merge: NameMerge): Da
   return place ? `${people.join(" & ")} (${place})` : people.join(" & ");
 }
 
+// A line such as "SALDO AKHIR DES '25 ... 72000": a label sitting before the
+// name columns (usually under "No") and a number in a person column, but no
+// person. It is not a household, so it is shown the way a merged cell would
+// look: the label in the name column, the number in the column after it.
+function labelRow(row: DatasetCell[], merge: NameMerge) {
+  const first = Math.min(...merge.people);
+  const hasName = merge.people.some((c) => typeof row[c] === "string" && textOf(row[c]) !== "");
+  const number = merge.people.map((c) => row[c]).find((v) => typeof v === "number");
+  if (hasName || number === undefined) return null;
+  for (let c = 0; c < first; c++) {
+    const text = textOf(row[c]);
+    if (typeof row[c] === "string" && text) return { label: text, from: c, number: number as number };
+  }
+  return null;
+}
+
 // The rows below the header that are kept (blank ones are dropped later).
 function dataRows(grid: Grid, headerIndex: number, options: BuildOptions) {
   const start = headerIndex + (options.headerRows ?? 1);
@@ -272,12 +288,23 @@ export function buildDataset(
   );
   const width = Math.max(0, ...grid.map((row) => row.length));
   const headers = Array.from({ length: width }, (_, c) => headerName(grid, headerIndex, headerRows, c));
+  const mergedAt = columns.findIndex((c) => c.merged);
   const rows = dataRows(grid, headerIndex, options)
-    .map((row) =>
-      columns.map((c) =>
+    .map((row) => {
+      const out = columns.map((c) =>
         c.merged && options.merge ? mergedCell(row, headers, options.merge) : (row[c.index] ?? null),
-      ),
-    )
+      );
+      const label = mergedAt >= 0 && options.merge ? labelRow(row, options.merge) : null;
+      if (label) {
+        out[mergedAt] = label.label;
+        const labelAt = columns.findIndex((c) => c.index === label.from);
+        if (labelAt >= 0) out[labelAt] = null;
+        // The number goes right after the name column when that cell is free.
+        if (out[mergedAt + 1] === null) out[mergedAt + 1] = label.number;
+        else out[mergedAt] = `${label.label}: ${label.number}`;
+      }
+      return out;
+    })
     .filter((row) => row.some((v) => !isEmpty(v)));
   return { columns: columns.map((c) => c.name), rows };
 }

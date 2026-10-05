@@ -307,10 +307,20 @@ describe("merging Bapak, Ibu and Blok into one name column", () => {
     expect(rows[0][0]).toBe(1); // other columns are untouched
   });
 
-  test("a number in a person column is kept as a number, not turned into a name", () => {
-    const withBalance: Grid = [...grid, [], ["SALDO AKHIR", 72000, null, null, null]];
-    const { rows } = buildDataset(withBalance, 1, new Set(), { merge });
-    expect(rows.at(-1)).toEqual(["SALDO AKHIR", "72000", null]);
+  test("a label with a number under the name columns shows like a merged cell", () => {
+    // "SALDO AKHIR ..." sits under "No" and its number under "Bapak".
+    const withBalance: Grid = [...grid, [], ["SALDO AKHIR DES '25", 72000, null, null, null]];
+    const { columns, rows } = buildDataset(withBalance, 1, new Set(), { merge });
+    expect(columns).toEqual(["No", "Nama", "Januari"]);
+    // The label is in the (wide) name column, the number right after it, and the narrow No column is empty.
+    expect(rows.at(-1)).toEqual([null, "SALDO AKHIR DES '25", 72000]);
+    // Ordinary households are untouched.
+    expect(rows[0]).toEqual([1, "Bapak Fulan & Ibu Fulana (AH2-28)", 5000]);
+  });
+
+  test("a number under a person column with no label is kept as a plain number", () => {
+    const loose: Grid = [...grid, [], [null, 4500, null, null, null]];
+    expect(buildDataset(loose, 1, new Set(), { merge }).rows.at(-1)).toEqual([null, "4500", null]);
   });
 
   test("a summary block keeps its own label column instead of becoming a name", () => {
