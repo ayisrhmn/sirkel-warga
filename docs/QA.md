@@ -367,6 +367,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Impor file itu dan lihat pratinjau: warna latar sel data muncul sama seperti di Excel (mis. sel merah untuk yang menunggak, baris SALDO kuning). **Warna baris judul kolom tidak ikut**: judul memakai gaya tampilan Sirkel sendiri.
 - Teks di atas warna tetap terbaca (hitam di warna terang, putih di warna gelap). Warna bergaris-garis selang-seling hanya tampil di sel yang tidak berwarna.
 - Setiap sel yang kosong (kolom angka maupun teks) tampil sebagai "-" abu-abu.
+- Nilai negatif (mis. saldo -59.000, "-Rp 5.000", "-5%") tampil dengan teks **merah**. Di sel dengan latar terang (mis. kuning) tetap merah; di sel dengan latar gelap (mis. merah pekat) teksnya tetap putih supaya terbaca.
 - Simpan, lalu buka laporan di halaman publik, halaman admin, dan (untuk yang dilindungi) setelah memasukkan password: warnanya sama. Unduh cadangan (JSON) lalu pulihkan di komunitas baru: warna tetap ada. Laporan lama (dibuat sebelum fitur ini) tampil tanpa warna.
 - Catatan: hanya warna isian polos (RGB) yang terbaca. Warna dari tema Excel, warna putih, dan tebal/miring tidak dibawa.
 - [ ] Lolos

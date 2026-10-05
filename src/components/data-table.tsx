@@ -2,6 +2,7 @@ import {
   fillLookup,
   formatCell,
   isIndexColumn,
+  isNegativeCell,
   isNumericCell,
   pinnedColumn,
   readableTextColor,
@@ -80,10 +81,15 @@ export function DataTable({
               <tr key={r} className="bg-white odd:bg-neutral-100">
                 {row.map((cell, c) => {
                   const fill = fillAt.get(`${r}:${c}`);
+                  const negative = isNegativeCell(cell);
+                  // Red text, unless the cell has a dark background where
+                  // the light text colour is the only one that reads.
+                  const ink = fill ? readableTextColor(fill) : undefined;
+                  const color = negative && ink !== "#ffffff" ? "#b91c1c" : ink;
                   return (
                   <td
                     key={c}
-                    style={fill ? { backgroundColor: `#${fill}`, color: readableTextColor(fill) } : undefined}
+                    style={fill || color ? { backgroundColor: fill ? `#${fill}` : undefined, color } : undefined}
                     className={`${
                       c === pinned
                         ? ""

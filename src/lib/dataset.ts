@@ -125,6 +125,11 @@ const numberFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }
 export const isNumericCell = (cell: DatasetCell) =>
   typeof cell === "number" || (typeof cell === "string" && /^-?(Rp )?-?[\d.,]+%?$/.test(cell));
 
+// A negative amount: a number below zero, or text such as "-Rp 5.000" and "-5%".
+// An empty or zero-like value is not negative.
+export const isNegativeCell = (cell: DatasetCell) =>
+  typeof cell === "number" ? cell < 0 : typeof cell === "string" && /^-(Rp )?\d|^-?Rp -\d/.test(cell);
+
 // On a phone a wide table scrolls sideways, and the names scroll away with the
 // first columns. Pin one column that names the rows: the first of the first
 // three whose cells are mostly text (a number column such as "No" is skipped).

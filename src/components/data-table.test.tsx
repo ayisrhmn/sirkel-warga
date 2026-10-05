@@ -133,6 +133,16 @@ describe("DataTable", () => {
     expect(renderToStaticMarkup(<DataTable columns={wide.columns} rows={wide.rows} />)).not.toContain("style=");
   });
 
+  test("negative amounts are red, also on a light fill, but not on a dark one", () => {
+    const rows = [["Saldo", -59000, "-Rp 5.000", "-5%", "Rp 5.000", 0]];
+    const html = renderToStaticMarkup(<DataTable columns={["a", "b", "c", "d", "e", "f"]} rows={rows} />);
+    expect(html.match(/color:#b91c1c/g)?.length).toBe(3);
+    const light = renderToStaticMarkup(<DataTable columns={["a", "b"]} rows={[["x", -1]]} fills={[[0, 1, "FFFF00"]]} />);
+    expect(light).toContain("background-color:#FFFF00;color:#b91c1c");
+    const dark = renderToStaticMarkup(<DataTable columns={["a", "b"]} rows={[["x", -1]]} fills={[[0, 1, "FF0000"]]} />);
+    expect(dark).toContain("background-color:#FF0000;color:#ffffff");
+  });
+
   test("every empty cell shows a muted dash", () => {
     const html = render(["Nama", "Jumlah"], [["Budi", 5000], ["Ani", null], [null, 7000]]);
     expect(html.match(/>-<\/span>/g)?.length).toBe(2);
