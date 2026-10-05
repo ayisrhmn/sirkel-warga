@@ -15,7 +15,7 @@ export async function requireMember(
     where: { userId: user.id, community: { slug } },
     select: {
       role: true,
-      community: { select: { id: true, slug: true, name: true } },
+      community: { select: { id: true, slug: true, name: true, timezone: true } },
     },
   });
   if (!membership || (owner && membership.role !== "owner")) notFound();

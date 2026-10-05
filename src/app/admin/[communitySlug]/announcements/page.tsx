@@ -1,6 +1,6 @@
 import { DeleteButton } from "@/components/delete-button";
 import { requireMember } from "@/lib/access";
-import { formatDate } from "@/lib/datetime";
+import { asTimeZone, formatDate } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import { deleteAnnouncement } from "./actions";
 import { AnnouncementForm } from "./announcement-form";
@@ -38,7 +38,7 @@ export default async function AnnouncementsPage({
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {item.status === "public"
-                    ? `Publik · ${formatDate(item.publishedAt)}`
+                    ? `Publik · ${formatDate(item.publishedAt, asTimeZone(community.timezone))}`
                     : "Draft"}
                 </p>
               </div>

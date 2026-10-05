@@ -29,6 +29,7 @@ describe("backup", () => {
     await m.users.createAdmin(slugA, {}, form({ name: "Admin A", username: "adm_a", password: PASSWORD }));
     await m.db.user.update({ where: { username: "adm_a" }, data: { mustChangePassword: false } });
     await m.settings.setProtectedPassword(slugA, {}, form({ password: "rahasia-rt" }));
+    await m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Makassar" }));
 
     await m.announcements.createAnnouncement(slugA, {}, form({ title: "Kerja bakti", body: "Minggu pagi\nbawa sapu", status: "public" }));
     await m.announcements.createAnnouncement(slugA, {}, form({ title: "Rencana", body: "belum final", status: "draft" }));
@@ -49,7 +50,7 @@ describe("backup", () => {
     backupText = await response.text();
     const backup = JSON.parse(backupText);
 
-    expect(backup).toMatchObject({ format: "sirkel-backup", version: 1, community: { slug: slugA, name: "Dawis Matahari - Sektor 3" } });
+    expect(backup).toMatchObject({ format: "sirkel-backup", version: 1, community: { slug: slugA, name: "Dawis Matahari - Sektor 3", timezone: "Asia/Makassar" } });
     expect(backup.announcements.map((a: { title: string }) => a.title).sort()).toEqual(["Kerja bakti", "Rencana"]);
     expect(backup.events.length).toBe(1);
     expect(backup.contacts.length).toBe(1);
@@ -87,6 +88,7 @@ describe("restore", () => {
     const community = await m.db.community.findUniqueOrThrow({ where: { slug: slugA } });
     expect(community.name).toBe("Dawis Matahari - Sektor 3");
     expect(community.protectedPasswordHash).toBeNull(); // must be set again
+    expect(community.timezone).toBe("Asia/Makassar");
     const owner = await m.db.membership.findFirstOrThrow({ where: { communityId: community.id }, include: { user: true } });
     expect([owner.role, owner.user.username]).toEqual(["owner", "owner_a"]);
 
@@ -116,6 +118,15 @@ describe("restore", () => {
 describe("restore refusals", () => {
   test("someone who already has a community cannot restore another", async () => {
     expect((await m.restoreCommunity({}, restoreForm(backupText, "slug-lain"))).error).toBe("Kamu sudah punya komunitas.");
+  });
+
+  test("a backup made before time zones existed restores as WIB", async () => {
+    const old = JSON.parse(backupText);
+    delete old.community.timezone;
+    await register("owner_e");
+    await login("owner_e");
+    await rejects(m.restoreCommunity({}, restoreForm(JSON.stringify(old), "cadangan-lama")), "REDIRECT:/admin/cadangan-lama");
+    expect((await m.db.community.findUniqueOrThrow({ where: { slug: "cadangan-lama" } })).timezone).toBe("Asia/Jakarta");
   });
 
   test("a taken slug is refused, and another slug can be chosen", async () => {

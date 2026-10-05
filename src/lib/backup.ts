@@ -8,7 +8,7 @@ export type Backup = {
   format: "sirkel-backup";
   version: 1;
   exportedAt: string;
-  community: { slug: string; name: string };
+  community: { slug: string; name: string; timezone?: string };
   members: { username: string | null; name: string; role: "owner" | "admin" }[];
   announcements: {
     title: string;
@@ -32,6 +32,7 @@ export async function buildBackup(community: {
   id: string;
   slug: string;
   name: string;
+  timezone: string;
 }): Promise<Backup> {
   const db = getDb();
   const where = { communityId: community.id };
@@ -67,7 +68,7 @@ export async function buildBackup(community: {
     format: "sirkel-backup",
     version: 1,
     exportedAt: new Date().toISOString(),
-    community: { slug: community.slug, name: community.name },
+    community: { slug: community.slug, name: community.name, timezone: community.timezone },
     members: members.map((m) => ({ ...m.user, role: m.role })),
     announcements: announcements.map((a) => ({
       ...a,
@@ -143,7 +144,12 @@ export function parseBackup(raw: string): { error: string } | { data: Backup } {
       format: "sirkel-backup",
       version: 1,
       exportedAt: typeof json.exportedAt === "string" ? json.exportedAt : "",
-      community: { slug: community.slug as string, name: community.name as string },
+      community: {
+        slug: community.slug as string,
+        name: community.name as string,
+        // Older backups have no zone: restoring falls back to WIB.
+        timezone: typeof community.timezone === "string" ? community.timezone : undefined,
+      },
       members: [], // informational only, never restored
       announcements: announcements as Backup["announcements"],
       events: events as Backup["events"],

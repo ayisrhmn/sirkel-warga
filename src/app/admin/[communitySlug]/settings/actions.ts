@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireMember } from "@/lib/access";
 import { communityTag } from "@/lib/communities";
+import { isTimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import type { FormState } from "@/lib/form-state";
@@ -84,4 +85,22 @@ export async function setProtectedPassword(
   return {
     ok: "Password disimpan. Semua pengunjung yang sudah membuka laporan dilindungi harus memasukkan password baru.",
   };
+}
+
+// Event times are stored as exact moments, so changing the zone only changes
+// how they are shown and entered, never when they happen.
+export async function setTimezone(
+  slug: string,
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { community } = await requireMember(slug, { owner: true });
+  const timezone = String(formData.get("timezone") ?? "");
+  if (!isTimeZone(timezone)) return { error: "Zona waktu tidak valid." };
+
+  await getDb().community.update({ where: { id: community.id }, data: { timezone } });
+  updateTag(communityTag(slug));
+  revalidatePath(`/${slug}`);
+  revalidatePath(`/admin/${slug}`, "layout");
+  return { ok: "Zona waktu disimpan." };
 }

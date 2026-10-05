@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import type { FormState } from "@/lib/form-state";
+import { DEFAULT_TIME_ZONE, TIME_ZONES, type TimeZone } from "@/lib/datetime";
 import { slugify } from "@/lib/slug";
 import { createCommunity } from "./actions";
 
@@ -43,6 +44,16 @@ export function CreateCommunityForm() {
         <span className="text-sm text-neutral-600 dark:text-neutral-400">
           Tidak bisa diubah setelah dibuat. Link: /{slug || "slug-komunitas"}
         </span>
+      </label>
+      <label className="flex flex-col gap-1">
+        Zona waktu
+        <select name="timezone" defaultValue={DEFAULT_TIME_ZONE} className={inputClass}>
+          {(Object.keys(TIME_ZONES) as TimeZone[]).map((zone) => (
+            <option key={zone} value={zone}>
+              {TIME_ZONES[zone].label} (UTC+{TIME_ZONES[zone].offsetHours})
+            </option>
+          ))}
+        </select>
       </label>
       {state.error && <p className={errorClass}>{state.error}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>

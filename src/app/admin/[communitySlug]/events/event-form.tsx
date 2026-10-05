@@ -9,13 +9,21 @@ import { createEvent, updateEvent } from "./actions";
 export type EventItem = {
   id: string;
   title: string;
-  startsAt: string; // datetime-local value, WIB
+  startsAt: string; // datetime-local value in the community's zone
   location: string;
   description: string;
 };
 
 // Creates a new event, or edits `item` when given.
-export function EventForm({ slug, item }: { slug: string; item?: EventItem }) {
+export function EventForm({
+  slug,
+  zoneLabel,
+  item,
+}: {
+  slug: string;
+  zoneLabel: string;
+  item?: EventItem;
+}) {
   const [state, action, pending] = useActionState(
     item ? updateEvent.bind(null, slug, item.id) : createEvent.bind(null, slug),
     {} as FormState,
@@ -27,7 +35,7 @@ export function EventForm({ slug, item }: { slug: string; item?: EventItem }) {
       <Field label="Judul">
         <input name="title" required defaultValue={value("title")} className={inputClass} />
       </Field>
-      <Field label="Tanggal dan jam (WIB)">
+      <Field label={`Tanggal dan jam (${zoneLabel})`}>
         <input
           name="startsAt"
           type="datetime-local"

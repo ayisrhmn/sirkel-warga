@@ -1,9 +1,11 @@
 import { requireMember } from "@/lib/access";
+import { asTimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import {
   DeleteCommunityForm,
   ProtectedPasswordForm,
   RenameCommunityForm,
+  TimezoneForm,
 } from "./settings-forms";
 
 export default async function SettingsPage({
@@ -25,6 +27,14 @@ export default async function SettingsPage({
           Slug <span className="font-mono">/{community.slug}</span> tidak bisa
           diubah.
         </p>
+      </section>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-bold">Zona waktu</h2>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          Jam agenda diisi dan ditampilkan dalam zona ini. Mengubahnya hanya
+          mengubah tampilan jam, bukan waktu kejadian agenda yang sudah ada.
+        </p>
+        <TimezoneForm slug={community.slug} timezone={asTimeZone(community.timezone)} />
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Password laporan dilindungi</h2>

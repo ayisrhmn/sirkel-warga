@@ -1,6 +1,6 @@
 import { DeleteButton } from "@/components/delete-button";
 import { requireMember } from "@/lib/access";
-import { formatDateTime, toWibInput } from "@/lib/datetime";
+import { asTimeZone, formatDateTime, TIME_ZONES, toLocalInput } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import { deleteEvent } from "./actions";
 import { EventForm } from "./event-form";
@@ -11,6 +11,8 @@ export default async function EventsPage({
   const { communitySlug } = await params;
   const { community } = await requireMember(communitySlug);
 
+  const zone = asTimeZone(community.timezone);
+  const zoneLabel = TIME_ZONES[zone].label;
   const items = await getDb().event.findMany({
     where: { communityId: community.id },
     orderBy: { startsAt: "desc" },
@@ -27,7 +29,7 @@ export default async function EventsPage({
     <main className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Tambah agenda</h2>
-        <EventForm slug={community.slug} />
+        <EventForm slug={community.slug} zoneLabel={zoneLabel} />
       </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">Agenda ({items.length})</h2>
@@ -43,7 +45,7 @@ export default async function EventsPage({
               <div>
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  {formatDateTime(item.startsAt)}
+                  {formatDateTime(item.startsAt, zone)}
                 </p>
               </div>
               <details>
@@ -51,10 +53,11 @@ export default async function EventsPage({
                 <div className="mt-3">
                   <EventForm
                     slug={community.slug}
+                    zoneLabel={zoneLabel}
                     item={{
                       id: item.id,
                       title: item.title,
-                      startsAt: toWibInput(item.startsAt),
+                      startsAt: toLocalInput(item.startsAt, zone),
                       location: item.location ?? "",
                       description: item.description ?? "",
                     }}

@@ -27,6 +27,9 @@ model Community {
   // Immutable after creation (changing it requires a redirect).
   slug                  String         @unique
   name                  String
+  // IANA name of the community's Indonesian time zone (Asia/Jakarta = WIB,
+  // Asia/Makassar = WITA, Asia/Jayapura = WIT). Event times use it.
+  timezone              String         @default("Asia/Jakarta")
   // scrypt hash for the `protected` datasets of this community (Phase 3).
   protectedPasswordHash String?        @map("protected_password_hash")
   createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)

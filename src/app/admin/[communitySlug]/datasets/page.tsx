@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireMember } from "@/lib/access";
 import { VISIBILITY_LABEL } from "@/lib/dataset";
-import { formatDate } from "@/lib/datetime";
+import { asTimeZone, formatDate } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 
 export default async function DatasetsPage({
@@ -49,7 +49,7 @@ export default async function DatasetsPage({
               {[
                 item.period,
                 VISIBILITY_LABEL[item.visibility],
-                `Diimpor ${formatDate(item.createdAt)}`,
+                `Diimpor ${formatDate(item.createdAt, asTimeZone(community.timezone))}`,
               ]
                 .filter(Boolean)
                 .join(" · ")}

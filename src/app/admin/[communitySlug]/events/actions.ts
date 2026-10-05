@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { requireMember } from "@/lib/access";
-import { parseWibInput } from "@/lib/datetime";
+import { asTimeZone, parseLocalInput, type TimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { getString, requireUuid } from "@/lib/form";
 import { revalidateCommunity } from "@/lib/revalidate";
 
-function parse(formData: FormData) {
+function parse(formData: FormData, zone: TimeZone) {
   const title = getString(formData, "title");
   const startsAtInput = getString(formData, "startsAt");
   const location = getString(formData, "location");
@@ -18,7 +18,7 @@ function parse(formData: FormData) {
 
   if (title.length < 3 || title.length > 120)
     return { error: "Judul 3-120 karakter.", values };
-  const startsAt = parseWibInput(startsAtInput);
+  const startsAt = parseLocalInput(startsAtInput, zone);
   if (!startsAt) return { error: "Tanggal dan jam tidak valid.", values };
   if (location.length > 120) return { error: "Lokasi maksimal 120 karakter.", values };
   if (description.length > 1000)
@@ -46,7 +46,7 @@ export async function createEvent(
   formData: FormData,
 ): Promise<FormState> {
   const { community } = await requireMember(slug);
-  const parsed = parse(formData);
+  const parsed = parse(formData, asTimeZone(community.timezone));
   if ("error" in parsed) return { error: parsed.error, values: parsed.values };
 
   await getDb().event.create({
@@ -64,7 +64,7 @@ export async function updateEvent(
 ): Promise<FormState> {
   const { community } = await requireMember(slug);
   requireUuid(id);
-  const parsed = parse(formData);
+  const parsed = parse(formData, asTimeZone(community.timezone));
   if ("error" in parsed) return { error: parsed.error, values: parsed.values };
 
   const { count } = await getDb().event.updateMany({

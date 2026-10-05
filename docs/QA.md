@@ -245,12 +245,13 @@ Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau 
 - Setelah simpan sukses di form tambah, pesan "Pengumuman disimpan." muncul dan form kosong kembali.
 - [ ] Lolos
 
-**E4. Agenda dan zona waktu WIB**
+**E4. Agenda dan zona waktu**
 - Menu "Agenda": tambah "Ronda malam", tanggal 3 hari ke depan pukul 19:30, lokasi "Pos ronda".
 - Di halaman publik: tampil dengan format seperti "Kamis, 08 Oktober 2026 pukul 19.30" (jam **19.30**, bukan 12.30 atau 02.30), lengkap lokasi.
 - Tambah agenda untuk 10 hari yang lalu: **tidak** tampil di halaman publik, tapi tetap ada di daftar admin.
 - Tanggal dikosongkan → ditolak browser (kolom wajib diisi).
 - Buka form Edit agenda: tanggal dan jam yang terisi sama dengan yang diinput (tidak bergeser).
+- Label kolom tanggal berbunyi "Tanggal dan jam (WIB)". Di Pengaturan → "Zona waktu", pilih WITA lalu simpan: label berubah jadi WITA dan jam agenda yang ditampilkan bertambah satu jam (momen kejadiannya sama). Agenda baru yang diisi 19:30 tampil sebagai 19.30 WITA. Kembalikan ke WIB setelahnya. Buat komunitas baru: ada pilihan zona waktu di formulirnya.
 - [ ] Lolos
 
 **E5. Kontak penting**
@@ -443,7 +444,6 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 - Tombol "kunci kembali" atau keluar dari laporan dilindungi: akses habis setelah 7 hari atau saat password diganti.
 - Batas percobaan yang memperhitungkan serangan dari banyak alamat IP sekaligus.
 - Reset password lewat email. Super admin yang lupa password hanya bisa direset manual oleh platform admin.
-- Perubahan zona waktu per komunitas: semua waktu WIB.
 - Paginasi di halaman publik (maksimal 20 pengumuman, 20 agenda, 50 kontak, 50 laporan).
 - Tampilan di HP sungguhan, deploy ke Vercel, dan panduan akses darurat (Fase 4).
 - Impor ulang ke laporan yang sudah ada: tiap impor membuat laporan baru.

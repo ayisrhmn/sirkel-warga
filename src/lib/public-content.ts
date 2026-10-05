@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { communityTag } from "@/lib/communities";
-import { startOfTodayWib } from "@/lib/datetime";
+import { asTimeZone, startOfToday } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 
 // Dates are ISO strings: cached values go through JSON.
@@ -21,7 +21,7 @@ export type PublicContent = {
 // Everything shown on a community's public page, cached under the same tag
 // as the community itself so one revalidation refreshes the whole page.
 // Hourly revalidation drops events that have passed.
-export function getPublicContent(community: { id: string; slug: string }) {
+export function getPublicContent(community: { id: string; slug: string; timezone: string }) {
   return unstable_cache(
     async (): Promise<PublicContent> => {
       const db = getDb();
@@ -34,7 +34,7 @@ export function getPublicContent(community: { id: string; slug: string }) {
           select: { id: true, title: true, body: true, publishedAt: true },
         }),
         db.event.findMany({
-          where: { ...where, startsAt: { gte: startOfTodayWib() } },
+          where: { ...where, startsAt: { gte: startOfToday(asTimeZone(community.timezone)) } },
           orderBy: { startsAt: "asc" },
           take: 20,
           select: {

@@ -9,6 +9,7 @@ const slugA = "dawis-matahari-sektor-3";
 const slugB = "rt-05-melati";
 const NOT_FOUND = "NOT_FOUND";
 
+const community = async (slug: string) => m.db.community.findUniqueOrThrow({ where: { slug } });
 const publicOf = async (slug: string) =>
   m.getPublicContent(await m.db.community.findUniqueOrThrow({ where: { slug } }));
 const day = (offset: number) => {
@@ -120,5 +121,58 @@ describe("isolation between communities", () => {
     expect((await publicOf(slugB)).announcements.map((a) => a.title)).toEqual(["Rapat RT 05"]);
     expect((await publicOf(slugB)).contacts).toEqual([]);
     expect((await publicOf(slugA)).announcements.map((a) => a.title)).toEqual(["Kerja bakti"]);
+  });
+});
+
+describe("time zone per community", () => {
+  test("only the super admin can change the zone, and only to a known one", async () => {
+    await login("adm_a");
+    await rejects(m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Makassar" })), NOT_FOUND);
+    await login("owner_b");
+    await rejects(m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Makassar" })), NOT_FOUND);
+
+    await login("owner_a");
+    expect((await m.settings.setTimezone(slugA, {}, form({ timezone: "Europe/Paris" }))).error).toBeDefined();
+    expect((await community(slugA)).timezone).toBe("Asia/Jakarta");
+    expect((await m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Makassar" }))).ok).toBeDefined();
+    expect((await community(slugA)).timezone).toBe("Asia/Makassar");
+  });
+
+  test("event times are read in the community's zone and stored as exact moments", async () => {
+    await login("owner_a");
+    await m.events.createEvent(slugA, {}, form({ title: "Rapat WITA", startsAt: day(5), location: "", description: "" }));
+    const stored = await m.db.event.findFirstOrThrow({ where: { title: "Rapat WITA" } });
+    // 19:30 in WITA (UTC+8) is 11:30 UTC; in WIB it was 12:30 UTC.
+    expect(stored.startsAt.getUTCHours()).toBe(11);
+    expect(stored.startsAt.getUTCMinutes()).toBe(30);
+
+    const shown = (await publicOf(slugA)).events.find((e) => e.title === "Rapat WITA");
+    expect(new Date(shown!.startsAt).getTime()).toBe(stored.startsAt.getTime());
+  });
+
+  test("changing the zone does not move existing events in time", async () => {
+    const before = await m.db.event.findFirstOrThrow({ where: { title: "Rapat WITA" } });
+    await m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Jayapura" }));
+    const after = await m.db.event.findFirstOrThrow({ where: { title: "Rapat WITA" } });
+    expect(after.startsAt.getTime()).toBe(before.startsAt.getTime());
+    await m.settings.setTimezone(slugA, {}, form({ timezone: "Asia/Jakarta" }));
+  });
+
+  test("a new community picks its zone, and an odd value falls back to WIB", async () => {
+    await register("owner_c");
+    await login("owner_c");
+    await rejects(
+      m.createCommunity({}, form({ name: "Warga Papua", slug: "warga-papua", timezone: "Asia/Jayapura" })),
+      "REDIRECT:/admin/warga-papua",
+    );
+    expect((await community("warga-papua")).timezone).toBe("Asia/Jayapura");
+
+    await register("owner_d");
+    await login("owner_d");
+    await rejects(
+      m.createCommunity({}, form({ name: "Warga Jawa", slug: "warga-jawa", timezone: "Mars/Olympus" })),
+      "REDIRECT:/admin/warga-jawa",
+    );
+    expect((await community("warga-jawa")).timezone).toBe("Asia/Jakarta");
   });
 });

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@/generated/prisma/client";
 import { BACKUP_MAX_BYTES, parseBackup } from "@/lib/backup";
 import { communityTag } from "@/lib/communities";
+import { asTimeZone } from "@/lib/datetime";
 import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { requireUser } from "@/lib/session";
@@ -17,6 +18,7 @@ export async function createCommunity(
   const user = await requireUser();
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
+  const timezone = asTimeZone(String(formData.get("timezone") ?? ""));
   const values = { name, slug };
 
   if (name.length < 3 || name.length > 80)
@@ -33,6 +35,7 @@ export async function createCommunity(
       data: {
         name,
         slug,
+        timezone,
         memberships: { create: { userId: user.id, role: "owner" } },
       },
     });
@@ -82,6 +85,7 @@ export async function restoreCommunity(
           data: {
             slug,
             name: backup.community.name,
+            timezone: asTimeZone(backup.community.timezone),
             memberships: { create: { userId: user.id, role: "owner" } },
           },
         });

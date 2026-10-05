@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCommunity } from "@/lib/communities";
-import { formatDate, formatDateTime } from "@/lib/datetime";
+import { asTimeZone, formatDate, formatDateTime } from "@/lib/datetime";
 import { getPublicContent } from "@/lib/public-content";
 import { SLUG_RE } from "@/lib/slug";
 
@@ -23,6 +23,7 @@ export default async function CommunityPage({
   if (!community) notFound();
 
   const { announcements, events, contacts, datasets } = await getPublicContent(community);
+  const zone = asTimeZone(community.timezone);
   const muted = "text-neutral-600 dark:text-neutral-400";
   const card = "rounded-md border border-neutral-300 p-3 dark:border-neutral-700";
 
@@ -36,7 +37,7 @@ export default async function CommunityPage({
         {announcements.map((a) => (
           <article key={a.id} className={card}>
             <h3 className="font-medium">{a.title}</h3>
-            <p className={`text-sm ${muted}`}>{formatDate(a.publishedAt)}</p>
+            <p className={`text-sm ${muted}`}>{formatDate(a.publishedAt, zone)}</p>
             <p className="mt-2 whitespace-pre-line">{a.body}</p>
           </article>
         ))}
@@ -48,7 +49,7 @@ export default async function CommunityPage({
         {events.map((e) => (
           <article key={e.id} className={card}>
             <h3 className="font-medium">{e.title}</h3>
-            <p className={`text-sm ${muted}`}>{formatDateTime(e.startsAt)}</p>
+            <p className={`text-sm ${muted}`}>{formatDateTime(e.startsAt, zone)}</p>
             {e.location && <p className="text-sm">{e.location}</p>}
             {e.description && (
               <p className="mt-2 whitespace-pre-line">{e.description}</p>
