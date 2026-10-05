@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import * as XLSX from "xlsx";
 import { toCsv, validateDatasetInput } from "./dataset";
-import { buildDataset, describeColumns, guessHeaderIndex, readWorkbook, sheetToGrid } from "./excel";
+import { buildDataset, describeColumns, guessHeaderIndex, looksLikeSpreadsheet, readWorkbook, sheetToGrid } from "./excel";
 
 // A treasurer-style sheet: banner title (merged), header on row 3, an empty
 // column, a duplicate header, a vertical merge, a formula, a date, a blank
@@ -69,6 +69,21 @@ describe("excel parsing", () => {
     const ws = XLSX.utils.aoa_to_sheet([["a", "b"], [1, 2]]);
     ws["!ref"] = "A1:XFD1048576";
     expect(sheetToGrid(ws)).toEqual([["a", "b"], [1, 2]]);
+  });
+});
+
+describe("file detection", () => {
+  const bytes = (...values: number[]) => new Uint8Array(values);
+  const text = new TextEncoder().encode("ini cuma teks");
+
+  test("real .xlsx and .xls files pass, a renamed text file does not", () => {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["a"]]), "S");
+    const xlsx = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+    expect(looksLikeSpreadsheet(new Uint8Array(xlsx), "a.xlsx")).toBe(true);
+    expect(looksLikeSpreadsheet(bytes(0xd0, 0xcf, 0x11, 0xe0, 0), "a.xls")).toBe(true);
+    expect(looksLikeSpreadsheet(text, "bukan-excel.xlsx")).toBe(false);
+    expect(looksLikeSpreadsheet(text, "data.csv")).toBe(true);
   });
 });
 

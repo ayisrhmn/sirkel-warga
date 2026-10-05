@@ -86,6 +86,15 @@ export function sheetToGrid(ws: XLSX.WorkSheet): Grid {
   return grid;
 }
 
+// SheetJS reads any unknown file as CSV text, so a renamed text file would be
+// accepted as a one-cell sheet. Check the signature of real Excel files first:
+// .xlsx is a zip ("PK\x03\x04"), .xls is an OLE2 document.
+export function looksLikeSpreadsheet(bytes: Uint8Array, fileName: string) {
+  if (/\.csv$/i.test(fileName)) return true;
+  const startsWith = (...signature: number[]) => signature.every((b, i) => bytes[i] === b);
+  return startsWith(0x50, 0x4b, 0x03, 0x04) || startsWith(0xd0, 0xcf, 0x11, 0xe0);
+}
+
 export function readWorkbook(data: ArrayBuffer | Uint8Array) {
   // cellNF keeps number formats, needed to recognise date cells.
   return XLSX.read(data, { type: "array", cellNF: true });

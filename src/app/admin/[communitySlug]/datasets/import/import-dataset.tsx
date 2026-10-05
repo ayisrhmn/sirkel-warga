@@ -16,6 +16,7 @@ import {
   buildDataset,
   describeColumns,
   guessHeaderIndex,
+  looksLikeSpreadsheet,
   readWorkbook,
   sheetToGrid,
   type Grid,
@@ -57,7 +58,9 @@ export function ImportDataset({ slug }: { slug: string }) {
       return;
     }
     try {
-      const wb = readWorkbook(await file.arrayBuffer());
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (!looksLikeSpreadsheet(bytes, file.name)) throw new Error("not a spreadsheet");
+      const wb = readWorkbook(bytes);
       if (wb.SheetNames.length === 0) throw new Error("empty");
       setWorkbook(wb);
       setTitle(file.name.replace(/\.[^.]+$/, ""));

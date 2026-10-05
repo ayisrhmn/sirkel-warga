@@ -1,0 +1,95 @@
+// Generates the sample files used by docs/QA.md into docs/qa/.
+// Run with: bun scripts/make-qa-samples.ts
+import { mkdirSync, writeFileSync } from "node:fs";
+import * as XLSX from "xlsx";
+
+const OUT = "docs/qa";
+mkdirSync(OUT, { recursive: true });
+
+// Excel stores dates as days since 1899-12-30.
+const serial = (iso: string) => Math.round(Date.parse(`${iso}T00:00:00Z`) / 86_400_000) + 25569;
+const save = (name: string, wb: XLSX.WorkBook) =>
+  writeFileSync(`${OUT}/${name}`, XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
+
+// 1. A treasurer-style sheet: title banner, header on row 4, vertical merges,
+// formulas, dates, an empty column, a blank row, and a total row.
+{
+  const names = ["Budi Santoso", "Ani Wijaya", "Cici Lestari", "Dodi Prakoso", "Eka Putri", "Fajar Nugroho", "Gita Maharani", "Hendra Gunawan"];
+  const rows: unknown[][] = [
+    ["LAPORAN IURAN WARGA - OKTOBER 2026"],
+    [],
+    [],
+    ["No", "Nama Warga", "Blok", null, "Telepon", "Iuran Kebersihan", "Iuran Keamanan", "Total", "Tanggal Bayar"],
+  ];
+  names.forEach((name, i) =>
+    rows.push([i + 1, name, i < 4 ? "A" : "B", null, `0812-3456-70${i}0`, 25000, 50000, null, null]),
+  );
+  rows.splice(4 + 4, 0, []); // blank row in the middle of the data
+  rows.push(["", "TOTAL", null, null, null, null, null, null, null]);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, // title banner
+    { s: { r: 4, c: 2 }, e: { r: 7, c: 2 } }, // Blok A spans four rows
+    { s: { r: 9, c: 2 }, e: { r: 12, c: 2 } }, // Blok B spans four rows
+  ];
+  const first = 5;
+  const last = 13; // spreadsheet rows of data (1-based), including the blank row
+  for (let r = first; r <= last; r++) {
+    if (r === 9) continue; // the blank row
+    ws[`H${r}`] = { t: "n", f: `F${r}+G${r}`, v: 75000 };
+  }
+  // Paid on different days; unpaid rows stay empty.
+  [0, 1, 2, 4, 5, 6].forEach((i) => {
+    const r = first + i + (i >= 4 ? 1 : 0);
+    ws[`I${r}`] = { t: "n", v: serial(`2026-10-0${i + 1}`), z: "dd/mm/yyyy" };
+  });
+  ws[`F${last + 1}`] = { t: "n", f: "SUM(F5:F13)", v: 200000 };
+  ws[`G${last + 1}`] = { t: "n", f: "SUM(G5:G13)", v: 400000 };
+  ws[`H${last + 1}`] = { t: "n", f: "SUM(H5:H13)", v: 600000 };
+  ws["!ref"] = `A1:I${last + 1}`;
+
+  const notes = XLSX.utils.aoa_to_sheet([["Catatan bendahara"], ["Iuran dibayar paling lambat tanggal 10."]]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Iuran Oktober");
+  XLSX.utils.book_append_sheet(wb, notes, "Catatan");
+  save("1-iuran-oktober-berantakan.xlsx", wb);
+}
+
+// 2. A clean summary: the kind of sheet that is safe to make public.
+{
+  const ws = XLSX.utils.aoa_to_sheet([
+    ["Keterangan", "Jumlah (Rp)"],
+    ["Pemasukan iuran", 1500000],
+    ["Pengeluaran kebersihan", 350000.5],
+    ["Pengeluaran keamanan", 600000],
+  ]);
+  ws["A5"] = { t: "s", v: "Saldo" };
+  ws["B5"] = { t: "n", f: "B2-B3-B4", v: 549999.5 };
+  ws["!ref"] = "A1:B5";
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Ringkasan");
+  save("2-ringkasan-kas.xlsx", wb);
+}
+
+// 3. Too many rows (limit is 1000).
+{
+  const rows: unknown[][] = [["No", "Nama", "Jumlah"]];
+  for (let i = 1; i <= 1200; i++) rows.push([i, `Warga ${i}`, i * 1000]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Data");
+  save("3-terlalu-banyak-baris.xlsx", wb);
+}
+
+// 4. Too many columns (limit is 30): 35 columns, a few rows.
+{
+  const header = Array.from({ length: 35 }, (_, i) => `Kolom ${i + 1}`);
+  const rows = [header, ...Array.from({ length: 3 }, (_, r) => header.map((_, c) => (r + 1) * (c + 1)))];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Lebar");
+  save("4-terlalu-banyak-kolom.xlsx", wb);
+}
+
+// 5. Not a spreadsheet at all.
+writeFileSync(`${OUT}/5-bukan-excel.xlsx`, "ini cuma teks biasa, bukan file Excel\n");
+
+console.log(`Wrote samples to ${OUT}/`);
