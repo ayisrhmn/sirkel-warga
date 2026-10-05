@@ -11,7 +11,7 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 | Framework | Next.js (App Router) + TypeScript + Tailwind CSS | Full-stack, tidak ada backend terpisah. TanStack Start dipertimbangkan, ditolak karena ISR dan revalidate on-demand harus diatur manual lewat header cache, sementara fitur `protected` rawan bocor bila cache salah. |
 | Fetching data | Server Component untuk baca, Server Action untuk mutasi | Tidak memakai axios maupun TanStack Query pada MVP. Halaman publik tidak butuh fetch dari client. Bisa ditambahkan di area admin bila nanti diperlukan. |
 | Database | Neon Postgres (Free), region Singapore | Satu database untuk semua komunitas, dipisah lewat `community_id`. |
-| Akses DB | Prisma ORM 7 + `@prisma/adapter-neon` | Dipilih karena sudah familiar. Prisma 7 mewajibkan driver adapter, dan adapter Neon memakai `@neondatabase/serverless` lewat WebSocket. Versi dikunci di 7.10.x (stabil), karena tag `latest` untuk CLI `prisma` saat ini masih 8.0 RC. |
+| Akses DB | Prisma ORM 7 + `@prisma/adapter-pg` | Dipilih karena sudah familiar. Prisma 7 mewajibkan driver adapter. Adapter `pg` konek lewat TCP biasa, jadi kode yang sama jalan di Postgres lokal (development) dan Neon (production). Versi dikunci di 7.10.x (stabil), karena tag `latest` untuk CLI `prisma` saat ini masih 8.0 RC. |
 | Parsing Excel | SheetJS di browser admin, dipasang dari tarball CDN resmi | `npm i --save https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`. Paket `xlsx` di npm tertinggal (0.18.5) dan memiliki CVE. Versi dicek ulang sebelum install. Alternatif cadangan: `read-excel-file`. |
 | Password data `protected` | Disimpan di database per komunitas, dalam bentuk hash (`scrypt` dari `node:crypto`) | Menggantikan `PROTECTED_PASSWORD` di env. Tiap komunitas bisa punya password berbeda. |
 | Hosting | Vercel Hobby, region function `sin1` | Domain `*.vercel.app` untuk tahap awal. |
@@ -21,7 +21,7 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 
 | Nama | Fungsi |
 |---|---|
-| `DATABASE_URL` | Koneksi Neon (runtime) |
+| `DATABASE_URL` | Koneksi Postgres (runtime). Production: URL Neon pooled. Development: Postgres lokal |
 | `DIRECT_URL` | Opsional. URL Neon non-pooled untuk migrasi, dipakai bila `DATABASE_URL` adalah URL pooled |
 | `ADMIN_PASSWORD` | Password login admin (lihat pertanyaan terbuka) |
 | `COOKIE_SECRET` | Kunci penandatangan semua cookie |
