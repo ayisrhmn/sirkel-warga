@@ -2,6 +2,11 @@
   "name": "sirkel-warga",
   "version": "1.0.0",
   "private": true,
+  "author": {
+    "name": "Muhammad Fariz Rahman",
+    "email": "farizrahman30@gmail.com",
+    "url": "https://ayisrhmn.vercel.app"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
