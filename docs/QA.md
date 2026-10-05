@@ -290,8 +290,8 @@ Buat ulang Komunitas 1 jika sudah dihapus di D8. Login sebagai super admin atau 
 
 **E5. Kontak penting**
 - Menu "Kontak": tambah "Budi", peran "Ronda", telepon `0812-3456-7890`, urutan 2; tambah "Ani", peran "Ketua RT", telepon `+62 811 222 333`, urutan 1.
-- Publik: Ani tampil sebelum Budi. Nomor adalah link; di HP (atau emulasi), menekannya membuka aplikasi telepon dengan nomor tanpa spasi dan tanda hubung.
-- Telepon `halo` → "Nomor telepon 5-20 karakter (angka, +, -, spasi)." Urutan `-1` atau `1000` → "Urutan harus angka 0-999."
+- Publik: Ani tampil sebelum Budi. Setiap nomor tampil sebagai tombol dengan ikon WhatsApp. Menekannya membuka WhatsApp di tab baru ke nomor itu: `0812-3456-7890` menjadi `https://wa.me/6281234567890` dan `+62 811 222 333` menjadi `https://wa.me/62811222333` (cek alamat di status bar saat kursor di atasnya). Di HP yang punya WhatsApp, aplikasinya terbuka langsung ke chat dengan nomor itu. Nomor telepon rumah (mis. `021 ...`) tetap dibuka sebagai link WhatsApp, tapi tidak akan menemukan akun.
+- Nomor `halo` → "Nomor telepon 5-20 karakter (angka, +, -, spasi)." Label kolomnya berbunyi "Nomor WhatsApp". Urutan `-1` atau `1000` → "Urutan harus angka 0-999."
 - [ ] Lolos
 
 **E6. Halaman publik kosong**

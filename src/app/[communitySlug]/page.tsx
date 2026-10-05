@@ -1,7 +1,9 @@
+import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { CommunityNotFound } from "@/components/community-not-found";
 import { getCommunity } from "@/lib/communities";
 import { asTimeZone, formatDate, formatDateTime } from "@/lib/datetime";
+import { whatsappUrl } from "@/lib/phone";
 import { getPublicContent } from "@/lib/public-content";
 import { SLUG_RE } from "@/lib/slug";
 
@@ -92,7 +94,14 @@ export default async function CommunityPage({
               <h3 className="font-medium">{c.name}</h3>
               <p className={`text-sm ${muted}`}>{c.role}</p>
             </div>
-            <a href={`tel:${c.phone.replace(/[^\d+]/g, "")}`} className="underline">
+            <a
+              href={whatsappUrl(c.phone)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Chat WhatsApp ${c.name}, ${c.phone}`}
+              className="flex shrink-0 items-center gap-2 rounded-md border border-neutral-300 px-3 py-2"
+            >
+              <MessageCircle aria-hidden="true" size={18} />
               {c.phone}
             </a>
           </article>

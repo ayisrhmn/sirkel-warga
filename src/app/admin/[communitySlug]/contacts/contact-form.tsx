@@ -30,7 +30,7 @@ export function ContactForm({ slug, item }: { slug: string; item?: ContactItem }
       <Field label="Peran (mis. Ketua RT, Ronda, Posyandu)">
         <input name="role" required defaultValue={value("role")} className={inputClass} />
       </Field>
-      <Field label="Nomor telepon">
+      <Field label="Nomor WhatsApp (mis. 0812 3456 7890)">
         <input
           name="phone"
           type="tel"
