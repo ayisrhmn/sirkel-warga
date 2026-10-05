@@ -89,6 +89,32 @@ const save = (name: string, wb: XLSX.WorkBook) =>
   save("4-terlalu-banyak-kolom.xlsx", wb);
 }
 
+// 6. A two-row header (a merged "Iuran" over two columns), rupiah and percent
+// formats. Header rows 1-2, data from row 3.
+{
+  const ws = XLSX.utils.aoa_to_sheet([
+    ["Nama", "Blok", "Iuran", null, "Persen bayar"],
+    [null, null, "Kebersihan", "Keamanan", null],
+    ["Budi Santoso", "A", 25000, 50000, 1],
+    ["Ani Wijaya", "A", 25000, 50000, 0.5],
+    ["Cici Lestari", "B", 25000, 50000, 0.25],
+  ]);
+  ws["!merges"] = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // Nama spans both header rows
+    { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // Blok too
+    { s: { r: 0, c: 2 }, e: { r: 0, c: 3 } }, // Iuran spans two columns
+    { s: { r: 0, c: 4 }, e: { r: 1, c: 4 } }, // Persen bayar
+  ];
+  for (const r of [3, 4, 5]) {
+    ws[`C${r}`].z = '"Rp"#,##0';
+    ws[`D${r}`].z = '"Rp"#,##0';
+    ws[`E${r}`].z = "0%";
+  }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Iuran bertingkat");
+  save("6-header-bertingkat.xlsx", wb);
+}
+
 // 5. Not a spreadsheet at all.
 writeFileSync(`${OUT}/5-bukan-excel.xlsx`, "ini cuma teks biasa, bukan file Excel\n");
 

@@ -16,6 +16,28 @@ function dateText(serial: number): string {
   return d.H || d.M ? `${date} ${time}` : date;
 }
 
+const idNumber = (value: number, decimals: number) =>
+  new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value);
+
+// Digits after the decimal point in an Excel number format ("0.00%" -> 2).
+const decimalsOf = (format: string) => /0\.(0+)/.exec(format)?.[1].length ?? 0;
+
+// Percent and rupiah cells keep how the treasurer sees them: 0.25 with a
+// percent format is "25%", 1500000 with an Rp format is "Rp 1.500.000". They
+// become text, because a table of numbers cannot say "Rp" or "%" by itself.
+function formattedNumber(value: number, format: string | undefined): string | null {
+  if (!format) return null;
+  if (format.includes("%")) return `${idNumber(value * 100, decimalsOf(format))}%`;
+  if (/Rp|IDR/i.test(format)) {
+    const amount = idNumber(Math.abs(value), decimalsOf(format));
+    return `${value < 0 ? "-" : ""}Rp ${amount}`;
+  }
+  return null;
+}
+
 // Cached results are read for formulas (the value, never the formula text).
 function cellValue(cell: XLSX.CellObject | undefined): DatasetCell {
   if (!cell) return null;
@@ -24,7 +46,8 @@ function cellValue(cell: XLSX.CellObject | undefined): DatasetCell {
       const value = cell.v as number;
       if (!Number.isFinite(value)) return null;
       if (cell.z && XLSX.SSF.is_date(cell.z)) return dateText(value);
-      return Number(value.toPrecision(12)); // 0.1 + 0.2 -> 0.3
+      const clean = Number(value.toPrecision(12)); // 0.1 + 0.2 -> 0.3
+      return formattedNumber(clean, typeof cell.z === "string" ? cell.z : undefined) ?? clean;
     }
     case "s": {
       const text = String(cell.v ?? "").trim();
@@ -39,7 +62,6 @@ function cellValue(cell: XLSX.CellObject | undefined): DatasetCell {
   }
 }
 
-// ponytail: header and body only; multi-row (grouped) headers are not merged.
 const MAX_CELLS = 1_000_000;
 
 // The real extent of the data. `!ref` can claim a huge range on messy files.
@@ -121,17 +143,32 @@ export function guessHeaderIndex(grid: Grid): number {
 
 export type ColumnInfo = { index: number; name: string };
 
+// A column's name from its header rows: "Iuran" over "Kebersihan" becomes
+// "Iuran Kebersihan". Repeated parts (a merged cell) are written once.
+function headerName(grid: Grid, headerIndex: number, headerRows: number, c: number) {
+  const parts: string[] = [];
+  for (let r = headerIndex; r < headerIndex + headerRows; r++) {
+    const text = String(grid[r]?.[c] ?? "").trim();
+    if (text && text !== parts[parts.length - 1]) parts.push(text);
+  }
+  return parts.join(" ");
+}
+
 // Columns that have a header or any data below it, with unique names.
-export function describeColumns(grid: Grid, headerIndex: number): ColumnInfo[] {
-  const header = grid[headerIndex] ?? [];
-  const body = grid.slice(headerIndex + 1);
+export function describeColumns(
+  grid: Grid,
+  headerIndex: number,
+  headerRows = 1,
+): ColumnInfo[] {
+  const body = grid.slice(headerIndex + headerRows);
   const width = Math.max(0, ...grid.map((row) => row.length));
   const seen = new Map<string, number>();
   const columns: ColumnInfo[] = [];
 
   for (let c = 0; c < width; c++) {
-    if (isEmpty(header[c] ?? null) && body.every((row) => isEmpty(row[c] ?? null))) continue;
-    const base = String(header[c] ?? "").trim() || `Kolom ${c + 1}`;
+    const name = headerName(grid, headerIndex, headerRows, c);
+    if (!name && body.every((row) => isEmpty(row[c] ?? null))) continue;
+    const base = name || `Kolom ${c + 1}`;
     const count = (seen.get(base) ?? 0) + 1;
     seen.set(base, count);
     columns.push({ index: c, name: count === 1 ? base : `${base} (${count})` });
@@ -144,10 +181,13 @@ export function buildDataset(
   grid: Grid,
   headerIndex: number,
   excluded: ReadonlySet<number> = new Set(),
+  headerRows = 1,
 ) {
-  const columns = describeColumns(grid, headerIndex).filter((c) => !excluded.has(c.index));
+  const columns = describeColumns(grid, headerIndex, headerRows).filter(
+    (c) => !excluded.has(c.index),
+  );
   const rows = grid
-    .slice(headerIndex + 1)
+    .slice(headerIndex + headerRows)
     .filter((row) => row.some((v) => !isEmpty(v)))
     .map((row) => columns.map((c) => row[c.index] ?? null));
   return { columns: columns.map((c) => c.name), rows };

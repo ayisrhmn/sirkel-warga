@@ -119,3 +119,53 @@ describe("dataset validation and CSV", () => {
     expect(csv).toBe('﻿Nama,Catatan\r\n"Budi, S.","dia bilang ""ok"""\r\n"\'=HYPERLINK(""x"")",-5\r\n');
   });
 });
+
+describe("number formats and grouped headers", () => {
+  function sheetWith(cells: Record<string, XLSX.CellObject>, ref: string) {
+    const ws: XLSX.WorkSheet = { ...cells, "!ref": ref };
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "S");
+    const bytes = XLSX.write(wb, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+    return sheetToGrid(readWorkbook(bytes).Sheets["S"]);
+  }
+
+  test("percent and rupiah cells keep the way they look in Excel", () => {
+    const grid = sheetWith(
+      {
+        A1: { t: "n", v: 0.25, z: "0%" },
+        A2: { t: "n", v: 0.1234, z: "0.0%" },
+        A3: { t: "n", v: 1500000, z: '"Rp"#,##0' },
+        A4: { t: "n", v: 350000.5, z: '[$Rp-421] #,##0.00' },
+        A5: { t: "n", v: -2500, z: '"Rp"#,##0' },
+        A6: { t: "n", v: 1500000, z: "#,##0" },
+        A7: { t: "n", v: 0.5 },
+      },
+      "A1:A7",
+    );
+    expect(grid.map((row) => row[0])).toEqual(["25%", "12,3%", "Rp 1.500.000", "Rp 350.000,50", "-Rp 2.500", 1500000, 0.5]);
+  });
+
+  test("a two-row header becomes one name per column", () => {
+    const grid = sheetWith(
+      {
+        A1: { t: "s", v: "Nama" },
+        B1: { t: "s", v: "Iuran" },
+        C1: { t: "s", v: "Iuran" }, // a merged "Iuran" repeats across both columns
+        A2: { t: "s", v: "Nama" },
+        B2: { t: "s", v: "Kebersihan" },
+        C2: { t: "s", v: "Keamanan" },
+        A3: { t: "s", v: "Budi" },
+        B3: { t: "n", v: 25000 },
+        C3: { t: "n", v: 50000 },
+      },
+      "A1:C3",
+    );
+    expect(describeColumns(grid, 0, 2).map((c) => c.name)).toEqual(["Nama", "Iuran Kebersihan", "Iuran Keamanan"]);
+    expect(buildDataset(grid, 0, new Set(), 2)).toEqual({
+      columns: ["Nama", "Iuran Kebersihan", "Iuran Keamanan"],
+      rows: [["Budi", 25000, 50000]],
+    });
+    // With one header row the second row would be read as data.
+    expect(buildDataset(grid, 0).rows.length).toBe(2);
+  });
+});

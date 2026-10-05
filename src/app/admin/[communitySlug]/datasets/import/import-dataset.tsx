@@ -33,6 +33,7 @@ export function ImportDataset({ slug }: { slug: string }) {
   const [sheet, setSheet] = useState("");
   const [grid, setGrid] = useState<Grid>([]);
   const [headerIndex, setHeaderIndex] = useState(0);
+  const [headerRows, setHeaderRows] = useState(1);
   const [excluded, setExcluded] = useState<Set<number>>(new Set());
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState("");
@@ -45,6 +46,7 @@ export function ImportDataset({ slug }: { slug: string }) {
     setSheet(name);
     setGrid(nextGrid);
     setHeaderIndex(guessHeaderIndex(nextGrid));
+    setHeaderRows(1);
     setExcluded(new Set());
   }
 
@@ -70,10 +72,13 @@ export function ImportDataset({ slug }: { slug: string }) {
     }
   }
 
-  const candidates = useMemo(() => describeColumns(grid, headerIndex), [grid, headerIndex]);
+  const candidates = useMemo(
+    () => describeColumns(grid, headerIndex, headerRows),
+    [grid, headerIndex, headerRows],
+  );
   const built = useMemo(
-    () => buildDataset(grid, headerIndex, excluded),
-    [grid, headerIndex, excluded],
+    () => buildDataset(grid, headerIndex, excluded, headerRows),
+    [grid, headerIndex, excluded, headerRows],
   );
 
   function onSave() {
@@ -120,15 +125,37 @@ export function ImportDataset({ slug }: { slug: string }) {
           <section className="flex flex-col gap-2">
             <h3 className="font-medium">3. Pilih baris judul kolom</h3>
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              Baris di atasnya (judul laporan, dll.) tidak ikut disimpan.
+              Baris di atasnya (judul laporan, dll.) tidak ikut disimpan. Bila
+              judul kolomnya bertingkat (mis. &ldquo;Iuran&rdquo; di atas &ldquo;Kebersihan&rdquo;),
+              pilih baris paling atas dan naikkan jumlah baris judul.
             </p>
+            <Field label="Jumlah baris judul">
+              <select
+                value={headerRows}
+                onChange={(e) => {
+                  setHeaderRows(Number(e.target.value));
+                  setExcluded(new Set());
+                }}
+                className={inputClass}
+              >
+                {[1, 2, 3].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <div className="overflow-x-auto rounded-md border border-neutral-300 dark:border-neutral-700">
               <table className="w-full text-sm">
                 <tbody>
                   {grid.slice(0, PICKER_ROWS).map((row, r) => (
                     <tr
                       key={r}
-                      className={r === headerIndex ? "bg-yellow-100 dark:bg-yellow-900/40" : ""}
+                      className={
+                        r >= headerIndex && r < headerIndex + headerRows
+                          ? "bg-yellow-100 dark:bg-yellow-900/40"
+                          : ""
+                      }
                     >
                       <td className="px-2 py-1">
                         <input

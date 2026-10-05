@@ -24,6 +24,7 @@ Sudah ada tes otomatis (`bun run test`) untuk logika izin, isolasi komunitas, pa
 | `3-terlalu-banyak-baris.xlsx` | 1200 baris | Batas baris |
 | `4-terlalu-banyak-kolom.xlsx` | 35 kolom | Batas kolom |
 | `5-bukan-excel.xlsx` | Teks biasa yang diberi ekstensi `.xlsx` | File rusak |
+| `6-header-bertingkat.xlsx` | Judul kolom dua baris ("Iuran" di atas "Kebersihan" dan "Keamanan"), format "Rp" dan persen | Judul bertingkat dan format angka |
 
 Bikin ulang file contoh kapan saja dengan `bun scripts/make-qa-samples.ts`.
 
@@ -311,6 +312,13 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Halaman komunitas: laporan tampil dengan label "Dilindungi". Isi dan pengaturan password diuji di bagian G.
 - [ ] Lolos
 
+**F6b. Judul bertingkat dan format angka**
+- Impor `6-header-bertingkat.xlsx`. Baris 1 ter-highlight sebagai judul. Kolom yang muncul masih "Nama, Blok, Iuran, Iuran (2), Persen bayar" (satu baris judul).
+- Ubah "Jumlah baris judul" menjadi 2: baris 1 dan 2 ter-highlight, nama kolom menjadi "Nama, Blok, Iuran Kebersihan, Iuran Keamanan, Persen bayar", dan pratinjau berisi 3 baris data.
+- Nilai tampil seperti di Excel: "Rp 25.000", "Rp 50.000", dan "100%", "50%", "25%" (rata kanan).
+- Simpan, lalu buka laporan di halaman publik dan unduh CSV: nilainya sama ("Rp 25.000", "100%").
+- [ ] Lolos
+
 **F7. Edit metadata dan hapus**
 - Di detail: ganti judul dan periode, simpan → "Perubahan disimpan." dan tampilan publik ikut berubah.
 - Judul "ab" → "Judul 3-120 karakter."
@@ -327,7 +335,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - [ ] Lolos
 
 **F9. File sungguhan dari bendahara**
-- Coba file Excel asli dari bendahara RT (salin dulu, jangan pakai aslinya). Catat: apakah header terdeteksi benar, apakah ada kolom persen atau mata uang yang tampilannya berubah (format "Rp" dan "%" tidak dibawa, angka ditampilkan polos dengan titik ribuan), apakah header dua baris atau lebih terbaca wajar (hanya satu baris header yang didukung), dan apakah ada sel dengan tanggal yang salah.
+- Coba file Excel asli dari bendahara RT (salin dulu, jangan pakai aslinya). Catat: apakah header terdeteksi benar, apakah kolom persen dan "Rp" tampil seperti di Excel (format lain seperti `$` atau satuan khusus tampil sebagai angka polos dengan titik ribuan), apakah header dua atau tiga baris terbaca wajar (gunakan "Jumlah baris judul"), dan apakah ada sel dengan tanggal yang salah.
 - [ ] Dicoba, catatan: ____________________
 
 **F10. Ekspor cadangan**
@@ -457,7 +465,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 | C. Komunitas | 5 | | | |
 | D. Role, isolasi, dan cadangan | 9 | | | |
 | E. Konten publik | 7 | | | |
-| F. Laporan dari Excel | 10 | | | |
+| F. Laporan dari Excel | 11 | | | |
 | G. Laporan dilindungi | 8 | | | |
 | H. Tampilan dan HP | 4 | | | |
 | I. Keamanan dan akses | 4 | | | |

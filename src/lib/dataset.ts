@@ -79,6 +79,10 @@ export function validateDatasetInput(
 
 const numberFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
 
+// Numbers, and text such as "Rp 1.500.000" or "25%", read best right-aligned.
+export const isNumericCell = (cell: DatasetCell) =>
+  typeof cell === "number" || (typeof cell === "string" && /^-?(Rp )?-?[\d.,]+%?$/.test(cell));
+
 export const formatCell = (cell: DatasetCell) =>
   cell === null ? "" : typeof cell === "number" ? numberFormat.format(cell) : cell;
 

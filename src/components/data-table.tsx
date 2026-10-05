@@ -1,4 +1,4 @@
-import { formatCell, type DatasetCell } from "@/lib/dataset";
+import { formatCell, isNumericCell, type DatasetCell } from "@/lib/dataset";
 
 // Wide tables scroll sideways inside their own container, so the page itself
 // never scrolls horizontally on a phone.
@@ -28,7 +28,7 @@ export function DataTable({
                 <td
                   key={c}
                   className={`whitespace-nowrap px-3 py-2 ${
-                    typeof cell === "number" ? "text-right tabular-nums" : ""
+                    isNumericCell(cell) ? "text-right tabular-nums" : ""
                   }`}
                 >
                   {formatCell(cell)}
