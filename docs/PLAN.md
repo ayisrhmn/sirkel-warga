@@ -11,7 +11,7 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 | Framework | Next.js (App Router) + TypeScript + Tailwind CSS | Full-stack, tidak ada backend terpisah. TanStack Start dipertimbangkan, ditolak karena ISR dan revalidate on-demand harus diatur manual lewat header cache, sementara fitur `protected` rawan bocor bila cache salah. |
 | Fetching data | Server Component untuk baca, Server Action untuk mutasi | Tidak memakai axios maupun TanStack Query pada MVP. Halaman publik tidak butuh fetch dari client. Bisa ditambahkan di area admin bila nanti diperlukan. |
 | Database | Neon Postgres (Free), region Singapore | Satu database untuk semua komunitas, dipisah lewat `community_id`. |
-| Akses DB | `@neondatabase/serverless` + Drizzle ORM | Usulan: skema bertipe dan migrasi cukup membantu untuk 5 tabel. Bisa diganti ke SQL langsung bila dianggap berlebihan. |
+| Akses DB | Prisma ORM 7 + `@prisma/adapter-neon` | Dipilih karena sudah familiar. Prisma 7 mewajibkan driver adapter, dan adapter Neon memakai `@neondatabase/serverless` lewat WebSocket. Versi dikunci di 7.10.x (stabil), karena tag `latest` untuk CLI `prisma` saat ini masih 8.0 RC. |
 | Parsing Excel | SheetJS di browser admin, dipasang dari tarball CDN resmi | `npm i --save https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`. Paket `xlsx` di npm tertinggal (0.18.5) dan memiliki CVE. Versi dicek ulang sebelum install. Alternatif cadangan: `read-excel-file`. |
 | Password data `protected` | Disimpan di database per komunitas, dalam bentuk hash (`scrypt` dari `node:crypto`) | Menggantikan `PROTECTED_PASSWORD` di env. Tiap komunitas bisa punya password berbeda. |
 | Hosting | Vercel Hobby, region function `sin1` | Domain `*.vercel.app` untuk tahap awal. |
@@ -21,7 +21,8 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 
 | Nama | Fungsi |
 |---|---|
-| `DATABASE_URL` | Koneksi Neon |
+| `DATABASE_URL` | Koneksi Neon (runtime) |
+| `DIRECT_URL` | Opsional. URL Neon non-pooled untuk migrasi, dipakai bila `DATABASE_URL` adalah URL pooled |
 | `ADMIN_PASSWORD` | Password login admin (lihat pertanyaan terbuka) |
 | `COOKIE_SECRET` | Kunci penandatangan semua cookie |
 
@@ -77,7 +78,7 @@ Setiap fase diakhiri dengan berhenti, ringkasan hasil, dan review kode dengan te
 
 ### Fase 0 — Fondasi
 - Scaffold Next.js + TypeScript + Tailwind, ESLint, struktur folder.
-- Koneksi Neon, Drizzle, skema database, migrasi pertama, seed satu komunitas contoh.
+- Koneksi Neon, Prisma, skema database, migrasi pertama, seed satu komunitas contoh.
 - `vercel.json` dengan region `sin1`. Pastikan database Neon di Singapore.
 - Landing page `/` (statis, teks sesuai spesifikasi).
 - Route `/[communitySlug]` (kerangka, membaca komunitas dari DB), halaman "Komunitas tidak ditemukan".
@@ -129,5 +130,4 @@ Login warga, pembayaran iuran, chart, notifikasi, sistem role yang rumit, penyim
 2. Apakah struktur file Excel bendahara seragam tiap bulan atau berubah-ubah? (Menentukan apakah perlu template.)
 3. Konfirmasi persetujuan ketua RT untuk menampilkan nama penunggak (ditinjau bersama pihak terkait).
 4. Domain: `*.vercel.app` dulu. Siapa yang membayar domain tahunan dan atas nama siapa belum diputuskan.
-5. Drizzle atau SQL langsung (lihat bagian 1).
-6. Pola URL laporan dan panel admin (lihat bagian 4).
+5. Pola URL laporan dan panel admin (lihat bagian 4).

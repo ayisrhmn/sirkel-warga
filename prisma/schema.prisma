@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AnnouncementStatus {
+  draft
+  public
+
+  @@map("announcement_status")
+}
+
+enum DatasetVisibility {
+  draft
+  public
+  protected
+
+  @@map("dataset_visibility")
+}
+
+model Community {
+  id                    String         @id @default(uuid()) @db.Uuid
+  // Immutable after creation (changing it requires a redirect).
+  slug                  String         @unique
+  name                  String
+  // scrypt hash for the `protected` datasets of this community (Phase 3).
+  protectedPasswordHash String?        @map("protected_password_hash")
+  createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  announcements         Announcement[]
+  events                Event[]
+  contacts              Contact[]
+  datasets              Dataset[]
+
+  @@map("communities")
+}
+
+model Announcement {
+  id          String             @id @default(uuid()) @db.Uuid
+  communityId String             @map("community_id") @db.Uuid
+  community   Community          @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  title       String
+  body        String
+  publishedAt DateTime           @default(now()) @map("published_at") @db.Timestamptz(6)
+  status      AnnouncementStatus @default(draft)
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([communityId])
+  @@map("announcements")
+}
+
+model Event {
+  id          String    @id @default(uuid()) @db.Uuid
+  communityId String    @map("community_id") @db.Uuid
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  title       String
+  startsAt    DateTime  @map("starts_at") @db.Timestamptz(6)
+  location    String?
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([communityId])
+  @@map("events")
+}
+
+model Contact {
+  id          String    @id @default(uuid()) @db.Uuid
+  communityId String    @map("community_id") @db.Uuid
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  name        String
+  role        String
+  phone       String
+  sortOrder   Int       @default(0) @map("sort_order")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([communityId])
+  @@map("contacts")
+}
+
+model Dataset {
+  id          String            @id @default(uuid()) @db.Uuid
+  communityId String            @map("community_id") @db.Uuid
+  community   Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  title       String
+  period      String?
+  // string[] of column names / (string | number | null)[][] of rows.
+  columns     Json
+  rows        Json
+  visibility  DatasetVisibility @default(draft)
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([communityId])
+  @@map("datasets")
+}
