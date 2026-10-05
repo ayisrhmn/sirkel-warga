@@ -8,7 +8,7 @@ export default function LoginPage() {
       <LoginForm />
       <p className="text-sm text-neutral-600 dark:text-neutral-400">
         Belum punya akun?{" "}
-        <Link href="/daftar" className="underline">
+        <Link href="/register" className="underline">
           Daftar
         </Link>
       </p>

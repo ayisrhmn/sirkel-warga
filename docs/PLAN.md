@@ -15,6 +15,8 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 | Auth | Better Auth (email+password dengan plugin `username`, sesi di database) | Auth.js dipertimbangkan, ditolak: mode maintenance, v5 masih beta, dan tidak punya role per komunitas. Plugin `organization` Better Auth tidak dipakai (role bawaannya tidak cocok dan bentrok dengan tabel `communities`); role disimpan di tabel `memberships` milik kita. |
 | Parsing Excel | SheetJS di browser admin, dipasang dari tarball CDN resmi | `bun add https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`. Paket `xlsx` di npm tertinggal (0.18.5) dan memiliki CVE. Versi dicek ulang sebelum install. Alternatif cadangan: `read-excel-file`. |
 | Password data `protected` | Disimpan di database per komunitas, dalam bentuk hash (`scrypt` dari `node:crypto`) | Menggantikan `PROTECTED_PASSWORD` di env. Tiap komunitas bisa punya password berbeda. |
+| Bahasa | Kode, nama route, nama file, dan komentar dalam bahasa Inggris | Teks antarmuka untuk pengguna dan dokumen proyek tetap bahasa Indonesia. |
+| Package manager | bun | `bun install`, `bun run <script>`, `bunx`. |
 | Hosting | Vercel Hobby, region function `sin1` | Domain `*.vercel.app` untuk tahap awal. |
 | Slug komunitas | Diturunkan dari nama, tanpa akhiran acak | Contoh: "Dawis Matahari - Sektor 3" menjadi `dawis-matahari-sektor-3`. Dapat diedit sebelum disimpan, terkunci sesudahnya. Slug bukan pengaman; data sensitif dijaga password `protected`. |
 | Data nunggak | Dibuat apa adanya (nama + status), sesuai spesifikasi | Masih prototype. Akan ditinjau bersama pihak terkait sebelum dipakai warga. |
@@ -69,29 +71,29 @@ Aturan:
 |---|---|---|
 | `/` | Landing page statis, teks persis sesuai spesifikasi | Static, cache penuh, tanpa DB |
 | `/[communitySlug]` | Halaman komunitas: pengumuman, agenda, kontak, daftar laporan | ISR, revalidate saat admin mengubah data |
-| `/[communitySlug]/laporan/[id]` | Tampilan dataset | `public`: ISR. `protected`: dynamic penuh, tanpa cache |
-| `/daftar` | Pendaftaran akun (status menunggu persetujuan) | Dynamic, `noindex` |
+| `/[communitySlug]/datasets/[id]` | Tampilan dataset | `public`: ISR. `protected`: dynamic penuh, tanpa cache |
+| `/register` | Pendaftaran akun (status menunggu persetujuan) | Dynamic, `noindex` |
 | `/login` | Login, tidak ada di navigasi publik | Dynamic, `noindex` |
-| `/ganti-password` | Wajib dilalui bila `must_change_password` | Dynamic |
-| `/buat-komunitas` | Membuat komunitas (user yang sudah disetujui dan belum punya komunitas) | Dynamic |
+| `/change-password` | Wajib dilalui bila `must_change_password` | Dynamic |
+| `/create-community` | Membuat komunitas (user yang sudah disetujui dan belum punya komunitas) | Dynamic |
 | `/admin` | Daftar komunitas milik user; langsung diteruskan bila hanya satu | Dynamic |
 | `/admin/[communitySlug]` | Ringkasan dan menu | Dynamic |
-| `/admin/[communitySlug]/pengumuman`, `/agenda`, `/kontak`, `/dataset` | CRUD konten (super admin dan admin) | Dynamic |
-| `/admin/[communitySlug]/pengguna` | Tambah, reset password, hapus admin (hanya super admin) | Dynamic |
-| `/admin/[communitySlug]/pengaturan` | Nama komunitas dan password `protected` (hanya super admin) | Dynamic |
+| `/admin/[communitySlug]/announcements`, `/events`, `/contacts`, `/datasets` | CRUD konten (super admin dan admin) | Dynamic |
+| `/admin/[communitySlug]/users` | Tambah, reset password, hapus admin (hanya super admin) | Dynamic |
+| `/admin/[communitySlug]/settings` | Nama komunitas dan password `protected` (hanya super admin) | Dynamic |
 | `/platform` | Persetujuan akun baru (hanya `is_platform_admin`, yaitu pemilik proyek) | Dynamic |
 | `/api/auth/[...all]` | Endpoint Better Auth | Dynamic |
 | `/robots.txt` | `Disallow: /` untuk semua crawler | Static |
 | slug tidak ditemukan | Halaman ramah "Komunitas tidak ditemukan" | — |
 
-Slug yang dilarang (divalidasi di server saat membuat komunitas): `login`, `daftar`, `ganti-password`, `buat-komunitas`, `admin`, `platform`, `api`, `robots.txt`, `favicon.ico`, `sitemap.xml`, `_next`, dan route sistem lain yang ditambahkan kemudian. Format slug: huruf kecil, angka, dan tanda hubung.
+Slug yang dilarang (divalidasi di server saat membuat komunitas): `login`, `register`, `change-password`, `create-community`, `admin`, `platform`, `api`, `robots.txt`, `favicon.ico`, `sitemap.xml`, `_next`, dan route sistem lain yang ditambahkan kemudian. Format slug: huruf kecil, angka, dan tanda hubung.
 
 ## 5. Akun, role, dan isolasi komunitas
 
 Alur:
-1. Calon pengurus mendaftar di `/daftar` (nama, username, password). Akun berstatus **menunggu persetujuan** dan belum bisa login.
+1. Calon pengurus mendaftar di `/register` (nama, username, password). Akun berstatus **menunggu persetujuan** dan belum bisa login.
 2. Pemilik proyek (platform admin) menyetujui di `/platform`. Platform admin ditandai lewat kolom `isPlatformAdmin` yang diisi lewat `bun run user:promote <username>` (tanpa UI).
-3. Setelah disetujui, user login dan membuat komunitas di `/buat-komunitas`. Pembuat otomatis menjadi **super admin** (`owner`) komunitas itu. Batas awal: satu komunitas per user.
+3. Setelah disetujui, user login dan membuat komunitas di `/create-community`. Pembuat otomatis menjadi **super admin** (`owner`) komunitas itu. Batas awal: satu komunitas per user.
 4. Super admin menambah pengurus lain dengan **membuatkan akun langsung** (username, nama, password awal), berperan `admin` di komunitas itu saja. Akun baru wajib ganti password saat login pertama. Password awal dikirim super admin lewat chat.
 
 Hak akses:
@@ -134,15 +136,15 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 
 ### Fase 1A — Fondasi akun (selesai)
 - Pasang Better Auth, plugin `username`, kolom tambahan user (`approved`, `is_platform_admin`, `must_change_password`), tabel akun di skema Prisma, migrasi.
-- Register (`/daftar`), login (`/login`), logout. Login ditolak bila belum disetujui.
+- Register (`/register`), login (`/login`), logout. Login ditolak bila belum disetujui.
 - Halaman `/platform` untuk menyetujui akun (hanya platform admin).
 - Rate limit di database, konfigurasi header IP.
 - Selesai bila: user baru tidak bisa login sebelum disetujui, setelah disetujui bisa login dan logout, dan percobaan login berulang kena rate limit.
 
 ### Fase 1B — Komunitas, role, dan pengguna
 - Tabel `memberships`, pengecekan `requireMember(slug, role?)`.
-- `/buat-komunitas` dengan slug otomatis dari nama, validasi slug termasuk daftar terlarang, pembuat menjadi super admin. `revalidateTag` dan `revalidatePath` saat komunitas dibuat (agar 404 yang ter-cache tidak menetap).
-- `/admin` (daftar komunitas milik user), `/admin/[slug]/pengaturan` (ubah nama), `/admin/[slug]/pengguna` (tambah admin, reset password, hapus user), `/ganti-password`.
+- `/create-community` dengan slug otomatis dari nama, validasi slug termasuk daftar terlarang, pembuat menjadi super admin. `revalidateTag` dan `revalidatePath` saat komunitas dibuat (agar 404 yang ter-cache tidak menetap).
+- `/admin` (daftar komunitas milik user), `/admin/[slug]/settings` (ubah nama), `/admin/[slug]/users` (tambah admin, reset password, hapus user), `/change-password`.
 - Selesai bila: admin komunitas A tidak bisa membuka atau memanipulasi komunitas B (diuji lewat URL dan Server Action), admin biasa ditolak di halaman pengaturan dan pengguna, dan user yang dihapus langsung kehilangan akses.
 
 ### Fase 1C — Konten dan halaman publik

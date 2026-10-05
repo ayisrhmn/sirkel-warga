@@ -5,7 +5,7 @@ import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import { authClient, authMessage } from "@/lib/auth-client";
 import { usernameToEmail } from "@/lib/username";
 
-export function DaftarForm() {
+export function RegisterForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);

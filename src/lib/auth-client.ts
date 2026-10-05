@@ -8,7 +8,7 @@ export const authClient = createAuthClient({
 
 type AuthError = { code?: string; status?: number; message?: string };
 
-// Maps Better Auth errors to messages for pengurus.
+// Maps Better Auth errors to user-facing messages (Indonesian).
 export function authMessage(error: AuthError): string {
   if (error.status === 429) return "Terlalu banyak percobaan. Coba lagi sebentar lagi.";
   if (error.code === "INVALID_USERNAME_OR_PASSWORD") return "Username atau password salah.";
