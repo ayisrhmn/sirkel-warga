@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import { authClient, authMessage } from "@/lib/auth-client";
 import { passwordProblem } from "@/lib/password-policy";
@@ -80,23 +81,19 @@ export function RegisterForm({ requireCode }: { requireCode: boolean }) {
       </label>
       <label className="flex flex-col gap-1">
         Password (minimal 8 karakter)
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           required
           minLength={8}
           autoComplete="new-password"
-          className={inputClass}
         />
       </label>
       <label className="flex flex-col gap-1">
         Ulangi password
-        <input
+        <PasswordInput
           name="confirm"
-          type="password"
           required
           autoComplete="new-password"
-          className={inputClass}
         />
       </label>
       {error && <p className={errorClass}>{error}</p>}

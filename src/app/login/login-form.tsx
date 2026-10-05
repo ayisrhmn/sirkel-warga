@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
 import { authClient, authMessage } from "@/lib/auth-client";
 
@@ -42,12 +43,10 @@ export function LoginForm() {
       </label>
       <label className="flex flex-col gap-1">
         Password
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           required
           autoComplete="current-password"
-          className={inputClass}
         />
       </label>
       {error && <p className={errorClass}>{error}</p>}

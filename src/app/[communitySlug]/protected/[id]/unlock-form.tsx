@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { Field } from "@/components/field";
-import { buttonClass, errorClass, inputClass } from "@/components/form-styles";
+import { PasswordInput } from "@/components/password-input";
+import { buttonClass, errorClass } from "@/components/form-styles";
 import type { FormState } from "@/lib/form-state";
 import { unlockDatasets } from "./actions";
 
@@ -15,12 +16,10 @@ export function UnlockForm({ slug, id }: { slug: string; id: string }) {
   return (
     <form action={action} className="flex max-w-sm flex-col gap-3">
       <Field label="Password">
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           required
           autoComplete="off"
-          className={inputClass}
         />
       </Field>
       {state.error && <p className={errorClass}>{state.error}</p>}

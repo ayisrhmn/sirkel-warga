@@ -100,6 +100,7 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - Password 5 karakter → browser menolak (minimal 8).
 - Password yang sangat mudah ditebak, mis. `12345678`, `password123`, `qwertyui`, atau yang sama dengan atau memuat username → "Password terlalu mudah ditebak. Pakai kombinasi yang lebih panjang atau acak." Aturan yang sama berlaku saat super admin membuat atau mereset akun admin, saat ganti password, dan untuk password laporan dilindungi.
 - Username `qa_owner1` yang sudah dipakai → "Username sudah dipakai."
+- Setiap kolom password punya tombol "Tampilkan" di kanan: menekannya menampilkan isinya (tombolnya berubah jadi "Sembunyikan"), menekan lagi menyembunyikannya. Tombol itu tidak mengirim form. Ada di kolom password di `/login`, `/register`, `/change-password`, dan form buka laporan dilindungi. Coba juga di tampilan HP.
 - [ ] Lolos
 
 **B3. [Prioritas] Akun belum disetujui tidak bisa masuk**
