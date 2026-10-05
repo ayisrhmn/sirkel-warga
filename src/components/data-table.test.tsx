@@ -24,6 +24,23 @@ describe("DataTable", () => {
     for (const name of wide.columns) expect(html).toContain(`>${name}</th>`);
   });
 
+  test("the table is as wide as its content instead of being stretched to the page", () => {
+    const html = render(wide.columns, wide.rows);
+    expect(html).toContain("w-fit max-w-full overflow-x-auto"); // the frame hugs the table
+    const table = html.split("<table")[1].split(">")[0];
+    expect(table).toContain("w-max");
+    expect(table).not.toContain("w-full");
+  });
+
+  test("a column of amounts has its header on the right, text columns on the left", () => {
+    const html = render(wide.columns, wide.rows);
+    for (const name of ["Januari", "Februari", "Maret"]) expect(html).toMatch(new RegExp(`<th[^>]*text-right[^>]*>${name}</th>`));
+    expect(html).toMatch(/<th[^>]*text-left[^>]*>Nama<\/th>/);
+    expect(html).not.toMatch(/<th[^>]*text-right[^>]*>Nama<\/th>/);
+    // The running number keeps its own centred style.
+    expect(html).toMatch(/<th[^>]*text-center[^>]*>No<\/th>/);
+  });
+
   test("the container scrolls sideways and a hint appears on small screens only", () => {
     const html = render(wide.columns, wide.rows);
     expect(html).toContain("overflow-x-auto");
