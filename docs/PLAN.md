@@ -47,11 +47,11 @@ datasets     (id, community_id FK, title, period, columns jsonb, rows jsonb,
 Tabel akun (Fase 1A dan 1B):
 
 ```
-users        (dikelola Better Auth: id, name, email sintetis, username, ...
+user         (dikelola Better Auth: id, name, email sintetis, username, ...
               + approved bool default false,
-              + is_platform_admin bool default false,
-              + must_change_password bool default false)
-sessions, accounts, verifications, rate_limits   (dikelola Better Auth)
+              + isPlatformAdmin bool default false,
+              + mustChangePassword bool default false)
+session, account, verification, rateLimit   (dikelola Better Auth)
 memberships  (id, user_id FK, community_id FK, role owner|admin, created_at,
               UNIQUE(user_id, community_id))
 ```
@@ -90,7 +90,7 @@ Slug yang dilarang (divalidasi di server saat membuat komunitas): `login`, `daft
 
 Alur:
 1. Calon pengurus mendaftar di `/daftar` (nama, username, password). Akun berstatus **menunggu persetujuan** dan belum bisa login.
-2. Pemilik proyek (platform admin) menyetujui di `/platform`. Platform admin ditandai lewat kolom `is_platform_admin` yang diisi manual di database (tanpa UI).
+2. Pemilik proyek (platform admin) menyetujui di `/platform`. Platform admin ditandai lewat kolom `isPlatformAdmin` yang diisi lewat `npm run user:promote -- <username>` (tanpa UI).
 3. Setelah disetujui, user login dan membuat komunitas di `/buat-komunitas`. Pembuat otomatis menjadi **super admin** (`owner`) komunitas itu. Batas awal: satu komunitas per user.
 4. Super admin menambah pengurus lain dengan **membuatkan akun langsung** (username, nama, password awal), berperan `admin` di komunitas itu saja. Akun baru wajib ganti password saat login pertama. Password awal dikirim super admin lewat chat.
 
@@ -132,7 +132,7 @@ Setiap fase diakhiri dengan berhenti, ringkasan hasil, dan review kode dengan te
 ### Fase 0 — Fondasi (selesai)
 Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas, halaman "tidak ditemukan", `robots.txt`, header `noindex`.
 
-### Fase 1A — Fondasi akun
+### Fase 1A — Fondasi akun (selesai)
 - Pasang Better Auth, plugin `username`, kolom tambahan user (`approved`, `is_platform_admin`, `must_change_password`), tabel akun di skema Prisma, migrasi.
 - Register (`/daftar`), login (`/login`), logout. Login ditolak bila belum disetujui.
 - Halaman `/platform` untuk menyetujui akun (hanya platform admin).
