@@ -1,4 +1,3 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -9,13 +8,6 @@ import { passwordProblem } from "@/lib/password-policy";
 import { pruneRateLimitsSometimes } from "@/lib/rate-limit";
 
 const db = getDb();
-
-// Hashed first so the comparison takes the same time whatever the length.
-const sameSecret = (given: string, expected: string) =>
-  timingSafeEqual(
-    createHash("sha256").update(given).digest(),
-    createHash("sha256").update(expected).digest(),
-  );
 
 export const auth = betterAuth({
   // Production sets BETTER_AUTH_URL. Preview deployments have a different
@@ -56,19 +48,12 @@ export const auth = betterAuth({
   },
   advanced: { ipAddress: { ipAddressHeaders: ["x-forwarded-for"] } },
   hooks: {
-    // Optional gate on self-registration: when REGISTRATION_CODE is set, the
-    // sign-up request must carry it. Server-side calls (a super admin creating
-    // an admin account) have no HTTP request and are not affected.
+    // Runs for HTTP requests only. Server-side calls (a super admin creating
+    // an admin account) have no request: their passwords are checked by the
+    // actions themselves.
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.request) await pruneRateLimitsSometimes();
       if (ctx.path !== "/sign-up/email" || !ctx.request) return;
-
-      const expected = process.env.REGISTRATION_CODE;
-      if (expected) {
-        const given = ctx.request.headers.get("x-registration-code") ?? "";
-        if (!sameSecret(given, expected))
-          throw new APIError("FORBIDDEN", { message: "Kode pendaftaran salah." });
-      }
 
       const { password, username } = (ctx.body ?? {}) as { password?: unknown; username?: unknown };
       const problem = passwordProblem(

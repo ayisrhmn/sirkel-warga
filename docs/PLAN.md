@@ -30,7 +30,6 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 | `BETTER_AUTH_SECRET` | Kunci sesi dan enkripsi Better Auth |
 | `BETTER_AUTH_URL` | URL dasar aplikasi (`http://localhost:3000` di development) |
 | `COOKIE_SECRET` | Kunci penandatangan cookie akses data `protected` (Fase 3) |
-| `REGISTRATION_CODE` | Opsional. Bila diisi, pendaftaran akun (`/register`) meminta kode ini |
 
 Tidak ada variabel dengan prefix `NEXT_PUBLIC_`. `ADMIN_PASSWORD` dan `PROTECTED_PASSWORD` tidak dipakai lagi.
 

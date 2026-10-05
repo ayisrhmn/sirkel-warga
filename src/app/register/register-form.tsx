@@ -7,7 +7,7 @@ import { authClient, authMessage } from "@/lib/auth-client";
 import { passwordProblem } from "@/lib/password-policy";
 import { usernameToEmail } from "@/lib/username";
 
-export function RegisterForm({ requireCode }: { requireCode: boolean }) {
+export function RegisterForm() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
@@ -18,7 +18,6 @@ export function RegisterForm({ requireCode }: { requireCode: boolean }) {
     const name = String(form.get("name")).trim();
     const username = String(form.get("username")).trim().toLowerCase();
     const password = String(form.get("password"));
-    const code = String(form.get("code") ?? "").trim();
 
     if (!/^[a-z0-9_.]{3,30}$/.test(username)) {
       setError("Username 3-30 karakter: huruf kecil, angka, titik, atau garis bawah.");
@@ -41,7 +40,6 @@ export function RegisterForm({ requireCode }: { requireCode: boolean }) {
       password,
       name,
       username,
-      fetchOptions: requireCode ? { headers: { "x-registration-code": code } } : undefined,
     });
     setPending(false);
     if (error) setError(authMessage(error));
@@ -59,12 +57,6 @@ export function RegisterForm({ requireCode }: { requireCode: boolean }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      {requireCode && (
-        <label className="flex flex-col gap-1">
-          Kode pendaftaran (dari pengelola Sirkel)
-          <input name="code" required autoComplete="off" className={inputClass} />
-        </label>
-      )}
       <label className="flex flex-col gap-1">
         Nama
         <input name="name" required autoComplete="name" className={inputClass} />

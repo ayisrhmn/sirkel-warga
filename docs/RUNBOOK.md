@@ -11,7 +11,6 @@ Panduan operasional untuk pemilik proyek (platform admin). Semua perintah dijala
 | `BETTER_AUTH_URL` | Alamat aplikasi, mis. `https://sirkel-warga.vercel.app` (tanpa garis miring di akhir) | Vercel |
 | `BETTER_AUTH_SECRET` | Acak, `openssl rand -base64 32` | Vercel |
 | `COOKIE_SECRET` | Acak, `openssl rand -base64 32`, minimal 16 karakter | Vercel |
-| `REGISTRATION_CODE` | Opsional. Bila diisi, halaman `/register` meminta kode ini, jadi hanya orang yang kamu beri kode yang bisa mendaftar. Mencegah antrean `/platform` dibanjiri spam. Ganti kapan saja (deploy ulang). | Vercel |
 
 Jangan pernah memakai awalan `NEXT_PUBLIC_` untuk variabel apa pun. Jangan simpan secret di repo.
 
