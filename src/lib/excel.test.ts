@@ -338,7 +338,10 @@ describe("isIndexColumn", () => {
     expect(isIndexColumn("No.", [[1], [null]], 0)).toBe(true);
     expect(isIndexColumn("Nomor", [[1], [2]], 0)).toBe(true);
     expect(isIndexColumn("Jumlah", [[1], [2]], 0)).toBe(false); // not named like one
-    expect(isIndexColumn("No", [["A1"], [2]], 0)).toBe(false); // text inside
+    expect(isIndexColumn("No", [["A1"], [2]], 0)).toBe(false); // half text: not a running number
+    // A treasurer's sheet puts one label under "No" (SALDO AKHIR ...): still narrow.
+    expect(isIndexColumn("No", [[1], [2], [3], [4], ["SALDO AKHIR DES '25"]], 0)).toBe(true);
+    expect(isIndexColumn("No", [[null], [null]], 0)).toBe(false);
     expect(isIndexColumn("No", [[1.5]], 0)).toBe(false);
   });
 });

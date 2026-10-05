@@ -98,11 +98,16 @@ export function pinnedColumn(columns: string[], rows: DatasetCell[][]): number {
 }
 
 // A running number ("No") only needs as much width as its digits: shrink it
-// instead of letting the table stretch it like every other column.
+// instead of letting the table stretch it like every other column. A few stray
+// texts are tolerated (a treasurer's sheet often puts a label such as
+// "SALDO AKHIR ..." under "No"): most cells must be whole numbers.
 export function isIndexColumn(name: string, rows: DatasetCell[][], c: number): boolean {
   if (!/^(no|no\.|nomor|#)$/i.test(name.trim())) return false;
   const cells = rows.map((row) => row[c]).filter((cell) => cell !== null);
-  return cells.every((cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 10000);
+  const numbers = cells.filter(
+    (cell) => typeof cell === "number" && Number.isInteger(cell) && cell >= 0 && cell < 10000,
+  );
+  return numbers.length > 0 && numbers.length >= cells.length * 0.8;
 }
 
 export const formatCell = (cell: DatasetCell) =>

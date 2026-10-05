@@ -48,7 +48,9 @@ export function DataTable({
                 {row.map((cell, c) => (
                   <td
                     key={c}
-                    className={`whitespace-nowrap bg-inherit ${pad(c)} py-2 ${
+                    className={`${
+                      narrow[c] && typeof cell !== "number" ? "whitespace-normal break-words" : "whitespace-nowrap"
+                    } bg-inherit ${pad(c)} py-2 ${
                       narrow[c] ? "tabular-nums" : isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)}`}
                   >
