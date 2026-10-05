@@ -25,6 +25,13 @@ export async function hitRateLimit(
   return Number(rows[0].count) <= max;
 }
 
+// Gives one attempt back (a counter that should only count failures).
+export async function releaseRateLimit(key: string) {
+  await getDb().$executeRaw`
+    UPDATE "rateLimit" SET "count" = GREATEST("count" - 1, 0) WHERE "key" = ${key}
+  `;
+}
+
 export async function clearRateLimit(key: string) {
   await getDb().rateLimit.deleteMany({ where: { key } });
 }

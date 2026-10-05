@@ -15,6 +15,8 @@ export function getCommunity(slug: string) {
         select: { id: true, slug: true, name: true },
       }),
     ["community", slug],
-    { tags: [communityTag(slug)] },
+    // Also expires after an hour, so lookups of slugs that never existed (scans,
+    // typos) cannot pile up in the cache forever.
+    { tags: [communityTag(slug)], revalidate: 3600 },
   )();
 }

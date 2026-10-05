@@ -203,6 +203,49 @@ describe("attempt limit", () => {
     }
   });
 
+  test("guessing from many addresses is capped for the whole community", async () => {
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+    anonymous();
+    // 100 wrong guesses from 25 different addresses (5 each, under the per-address limit).
+    for (let i = 0; i < 100; i++) {
+      setForwardedFor(`10.0.${Math.floor(i / 5)}.1`);
+      expect((await unlock(slugA, ids.protectedA, `tebak-${i}`)).error).toBe("Password salah.");
+    }
+    // A new address is now refused, even with the right password.
+    setForwardedFor("10.9.9.9");
+    for (const password of ["tebak-lagi", "password-baru"]) {
+      expect((await unlock(slugA, ids.protectedA, password)).error).toContain("komunitas ini");
+    }
+    expect(cookieOf(communityA.id)).toBeUndefined();
+
+    // Visitors who unlocked earlier keep their access.
+    const { protectedPasswordHash } = await m.db.community.findUniqueOrThrow({ where: { id: communityA.id } });
+    jar.set(m.access.accessCookieName(communityA.id), m.access.createAccessToken(communityA.id, protectedPasswordHash!));
+    expect((await view(slugA, ids.protectedA)).state).toBe("open");
+
+    // The other community is not affected.
+    await rejects(unlock(slugB, ids.protectedB, "rahasia-b"), `REDIRECT:/${slugB}/protected/${ids.protectedB}`);
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+  }, 120_000);
+
+  test("correct passwords do not count towards the community cap", async () => {
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+    for (let i = 0; i < 30; i++) {
+      anonymous();
+      setForwardedFor(`10.1.${i}.1`);
+      await rejects(unlock(slugA, ids.protectedA, "password-baru"), `REDIRECT:/${slugA}/protected/${ids.protectedA}`);
+    }
+    // 30 successes were handed back, so all 100 wrong guesses are still available.
+    for (let i = 0; i < 100; i++) {
+      anonymous();
+      setForwardedFor(`10.2.${Math.floor(i / 5)}.1`);
+      expect((await unlock(slugA, ids.protectedA, `tebak-${i}`)).error).toBe("Password salah.");
+    }
+    setForwardedFor("10.9.9.9");
+    expect((await unlock(slugA, ids.protectedA, "tebak")).error).toContain("komunitas ini");
+    await m.db.$executeRawUnsafe('DELETE FROM "rateLimit"');
+  }, 120_000);
+
   test("parallel guesses cannot exceed the limit", async () => {
     await reset();
     setForwardedFor("192.0.2.99");

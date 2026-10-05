@@ -59,7 +59,7 @@ export async function deleteCommunity(
   redirect("/admin");
 }
 
-const PROTECTED_PASSWORD_MIN = 6;
+const PROTECTED_PASSWORD_MIN = 8;
 const PROTECTED_PASSWORD_MAX = 64;
 
 // The one password warga enter to open `protected` datasets. Only the hash is

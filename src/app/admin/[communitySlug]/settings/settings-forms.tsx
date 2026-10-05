@@ -78,9 +78,9 @@ export function ProtectedPasswordForm({ slug }: { slug: string }) {
         name="password"
         type="text"
         required
-        minLength={6}
+        minLength={8}
         autoComplete="off"
-        placeholder="Password baru (6-64 karakter)"
+        placeholder="Password baru (8-64 karakter)"
         className={inputClass}
       />
       {state.error && <p className={errorClass}>{state.error}</p>}

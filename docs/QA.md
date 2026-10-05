@@ -335,7 +335,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 
 **G1. Super admin mengatur password**
 - Login `qa_owner1`, menu "Pengaturan", bagian "Password laporan dilindungi". Sebelum diatur, tulisannya "Belum diatur: laporan berstatus Dilindungi belum bisa dibuka siapa pun."
-- Isi `abc` → "Password 6-64 karakter." (atau browser menolak). Isi `rahasia-rt`, simpan → pesan hijau tentang password disimpan. Tulisan status berubah menjadi "Password sudah diatur...".
+- Isi `abc` atau `1234567` → "Password 8-64 karakter." (atau browser menolak). Isi `rahasia-rt`, simpan → pesan hijau tentang password disimpan. Tulisan status berubah menjadi "Password sudah diatur...".
 - Admin biasa (`qa_admin1`) tidak punya menu "Pengaturan" dan `/admin/dawis-matahari-sektor-3/settings` memberi 404.
 - [ ] Lolos
 
@@ -373,7 +373,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 - Percobaan ke-6, termasuk dengan password yang **benar**: "Terlalu banyak percobaan. Coba lagi beberapa menit lagi." Tidak ada cookie yang dibuat.
 - Untuk melanjutkan tanpa menunggu 10 menit: `docker exec postgres18 psql -U postgres -d sirkel -c "delete from \"rateLimit\" where key like 'unlock:%'"`
 - Masukkan salah 3 kali lalu benar → terbuka. Setelah itu counter di-reset (5 percobaan salah berikutnya kembali diizinkan).
-- Catatan: batas dihitung per alamat IP dan per komunitas. Di jaringan lokal semua percobaan memakai alamat yang sama.
+- Catatan: batas per alamat IP dihitung per komunitas, dan di jaringan lokal semua percobaan memakai alamat yang sama. Ada juga batas total **100 tebakan salah per jam per komunitas** (dari alamat mana pun): setelah itu pengunjung baru melihat "Terlalu banyak percobaan gagal pada laporan komunitas ini...", sedangkan yang sudah membuka tetap bisa. Password yang benar tidak dihitung. Ini sudah diuji otomatis; di browser cukup pastikan pesannya terbaca wajar.
 - [ ] Lolos
 
 **G8. Tautan dan perubahan status laporan**

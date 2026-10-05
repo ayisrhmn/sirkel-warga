@@ -11,10 +11,15 @@ import {
   accessCookieName,
   createAccessToken,
 } from "@/lib/protected-access";
-import { clearRateLimit, clientIp, hitRateLimit } from "@/lib/rate-limit";
+import { clearRateLimit, clientIp, hitRateLimit, releaseRateLimit } from "@/lib/rate-limit";
 import { SLUG_RE } from "@/lib/slug";
 
-const ATTEMPTS = { max: 5, windowMs: 10 * 60 * 1000 };
+// Per visitor address: stops one person from guessing.
+const PER_ADDRESS = { max: 5, windowMs: 10 * 60 * 1000 };
+// Per community, counting only wrong guesses: stops guessing from many
+// addresses at once (IPv6 makes new addresses free). Visitors who already
+// unlocked are not affected; new ones wait for the window to pass.
+const PER_COMMUNITY = { max: 100, windowMs: 60 * 60 * 1000 };
 
 export async function unlockDatasets(
   slug: string,
@@ -36,14 +41,22 @@ export async function unlockDatasets(
   // Every attempt counts before the password is checked, so a burst of
   // parallel guesses is cut off too. A correct password clears the counter.
   const key = `unlock:${community.id}:${await clientIp()}`;
-  if (!(await hitRateLimit(key, ATTEMPTS)))
+  if (!(await hitRateLimit(key, PER_ADDRESS)))
     return { error: "Terlalu banyak percobaan. Coba lagi beberapa menit lagi." };
+  const communityKey = `unlock-all:${community.id}`;
+  if (!(await hitRateLimit(communityKey, PER_COMMUNITY)))
+    return {
+      error: "Terlalu banyak percobaan gagal pada laporan komunitas ini. Coba lagi nanti atau hubungi pengurus.",
+    };
 
   const password = String(formData.get("password") ?? "");
   if (!(await verifyPassword(password, community.protectedPasswordHash)))
     return { error: "Password salah." };
 
+  // A correct password is not a guess: it resets this address and gives the
+  // community-wide attempt back.
   await clearRateLimit(key);
+  await releaseRateLimit(communityKey);
   (await cookies()).set(
     accessCookieName(community.id),
     createAccessToken(community.id, community.protectedPasswordHash),
