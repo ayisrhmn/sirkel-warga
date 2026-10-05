@@ -19,9 +19,20 @@ export default async function DatasetPage({
     where: { id, communityId: community.id },
   });
   if (!dataset) notFound();
+  const { protectedPasswordHash } = await getDb().community.findUniqueOrThrow({
+    where: { id: community.id },
+    select: { protectedPasswordHash: true },
+  });
 
   return (
     <main className="flex flex-col gap-6">
+      {dataset.visibility === "protected" && !protectedPasswordHash && (
+        <p className="rounded-md border border-yellow-500 p-3 text-sm">
+          Laporan ini Dilindungi, tapi password komunitas belum diatur sehingga
+          belum bisa dibuka siapa pun. Super admin bisa mengaturnya di menu
+          Pengaturan.
+        </p>
+      )}
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">{dataset.title}</h2>
         <DatasetMetaForm

@@ -63,7 +63,7 @@ export default async function CommunityPage({
           {datasets.map((d) => (
             <Link
               key={d.id}
-              href={`/${community.slug}/datasets/${d.id}`}
+              href={`/${community.slug}/${d.visibility === "protected" ? "protected" : "datasets"}/${d.id}`}
               className={`${card} flex items-center justify-between gap-3 underline`}
             >
               <span>

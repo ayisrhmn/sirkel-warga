@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireMember } from "@/lib/access";
 import { communityTag } from "@/lib/communities";
 import { getDb } from "@/lib/db";
+import { hashPassword } from "@/lib/password";
 import type { FormState } from "@/lib/form-state";
 
 export async function renameCommunity(
@@ -56,4 +57,31 @@ export async function deleteCommunity(
   updateTag(communityTag(slug));
   revalidatePath(`/${slug}`);
   redirect("/admin");
+}
+
+const PROTECTED_PASSWORD_MIN = 6;
+const PROTECTED_PASSWORD_MAX = 64;
+
+// The one password warga enter to open `protected` datasets. Only the hash is
+// stored. Changing it signs every visitor out of protected data.
+export async function setProtectedPassword(
+  slug: string,
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { community } = await requireMember(slug, { owner: true });
+  const password = String(formData.get("password") ?? "");
+  if (password.length < PROTECTED_PASSWORD_MIN || password.length > PROTECTED_PASSWORD_MAX)
+    return {
+      error: `Password ${PROTECTED_PASSWORD_MIN}-${PROTECTED_PASSWORD_MAX} karakter.`,
+    };
+
+  await getDb().community.update({
+    where: { id: community.id },
+    data: { protectedPasswordHash: await hashPassword(password) },
+  });
+  revalidatePath(`/admin/${slug}`, "layout");
+  return {
+    ok: "Password disimpan. Semua pengunjung yang sudah membuka laporan dilindungi harus memasukkan password baru.",
+  };
 }

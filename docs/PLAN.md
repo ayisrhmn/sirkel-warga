@@ -127,7 +127,7 @@ Aturan implementasi:
 7. Tidak ada secret yang terekspos ke client.
 8. Perbandingan password `protected` memakai `timingSafeEqual`.
 9. Status nunggak: hanya nama dan status, tanpa nominal dan rincian bulan. Permintaan lebih dari itu perlu peringatan risiko terlebih dahulu.
-10. **TODO (Fase 3): rate limit percobaan password `protected`.** Ditandai dengan komentar `TODO(rate-limit)` di kode.
+10. Rate limit percobaan password `protected`: 5 percobaan salah per 10 menit untuk tiap pasangan komunitas dan alamat IP, dihitung sebelum password diperiksa (satu pernyataan SQL atomik) sehingga tebakan paralel ikut terbatas. Password benar mereset hitungan. Risiko yang tersisa: serangan dari banyak IP sekaligus.
 
 ## 7. Fase pengembangan
 
@@ -162,7 +162,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 - Tombol export dataset (cadangan, karena Free plan tidak punya backup yang bisa diandalkan).
 - Selesai bila: file Excel contoh yang berantakan berhasil diimport dengan preview benar dan tampil di halaman publik.
 
-### Fase 3 — Mode `protected`
+### Fase 3 — Mode `protected` (selesai)
 - Pengaturan password `protected` per komunitas di admin (hanya super admin, disimpan sebagai hash).
 - Form password, verifikasi di server, cookie bertanda tangan per komunitas (7 hari).
 - Halaman dataset `protected` di route dinamis terpisah (`/[communitySlug]/protected/[id]`) dengan `no-store`. Route publik `/datasets/[id]` untuk dataset `protected` mengarahkan ke sana.

@@ -1,12 +1,12 @@
-# Skenario QA Manual — Sirkel (Fase 0 sampai 2)
+# Skenario QA Manual — Sirkel (Fase 0 sampai 3)
 
-Dokumen ini untuk menguji Sirkel secara manual di browser. Yang diuji: halaman publik, akun, komunitas, role dan isolasi, konten, dan laporan dari Excel. Mode lindung password (Fase 3) belum ada, jadi tidak termasuk.
+Dokumen ini untuk menguji Sirkel secara manual di browser. Yang diuji: halaman publik, akun, komunitas, role dan isolasi, konten, dan laporan dari Excel. Fase 4 (deploy dan polishing) belum termasuk.
 
-Sudah ada tes otomatis (`bun run test`) untuk logika izin, isolasi komunitas, parser Excel, dan validasi. Skenario di bawah fokus pada hal yang **belum bisa dicek otomatis**: tampilan, form di browser, alur impor Excel di layar, perilaku cache, dan pengalaman di HP. Skenario bertanda **[Prioritas]** adalah yang paling mungkin menemukan masalah.
+Sudah ada tes otomatis (`bun run test`) untuk logika izin, isolasi komunitas, parser Excel, validasi, serta gerbang password dan rate limit. Skenario di bawah fokus pada hal yang **belum bisa dicek otomatis**: tampilan, form di browser, alur impor Excel di layar, perilaku cache, dan pengalaman di HP. Skenario bertanda **[Prioritas]** adalah yang paling mungkin menemukan masalah.
 
 ## 1. Persiapan
 
-1. Pastikan Postgres lokal menyala dan `.env.local` berisi `DATABASE_URL`, `BETTER_AUTH_URL=http://localhost:3000`, `BETTER_AUTH_SECRET`.
+1. Pastikan Postgres lokal menyala dan `.env.local` berisi `DATABASE_URL`, `BETTER_AUTH_URL=http://localhost:3000`, `BETTER_AUTH_SECRET`, dan `COOKIE_SECRET`.
 2. Siapkan database bersih:
    ```bash
    bun install
@@ -285,11 +285,9 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Ubah ke Draft di detail admin: langsung hilang dari publik (link lama 404).
 - [ ] Lolos
 
-**F6. [Prioritas] Laporan dilindungi: baris tidak boleh bocor**
+**F6. [Prioritas] Laporan dilindungi muncul dengan label**
 - Ubah "Iuran Oktober 2026" menjadi "Dilindungi password" dan simpan.
-- Halaman komunitas: laporan tampil dengan label "Dilindungi". Klik: judul dan periode tampil, dengan pesan "Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.", **tanpa tabel**.
-- Buka View Source halaman itu dan cari "Budi Santoso". Tidak boleh ada. Di tab Network (Doc dan Fetch/XHR), juga tidak boleh ada data tabel.
-- (Penginputan password belum ada sampai Fase 3: ini perilaku yang diharapkan.)
+- Halaman komunitas: laporan tampil dengan label "Dilindungi". Isi dan pengaturan password diuji di bagian G.
 - [ ] Lolos
 
 **F7. Edit metadata dan hapus**
@@ -319,61 +317,118 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 
 ---
 
-## G. Tampilan dan HP
+## G. Laporan dilindungi password (Fase 3)
 
-**G1. [Prioritas] Emulasi HP**
+Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktober-berantakan.xlsx` dengan tampilan "Dilindungi password") dan satu laporan Publik. Siapkan juga Komunitas 2 dengan satu laporan Dilindungi sendiri. Gunakan jendela Incognito sebagai "warga" (tanpa login).
+
+**G1. Super admin mengatur password**
+- Login `qa_owner1`, menu "Pengaturan", bagian "Password laporan dilindungi". Sebelum diatur, tulisannya "Belum diatur: laporan berstatus Dilindungi belum bisa dibuka siapa pun."
+- Isi `abc` → "Password 6-64 karakter." (atau browser menolak). Isi `rahasia-rt`, simpan → pesan hijau tentang password disimpan. Tulisan status berubah menjadi "Password sudah diatur...".
+- Admin biasa (`qa_admin1`) tidak punya menu "Pengaturan" dan `/admin/dawis-matahari-sektor-3/settings` memberi 404.
+- [ ] Lolos
+
+**G2. Peringatan bila password belum diatur**
+- Pada komunitas yang belum punya password, buka detail laporan Dilindungi di admin: ada kotak peringatan kuning ("...password komunitas belum diatur...").
+- Sebagai warga, buka laporan itu: "Pengurus belum menetapkan password untuk laporan ini." tanpa kolom password dan tanpa tabel.
+- [ ] Lolos
+
+**G3. [Prioritas] Gerbang password**
+- Di jendela Incognito, buka halaman komunitas, klik laporan berlabel "Dilindungi". Diharapkan: URL `/dawis-matahari-sektor-3/protected/<id>`, judul dan periode tampil, pesan "Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.", dan kolom password dengan tombol "Buka laporan". Tidak ada tabel.
+- Masukkan password salah → "Password salah." Masukkan `rahasia-rt` → tabel tampil.
+- Muat ulang halaman: tetap terbuka (tanpa minta password lagi). Jendela Incognito lain (baru) tetap diminta password.
+- Laporan Dilindungi lain di komunitas yang sama juga langsung terbuka (satu password per komunitas).
+- [ ] Lolos
+
+**G4. [Prioritas] Data tidak bocor tanpa password**
+- Di jendela Incognito baru (belum membuka), buka halaman laporan dilindungi. View Source dan cari satu nama dari tabel (mis. "Budi Santoso"): tidak boleh ada. Di tab Network, periksa semua respons (Doc, Fetch/XHR, JS): tidak ada data tabel.
+- Cek header respons halaman `/protected/<id>`: `Cache-Control: private, no-store, max-age=0`.
+- Setelah membuka dengan password benar, Application → Cookies: ada `sirkel_access_<id komunitas>` dengan **HttpOnly**, Path `/dawis-matahari-sektor-3`, dan kedaluwarsa sekitar 7 hari.
+- Ubah isi cookie itu secara manual (edit satu karakter) lalu muat ulang: kembali diminta password.
+- [ ] Lolos
+
+**G5. Mengganti password mengeluarkan semua pengunjung**
+- Dengan laporan terbuka di jendela warga, login `qa_owner1` di jendela lain dan ganti password menjadi `password-baru`.
+- Di jendela warga, muat ulang: diminta password lagi. `rahasia-rt` ditolak ("Password salah."), `password-baru` berhasil.
+- [ ] Lolos
+
+**G6. [Prioritas] Cookie satu komunitas tidak membuka komunitas lain**
+- Buka laporan dilindungi Komunitas 1 dengan password benar. Lalu di jendela yang sama buka laporan dilindungi Komunitas 2: tetap diminta password.
+- Password Komunitas 1 dimasukkan di form Komunitas 2 ditolak ("Password salah.").
+- [ ] Lolos
+
+**G7. [Prioritas] Batas percobaan**
+- Di jendela warga baru, masukkan password salah 5 kali berturut-turut → setiap kali "Password salah."
+- Percobaan ke-6, termasuk dengan password yang **benar**: "Terlalu banyak percobaan. Coba lagi beberapa menit lagi." Tidak ada cookie yang dibuat.
+- Untuk melanjutkan tanpa menunggu 10 menit: `docker exec postgres18 psql -U postgres -d sirkel -c "delete from \"rateLimit\" where key like 'unlock:%'"`
+- Masukkan salah 3 kali lalu benar → terbuka. Setelah itu counter di-reset (5 percobaan salah berikutnya kembali diizinkan).
+- Catatan: batas dihitung per alamat IP dan per komunitas. Di jaringan lokal semua percobaan memakai alamat yang sama.
+- [ ] Lolos
+
+**G8. Tautan dan perubahan status laporan**
+- Dari halaman komunitas, laporan Dilindungi menautkan langsung ke `/protected/<id>`.
+- Buka `/dawis-matahari-sektor-3/datasets/<id laporan dilindungi>`: dialihkan ke `/protected/<id>`.
+- Ubah laporan itu menjadi Publik: `/protected/<id>` dialihkan ke `/datasets/<id>` dan tabel tampil tanpa password. Ubah ke Draft: kedua alamat 404.
+- Id sembarang atau id laporan komunitas lain di `/protected/...`: 404.
+- [ ] Lolos
+
+---
+
+## H. Tampilan dan HP
+
+**H1. [Prioritas] Emulasi HP**
 - DevTools → Toggle device toolbar, pilih ukuran kecil (iPhone SE atau 360x640). Telusuri: `/`, halaman komunitas, halaman laporan, `/login`, `/register`, seluruh menu admin, form impor.
 - Diharapkan: tidak ada scroll horizontal pada halaman (kecuali di dalam tabel lebar), teks terbaca, tombol cukup besar untuk ditekan, menu admin membungkus ke baris berikutnya dengan rapi.
 - [ ] Lolos
 
-**G2. Koneksi lambat**
+**H2. Koneksi lambat**
 - Throttling "Slow 4G" dan "Fast 3G", buka halaman komunitas. Catat waktu hingga isi tampil dan ukuran transfer. Halaman publik tidak boleh memuat library Excel (cek tab Network: tidak ada chunk besar berisi "xlsx" di halaman publik).
 - [ ] Lolos
 
-**G3. Mode gelap**
+**H3. Mode gelap**
 - Ubah tema sistem ke gelap (atau emulasi `prefers-color-scheme: dark` di DevTools → Rendering). Telusuri halaman publik dan admin.
 - Diharapkan: teks terbaca, garis tepi kartu dan tabel terlihat, pesan error merah dan sukses hijau terbaca.
 - [ ] Lolos
 
-**G4. HP sungguhan**
+**H4. HP sungguhan**
 - Catatan: login dari HP lewat alamat LAN akan ditolak karena `BETTER_AUTH_URL` ditetapkan ke `localhost`. Uji di HP sungguhan setelah deploy ke Vercel (Fase 4), atau minimal buka halaman publik lewat IP LAN.
 - [ ] Ditunda ke Fase 4
 
 ---
 
-## H. Keamanan dan akses
+## I. Keamanan dan akses
 
-**H1. [Prioritas] Halaman admin tanpa login**
+**I1. [Prioritas] Halaman admin tanpa login**
 - Dalam jendela Incognito (belum login), buka satu per satu: `/admin`, `/admin/dawis-matahari-sektor-3`, `.../announcements`, `.../datasets`, `.../datasets/import`, `.../datasets/export`, `/platform`, `/change-password`, `/create-community`.
 - Diharapkan: semuanya dialihkan ke `/login`.
 - [ ] Lolos
 
-**H2. Akses silang lewat id**
+**I2. Akses silang lewat id**
 - Login `qa_owner2`. Salin URL detail laporan milik Komunitas 1 (`/admin/dawis-matahari-sektor-3/datasets/<id>`) dan buka: 404.
 - Ubah slug di URL admin Komunitas 2 menjadi id laporan Komunitas 1, misalnya `/admin/rt-05-melati/datasets/<id-komunitas-1>`: 404.
 - [ ] Lolos
 
-**H3. Halaman publik tidak membocorkan data admin**
+**I3. Halaman publik tidak membocorkan data admin**
 - View source halaman komunitas dan halaman laporan. Tidak boleh ada: hash password, email sintetis (`@users.sirkel.local`), data draft, atau data komunitas lain.
 - [ ] Lolos
 
-**H4. Header cache**
+**I4. Header cache**
 - Halaman publik komunitas memiliki `Cache-Control: s-maxage=3600, stale-while-revalidate=...`. Halaman admin dan export tidak boleh ter-cache (`no-store` atau dinamis).
 - [ ] Lolos
 
 ---
 
-## I. Yang sengaja belum ada (jangan dilaporkan sebagai bug)
+## J. Yang sengaja belum ada (jangan dilaporkan sebagai bug)
 
-- Membuka laporan `protected` dengan password (Fase 3). Saat ini hanya ada pemberitahuan terkunci.
-- Batas percobaan password untuk laporan `protected` (Fase 3).
+- Membuat password berbeda untuk tiap laporan: ada satu password per komunitas.
+- Tombol "kunci kembali" atau keluar dari laporan dilindungi: akses habis setelah 7 hari atau saat password diganti.
+- Batas percobaan yang memperhitungkan serangan dari banyak alamat IP sekaligus.
 - Reset password lewat email. Super admin yang lupa password hanya bisa direset manual oleh platform admin.
 - Perubahan zona waktu per komunitas: semua waktu WIB.
 - Paginasi di halaman publik (maksimal 20 pengumuman, 20 agenda, 50 kontak, 50 laporan).
 - Tampilan di HP sungguhan, deploy ke Vercel, dan panduan akses darurat (Fase 4).
 - Impor ulang ke laporan yang sudah ada: tiap impor membuat laporan baru.
 
-## J. Ringkasan hasil
+## K. Ringkasan hasil
 
 | Bagian | Jumlah skenario | Lolos | Gagal | Catatan |
 |---|---|---|---|---|
@@ -383,5 +438,6 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 | D. Role dan isolasi | 8 | | | |
 | E. Konten publik | 7 | | | |
 | F. Laporan dari Excel | 10 | | | |
-| G. Tampilan dan HP | 4 | | | |
-| H. Keamanan dan akses | 4 | | | |
+| G. Laporan dilindungi | 8 | | | |
+| H. Tampilan dan HP | 4 | | | |
+| I. Keamanan dan akses | 4 | | | |

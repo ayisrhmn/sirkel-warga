@@ -8,14 +8,18 @@ import { beforeAll, expect, mock } from "bun:test";
 
 // A minimal browser cookie jar: requests send it, and Better Auth's
 // nextCookies plugin updates it through cookies().set(...).
-const jar = new Map<string, string>();
+export const jar = new Map<string, string>();
+let forwardedFor = "";
+// Pretend the next requests come from this address (x-forwarded-for).
+export const setForwardedFor = (ip: string) => void (forwardedFor = ip);
 const cookieHeader = () =>
   [...jar].map(([name, value]) => `${name}=${value}`).join("; ");
 mock.module("next/headers", () => ({
-  headers: async () => new Headers({ cookie: cookieHeader() }),
+  headers: async () =>
+    new Headers({ cookie: cookieHeader(), ...(forwardedFor ? { "x-forwarded-for": forwardedFor } : {}) }),
   cookies: async () => ({
     set: (name: string, value: string) => void jar.set(name, value),
-    get: () => undefined,
+    get: (name: string) => (jar.has(name) ? { name, value: jar.get(name) } : undefined),
     getAll: () => [],
     delete: (name: string) => void jar.delete(name),
   }),
@@ -57,6 +61,9 @@ export type Modules = {
   exportAll: typeof import("../src/app/admin/[communitySlug]/datasets/export/route").GET;
   exportCsv: typeof import("../src/app/admin/[communitySlug]/datasets/[id]/export/route").GET;
   getPublicDataset: typeof import("../src/lib/public-dataset").getPublicDataset;
+  unlockDatasets: typeof import("../src/app/[communitySlug]/protected/[id]/actions").unlockDatasets;
+  getProtectedDataset: typeof import("../src/lib/protected-dataset").getProtectedDataset;
+  access: typeof import("../src/lib/protected-access");
 };
 export let m: Modules;
 
@@ -96,9 +103,13 @@ async function setup() {
     exportAll: (await import("../src/app/admin/[communitySlug]/datasets/export/route")).GET,
     exportCsv: (await import("../src/app/admin/[communitySlug]/datasets/[id]/export/route")).GET,
     getPublicDataset: (await import("../src/lib/public-dataset")).getPublicDataset,
+    unlockDatasets: (await import("../src/app/[communitySlug]/protected/[id]/actions")).unlockDatasets,
+    getProtectedDataset: (await import("../src/lib/protected-dataset")).getProtectedDataset,
+    access: await import("../src/lib/protected-access"),
   };
   await m.db.$executeRawUnsafe('TRUNCATE "user", "communities", "rateLimit" CASCADE');
   jar.clear();
+  forwardedFor = "";
 }
 
 // --- Helpers ----------------------------------------------------------------

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DataTable } from "@/components/data-table";
 import { getCommunity } from "@/lib/communities";
 import { requireUuid } from "@/lib/form";
@@ -22,6 +22,9 @@ export default async function DatasetPage({
   if (!community) notFound();
   const dataset = await getPublicDataset(community, id);
   if (!dataset) notFound();
+  // Protected data is served only by the dynamic, cookie-checked route.
+  if (dataset.visibility === "protected")
+    redirect(`/${community.slug}/protected/${dataset.id}`);
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-8">
@@ -34,13 +37,7 @@ export default async function DatasetPage({
           <p className="text-neutral-600 dark:text-neutral-400">{dataset.period}</p>
         )}
       </div>
-      {dataset.visibility === "protected" ? (
-        <p className="rounded-md border border-neutral-300 p-3 dark:border-neutral-700">
-          Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.
-        </p>
-      ) : (
-        <DataTable columns={dataset.columns} rows={dataset.rows} />
-      )}
+      <DataTable columns={dataset.columns} rows={dataset.rows} />
     </main>
   );
 }
