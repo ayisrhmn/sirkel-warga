@@ -1,10 +1,10 @@
 // Makes an existing account an approved platform admin.
-// Run with: npm run user:promote -- <username>
+// Run with: bun run user:promote <username>
 import { getDb } from "@/lib/db";
 
 async function main() {
   const username = process.argv[2]?.toLowerCase();
-  if (!username) throw new Error("Usage: npm run user:promote -- <username>");
+  if (!username) throw new Error("Usage: bun run user:promote <username>");
 
   const db = getDb();
   try {

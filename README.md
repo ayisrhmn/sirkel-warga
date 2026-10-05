@@ -7,10 +7,10 @@ Rencana pengembangan: [docs/PLAN.md](docs/PLAN.md).
 ## Menjalankan
 
 ```bash
-npm install
+bun install
 cp .env.example .env.local   # isi variabel (lihat bagian Environment dan Database)
-npm run db:deploy            # terapkan migrasi ke database
-npm run dev
+bun run db:deploy            # terapkan migrasi ke database
+bun run dev
 ```
 
 ## Environment
@@ -37,18 +37,18 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sirkel
 Akun baru mendaftar di `/daftar` dan baru bisa login setelah disetujui. Akun pertama (platform admin) disetujui lewat perintah berikut, sesudahnya persetujuan dilakukan di `/platform`.
 
 ```bash
-npm run user:promote -- <username>
+bun run user:promote <username>
 ```
 
 ## Skrip
 
 | Perintah | Fungsi |
 |---|---|
-| `npm run db:migrate` | Buat dan terapkan migrasi dari `prisma/schema.prisma` (development) |
-| `npm run db:deploy` | Terapkan migrasi yang sudah ada (production) |
-| `npm run user:promote -- <username>` | Setujui akun dan jadikan platform admin |
+| `bun run db:migrate` | Buat dan terapkan migrasi dari `prisma/schema.prisma` (development) |
+| `bun run db:deploy` | Terapkan migrasi yang sudah ada (production) |
+| `bun run user:promote <username>` | Setujui akun dan jadikan platform admin |
 
-Prisma Client dibuat otomatis ke `src/generated/prisma` lewat `postinstall`. Bila skema berubah, jalankan `npx prisma generate`.
+Prisma Client dibuat otomatis ke `src/generated/prisma` lewat `postinstall`. Bila skema berubah, jalankan `bunx prisma generate`.
 
 ## Stack
 

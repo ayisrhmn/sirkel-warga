@@ -13,7 +13,7 @@ Sirkel adalah web info lingkungan (RT / gang / dasa wisma) untuk warga: pengumum
 | Database | Neon Postgres (Free), region Singapore | Satu database untuk semua komunitas, dipisah lewat `community_id`. |
 | Akses DB | Prisma ORM 7 + `@prisma/adapter-pg` | Dipilih karena sudah familiar. Prisma 7 mewajibkan driver adapter. Adapter `pg` konek lewat TCP biasa, jadi kode yang sama jalan di Postgres lokal (development) dan Neon (production). Versi dikunci di 7.10.x (stabil), karena tag `latest` untuk CLI `prisma` saat ini masih 8.0 RC. |
 | Auth | Better Auth (email+password dengan plugin `username`, sesi di database) | Auth.js dipertimbangkan, ditolak: mode maintenance, v5 masih beta, dan tidak punya role per komunitas. Plugin `organization` Better Auth tidak dipakai (role bawaannya tidak cocok dan bentrok dengan tabel `communities`); role disimpan di tabel `memberships` milik kita. |
-| Parsing Excel | SheetJS di browser admin, dipasang dari tarball CDN resmi | `npm i --save https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`. Paket `xlsx` di npm tertinggal (0.18.5) dan memiliki CVE. Versi dicek ulang sebelum install. Alternatif cadangan: `read-excel-file`. |
+| Parsing Excel | SheetJS di browser admin, dipasang dari tarball CDN resmi | `bun add https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`. Paket `xlsx` di npm tertinggal (0.18.5) dan memiliki CVE. Versi dicek ulang sebelum install. Alternatif cadangan: `read-excel-file`. |
 | Password data `protected` | Disimpan di database per komunitas, dalam bentuk hash (`scrypt` dari `node:crypto`) | Menggantikan `PROTECTED_PASSWORD` di env. Tiap komunitas bisa punya password berbeda. |
 | Hosting | Vercel Hobby, region function `sin1` | Domain `*.vercel.app` untuk tahap awal. |
 | Slug komunitas | Diturunkan dari nama, tanpa akhiran acak | Contoh: "Dawis Matahari - Sektor 3" menjadi `dawis-matahari-sektor-3`. Dapat diedit sebelum disimpan, terkunci sesudahnya. Slug bukan pengaman; data sensitif dijaga password `protected`. |
@@ -90,7 +90,7 @@ Slug yang dilarang (divalidasi di server saat membuat komunitas): `login`, `daft
 
 Alur:
 1. Calon pengurus mendaftar di `/daftar` (nama, username, password). Akun berstatus **menunggu persetujuan** dan belum bisa login.
-2. Pemilik proyek (platform admin) menyetujui di `/platform`. Platform admin ditandai lewat kolom `isPlatformAdmin` yang diisi lewat `npm run user:promote -- <username>` (tanpa UI).
+2. Pemilik proyek (platform admin) menyetujui di `/platform`. Platform admin ditandai lewat kolom `isPlatformAdmin` yang diisi lewat `bun run user:promote <username>` (tanpa UI).
 3. Setelah disetujui, user login dan membuat komunitas di `/buat-komunitas`. Pembuat otomatis menjadi **super admin** (`owner`) komunitas itu. Batas awal: satu komunitas per user.
 4. Super admin menambah pengurus lain dengan **membuatkan akun langsung** (username, nama, password awal), berperan `admin` di komunitas itu saja. Akun baru wajib ganti password saat login pertama. Password awal dikirim super admin lewat chat.
 
