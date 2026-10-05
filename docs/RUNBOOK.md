@@ -33,7 +33,7 @@ Jangan pernah memakai awalan `NEXT_PUBLIC_` untuk variabel apa pun. Jangan simpa
 3. Deploy. Region fungsi sudah diatur ke Singapore (`sin1`) lewat `vercel.json`. Paket Hobby hanya mengizinkan satu region.
 4. Setelah `BETTER_AUTH_URL` sesuai alamat produksi, deploy ulang bila perlu (perubahan env baru berlaku setelah deploy baru).
 
-**Preview deployment (branch lain, pull request).** Setiap preview punya alamat sendiri. Isi `BETTER_AUTH_URL` hanya untuk lingkungan **Production** di Vercel, sehingga preview memakai alamatnya sendiri (otomatis lewat `VERCEL_URL`) dan login tetap jalan. Preview tetap butuh `DATABASE_URL`, `BETTER_AUTH_SECRET`, dan `COOKIE_SECRET` untuk lingkungan Preview. **Jangan** mengarahkan preview ke database produksi: buat *branch* Neon terpisah untuk preview, supaya uji coba tidak menyentuh data warga.
+**Preview deployment (branch lain, pull request).** Setiap preview punya alamat sendiri. Isi `BETTER_AUTH_URL` hanya untuk lingkungan **Production** di Vercel, sehingga preview memakai alamatnya sendiri (otomatis lewat `VERCEL_URL`) dan login tetap jalan. Build tidak butuh `DATABASE_URL`, tapi aplikasi yang berjalan butuh `DATABASE_URL`, `BETTER_AUTH_SECRET`, dan `COOKIE_SECRET` untuk lingkungan Preview. **Jangan** mengarahkan preview ke database produksi: buat *branch* Neon terpisah untuk preview, supaya uji coba tidak menyentuh data warga.
 
 ### 2.3 Memeriksa region
 Buka halaman yang dinamis, mis. `https://<alamat>/admin`, dan lihat header `x-vercel-id`:
@@ -116,7 +116,11 @@ Yang **tidak** ada di cadangan, dengan sengaja: password (hash password laporan 
 - **Halaman publik langsung berubah setelah pengurus menyimpan**, dan agenda yang sudah lewat hilang sendiri paling lambat satu jam kemudian.
 - **Laporan dilindungi:** pengunjung memasukkan password sekali, lalu akses berlaku 7 hari di perangkat itu. Lima kali salah dalam 10 menit mengunci percobaan dari alamat IP itu sementara, dan 100 tebakan salah dalam satu jam (dari alamat mana pun) mengunci pengunjung baru untuk komunitas itu sampai jamnya lewat. Pengunjung yang sudah membuka laporan tidak terpengaruh. Password laporan dilindungi minimal 8 karakter.
 
-## 7. Masalah umum
+## 7. Bot dan pemindaian
+
+Alamat yang formatnya wajar tapi tidak ada (mis. `/abc-def`) menyebabkan satu pencarian ke database, lalu hasilnya di-cache satu jam. Bot yang menebak banyak alamat bisa membuat database Neon terus terbangun dan menghabiskan jatah komputasi. Aplikasi sudah menolak alamat berformat salah tanpa menyentuh database dan membatasi umur cache, tetapi pembatasan laju per IP untuk halaman publik sebaiknya dipasang di platform, bukan di kode. Vercel punya Firewall per project (Settings, Firewall) yang bisa membatasi jumlah request per IP; cek aturan apa yang tersedia di paketmu sebelum mengandalkannya. Pantau juga pemakaian jam komputasi di dashboard Neon beberapa minggu pertama.
+
+## 8. Masalah umum
 
 | Gejala | Kemungkinan penyebab dan solusi |
 |---|---|

@@ -183,6 +183,7 @@ Login warga, pembayaran iuran, chart, notifikasi, role selain super admin dan ad
 ## 9. Risiko
 
 - **Excel bendahara berantakan.** Struktur bisa berubah tiap bulan. Preview dan pemilihan header manual adalah mitigasinya.
+- **Pemindaian alamat oleh bot.** Alamat tak dikenal berformat wajar memicu satu query ke database (di-cache satu jam). Mitigasi di kode: validasi format, cache terbatas. Pembatasan laju per IP untuk halaman publik dipasang di platform (lihat RUNBOOK bagian 7).
 - **Cold start Neon Free.** Compute tertidur setelah 5 menit idle, sehingga request pertama bisa lambat. ISR mengurangi dampaknya untuk halaman publik.
 - **Tanpa backup otomatis.** Pengaman yang ada: cadangan lengkap per komunitas (JSON, super admin) yang bisa dipulihkan lewat `/create-community`, plus ekspor laporan. Cadangan tidak berisi password dan akun, dan tetap manual: perlu kebiasaan mengunduh secara berkala. Penjadwalan otomatis belum ada.
 - **Kebocoran data `protected` lewat cache.** Dimitigasi dengan dynamic rendering, `no-store`, dan pengujian eksplisit di Fase 3.
