@@ -172,6 +172,42 @@ describe("the gate", () => {
   });
 });
 
+describe("who needs the password", () => {
+  test("members of the community and platform admins read it without a password, everyone else needs it", async () => {
+    await register("ops_p");
+    await m.db.user.update({ where: { username: "ops_p" }, data: { isPlatformAdmin: true } });
+
+    for (const username of ["owner_a", "adm_a", "ops_p"]) {
+      anonymous();
+      await login(username);
+      const result = await view(slugA, ids.protectedA);
+      expect(result.state, username).toBe("open");
+      expect(result.state === "open" && result.rows).toEqual([[SECRET_NAME, "belum bayar"]]);
+      expect(cookieOf(communityA.id)).toBeUndefined(); // no access cookie involved
+    }
+
+    // Signed in, but a member of another community only: still locked.
+    anonymous();
+    await login("owner_b");
+    expect((await view(slugA, ids.protectedA)).state).toBe("locked");
+
+    // Signed out again: locked, whoever was signed in before.
+    anonymous();
+    const result = await view(slugA, ids.protectedA);
+    expect(result.state).toBe("locked");
+    expect(JSON.stringify(result)).not.toContain(SECRET_NAME);
+  });
+
+  test("a password entered by a visitor opens it only for a short while", async () => {
+    const { ACCESS_MAX_AGE_SECONDS } = m.access;
+    expect(ACCESS_MAX_AGE_SECONDS).toBeLessThanOrEqual(30 * 60);
+    const { protectedPasswordHash } = await m.db.community.findUniqueOrThrow({ where: { id: communityA.id } });
+    // A token issued under the old 7-day lifetime no longer works.
+    jar.set(m.access.accessCookieName(communityA.id), m.access.createAccessToken(communityA.id, protectedPasswordHash!, Date.now() + 6 * 24 * 3600 * 1000));
+    expect((await view(slugA, ids.protectedA)).state).toBe("locked");
+  });
+});
+
 describe("attempt limit", () => {
   const reset = () => m.db.$executeRawUnsafe('DELETE FROM "rateLimit" WHERE "key" LIKE \'unlock:%\'');
 

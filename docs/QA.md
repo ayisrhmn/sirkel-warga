@@ -428,14 +428,15 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 **G3. [Prioritas] Gerbang password**
 - Di jendela Incognito, buka halaman komunitas, klik laporan berlabel "Dilindungi". Diharapkan: URL `/dawis-matahari-sektor-3/protected/<id>`, judul dan periode tampil, pesan "Laporan ini dilindungi password. Tanyakan password-nya ke pengurus.", dan kolom password dengan tombol "Buka laporan". Tidak ada tabel.
 - Masukkan password salah → "Password salah." Masukkan `rahasia-rt` → tabel tampil.
-- Muat ulang halaman: tetap terbuka (tanpa minta password lagi). Jendela Incognito lain (baru) tetap diminta password.
-- Laporan Dilindungi lain di komunitas yang sama juga langsung terbuka (satu password per komunitas).
+- Muat ulang halaman: tetap terbuka selama 15 menit setelah password dimasukkan, lalu diminta lagi. Jendela Incognito lain (baru) tetap diminta password.
+- Laporan Dilindungi lain di komunitas yang sama juga terbuka selama 15 menit itu (satu password per komunitas).
+- **Pengurus tidak diminta password.** Login sebagai super admin atau admin komunitas itu, atau platform admin: laporan Dilindungi langsung terbuka tanpa kolom password. Login sebagai pengurus komunitas **lain**, atau tanpa login (setelah keluar): tetap diminta password. Setelah logout, laporan yang tadi terbuka tanpa password harus meminta password lagi.
 - [ ] Lolos
 
 **G4. [Prioritas] Data tidak bocor tanpa password**
 - Di jendela Incognito baru (belum membuka), buka halaman laporan dilindungi. View Source dan cari satu nama dari tabel (mis. "Budi Santoso"): tidak boleh ada. Di tab Network, periksa semua respons (Doc, Fetch/XHR, JS): tidak ada data tabel.
 - Cek header respons halaman `/protected/<id>`: `Cache-Control: private, no-store, max-age=0`.
-- Setelah membuka dengan password benar, Application → Cookies: ada `sirkel_access_<id komunitas>` dengan **HttpOnly**, Path `/dawis-matahari-sektor-3`, dan kedaluwarsa sekitar 7 hari.
+- Setelah membuka dengan password benar, Application → Cookies: ada `sirkel_access_<id komunitas>` dengan **HttpOnly**, Path `/dawis-matahari-sektor-3`, dan kedaluwarsa sekitar 15 menit. Cookie lama dari sebelum perubahan ini (7 hari) tidak lagi diterima.
 - Ubah isi cookie itu secara manual (edit satu karakter) lalu muat ulang: kembali diminta password.
 - [ ] Lolos
 
@@ -524,7 +525,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 ## J. Yang sengaja belum ada (jangan dilaporkan sebagai bug)
 
 - Membuat password berbeda untuk tiap laporan: ada satu password per komunitas.
-- Tombol "kunci kembali" atau keluar dari laporan dilindungi: akses habis setelah 7 hari atau saat password diganti.
+- Tombol "kunci kembali" atau keluar dari laporan dilindungi: akses habis setelah 15 menit atau saat password diganti.
 - Reset password lewat email. Super admin yang lupa password hanya bisa direset manual oleh platform admin.
 - Paginasi di halaman publik (maksimal 20 pengumuman, 20 agenda, 50 kontak, 50 laporan).
 - Deploy ke Vercel dan uji di HP sungguhan: dikerjakan setelah QA ini, mengikuti [RUNBOOK.md](RUNBOOK.md).

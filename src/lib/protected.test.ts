@@ -39,6 +39,11 @@ describe("access token", () => {
     expect(verifyAccessToken(token, community, "scrypt$16384$8$1$salt$changed")).toBe(false);
   });
 
+  test("a token that outlives the current lifetime is rejected", () => {
+    const longLived = createAccessToken(community, hash, Date.now() + 6 * 24 * 3600 * 1000);
+    expect(verifyAccessToken(longLived, community, hash)).toBe(false);
+  });
+
   test("expired, tampered, and garbage tokens are rejected", () => {
     const eightDaysAgo = Date.now() - 8 * 24 * 3600 * 1000;
     expect(verifyAccessToken(createAccessToken(community, hash, eightDaysAgo), community, hash)).toBe(false);

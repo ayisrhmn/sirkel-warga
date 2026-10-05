@@ -122,7 +122,7 @@ Aturan implementasi:
 
 1. Password hash, sesi, dan cookie sesi dikelola Better Auth (cookie `httpOnly`, `secure`, `sameSite=lax`). Sesi disimpan di database.
 2. Rate limit login dan pendaftaran memakai fitur bawaan Better Auth dengan penyimpanan di database (agar bekerja di serverless). Header IP dari Vercel dikonfigurasi eksplisit.
-3. Password `protected` diverifikasi di server terhadap hash di database. Cookie dibuat **per komunitas**, memuat `community_id`, waktu kedaluwarsa (7 hari), dan sidik jari hash password. Mengganti password otomatis membatalkan cookie lama, dan cookie komunitas A tidak membuka komunitas B.
+3. Password `protected` diverifikasi di server terhadap hash di database. Cookie dibuat **per komunitas**, memuat `community_id`, waktu kedaluwarsa (15 menit), dan sidik jari hash password. Mengganti password otomatis membatalkan cookie lama, dan cookie komunitas A tidak membuka komunitas B.
 4. Data `protected` hanya di-query di server setelah cookie valid. Tidak ada pengiriman data ke browser lalu disembunyikan dengan CSS.
 5. Halaman `protected` memakai dynamic rendering tanpa cache apa pun (`force-dynamic` dan header `Cache-Control: no-store`).
 6. `noindex` lewat meta robots dan header `X-Robots-Tag` untuk semua halaman, ditambah `robots.txt`.
@@ -166,7 +166,7 @@ Scaffold Next.js, Prisma + Postgres, skema konten, landing page, route komunitas
 
 ### Fase 3 — Mode `protected` (selesai)
 - Pengaturan password `protected` per komunitas di admin (hanya super admin, disimpan sebagai hash).
-- Form password, verifikasi di server, cookie bertanda tangan per komunitas (7 hari).
+- Form password, verifikasi di server, cookie bertanda tangan per komunitas (15 menit). Super admin, admin, dan platform admin membuka tanpa password.
 - Halaman dataset `protected` di route dinamis terpisah (`/[communitySlug]/protected/[id]`) dengan `no-store`. Route publik `/datasets/[id]` untuk dataset `protected` mengarahkan ke sana.
 - Rate limit percobaan password.
 - Selesai bila: tanpa cookie yang valid tidak ada satu pun data `protected` di HTML maupun respons jaringan, password komunitas A tidak membuka B, dan mengganti password membatalkan akses lama.

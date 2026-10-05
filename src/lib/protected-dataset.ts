@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { DatasetCell, DatasetFill } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
 import { accessCookieName, verifyAccessToken } from "@/lib/protected-access";
+import { getSession } from "@/lib/session";
 
 export type ProtectedDatasetResult =
   | { state: "not-found" }
@@ -37,7 +38,7 @@ export async function getProtectedDataset(
   });
   if (!community) return { state: "not-found" };
 
-  // Metadata first: no rows are loaded until the cookie has been verified.
+  // Metadata first: no rows are loaded until access has been verified.
   const meta = await db.dataset.findFirst({
     where: { id, communityId: community.id },
     select: { title: true, period: true, visibility: true },
@@ -46,21 +47,36 @@ export async function getProtectedDataset(
   if (meta.visibility === "public") return { state: "public" };
 
   const hash = community.protectedPasswordHash;
-  const token = (await cookies()).get(accessCookieName(community.id))?.value;
   const base = { communityName: community.name, title: meta.title, period: meta.period };
 
+  // Members of this community and platform admins read it without the password.
+  // Everyone else, signed in or not, needs it every time.
+  const open = async (): Promise<ProtectedDatasetResult> => {
+    const data = await db.dataset.findFirstOrThrow({
+      where: { id, communityId: community.id, visibility: "protected" },
+      select: { columns: true, rows: true, fills: true },
+    });
+    return {
+      state: "open",
+      ...base,
+      columns: data.columns as string[],
+      rows: data.rows as DatasetCell[][],
+      fills: data.fills as DatasetFill[],
+    };
+  };
+  const user = (await getSession())?.user;
+  if (user?.approved) {
+    if (user.isPlatformAdmin) return open();
+    const member = await db.membership.findFirst({
+      where: { userId: user.id, communityId: community.id },
+      select: { id: true },
+    });
+    if (member) return open();
+  }
+
+  const token = (await cookies()).get(accessCookieName(community.id))?.value;
   if (!hash || !token || !verifyAccessToken(token, community.id, hash))
     return { state: "locked", ...base, hasPassword: hash !== null };
 
-  const data = await db.dataset.findFirstOrThrow({
-    where: { id, communityId: community.id, visibility: "protected" },
-    select: { columns: true, rows: true, fills: true },
-  });
-  return {
-    state: "open",
-    ...base,
-    columns: data.columns as string[],
-    rows: data.rows as DatasetCell[][],
-    fills: data.fills as DatasetFill[],
-  };
+  return open();
 }

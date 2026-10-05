@@ -1,8 +1,10 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 // Proof that a visitor entered the community's password for `protected`
-// datasets: a signed token in an httpOnly cookie, valid for 7 days.
-export const ACCESS_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+// datasets: a signed token in an httpOnly cookie. It is short on purpose: a
+// visitor enters the password again on the next visit, and a shared device
+// does not stay unlocked. (Members of the community never need it.)
+export const ACCESS_MAX_AGE_SECONDS = 15 * 60;
 
 // One cookie per community, so unlocking A never opens B.
 export const accessCookieName = (communityId: string) => `sirkel_access_${communityId}`;
@@ -52,7 +54,15 @@ export function verifyAccessToken(
 
   try {
     const { c, f, e } = JSON.parse(Buffer.from(payload, "base64url").toString());
-    return c === communityId && f === fingerprint(passwordHash) && typeof e === "number" && e > now;
+    // A token that expires later than a fresh one would is refused too, so
+    // tokens issued under a longer lifetime stop working when it is shortened.
+    return (
+      c === communityId &&
+      f === fingerprint(passwordHash) &&
+      typeof e === "number" &&
+      e > now &&
+      e <= now + ACCESS_MAX_AGE_SECONDS * 1000
+    );
   } catch {
     return false;
   }
