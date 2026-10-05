@@ -22,6 +22,19 @@ describe("DataTable on phones", () => {
     expect(html).not.toContain("Geser tabel");
   });
 
+  test("the table keeps its pinned column edge while scrolling (separate borders, borders on the cells)", () => {
+    const html = render(wide.columns, wide.rows);
+    const table = html.split("<table")[1].split("</table>")[0];
+    expect(table.split(">")[0]).toContain("border-separate");
+    expect(table.split(">")[0]).toContain("border-spacing-0");
+    // The pinned (Nama) header and cells carry their own right border.
+    const pinnedCells = table.match(/<(th|td)[^>]*sticky left-0[^>]*border-r[^>]*>/g) ?? [];
+    expect(pinnedCells.length).toBe(1 + wide.rows.length);
+    // The header underline is on the header cells, since row borders do not exist in this model.
+    expect(table).not.toContain('<tr class="border-b');
+    expect(table.match(/<th[^>]*border-b/g)?.length).toBe(wide.columns.length);
+  });
+
   test("a card shows the name and the number on top, and every other column inside", () => {
     const html = render(wide.columns, wide.rows);
     const first = html.split("<details")[1].split("</details>")[0];

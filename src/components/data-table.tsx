@@ -22,7 +22,9 @@ export function DataTable({
   const narrow = columns.map((name, c) => isIndexColumn(name, rows, c));
   const pad = (c: number) => (narrow[c] ? "w-px px-2 text-center" : "px-3");
   // Sticky cells need their own opaque background, or the cells scrolling
-  // underneath show through them.
+  // underneath show through them. Their right edge is drawn with a border, which
+  // only stays with a sticky cell when the table uses `border-separate`: in the
+  // default collapsed model the borders belong to the table and scroll away.
   const pin = (c: number) =>
     c === pinned ? "sticky left-0 z-10 border-r border-neutral-300 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.15)]" : "";
 
@@ -39,14 +41,14 @@ export function DataTable({
       <div
         className={`overflow-x-auto rounded-md border border-neutral-300 ${asCards ? "hidden md:block" : ""}`}
       >
-        <table className="w-full text-sm">
+        <table className="w-full border-separate border-spacing-0 text-sm">
           <thead>
-            <tr className="border-b border-neutral-300">
+            <tr>
               {columns.map((name, i) => (
                 <th
                   key={i}
                   scope="col"
-                  className={`whitespace-nowrap bg-white ${pad(i)} py-2 ${narrow[i] ? "" : "text-left"} font-medium ${pin(i)}`}
+                  className={`whitespace-nowrap border-b border-neutral-300 bg-white ${pad(i)} py-2 ${narrow[i] ? "" : "text-left"} font-medium ${pin(i)}`}
                 >
                   {name}
                 </th>

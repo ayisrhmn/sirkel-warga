@@ -368,7 +368,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Kartu yang tertutup hanya menampilkan nomor dan nama, mis. `1. Bapak Robi & Ibu Vania (AH2-28)`, dengan panah di kanan. Mengetuknya **membuka** rincian: daftar kolom lain (Januari, Februari, dst.) dengan nilainya di kanan, dan `-` untuk sel kosong. Panah berputar saat terbuka, mengetuk lagi **menutup**. Beberapa kartu bisa terbuka bersamaan.
 - Pada ringkasan, kartunya berjudul "TOTAL", "PENGELUARAN", "PEMASUKAN", "SALDO" dan rinciannya per bulan. Angka besar berformat titik ribuan.
 - Halaman tidak ikut bergeser ke samping sama sekali, dan tidak ada tabel yang bisa digeser di layar kecil.
-- Perbesar layar (768px ke atas, atau buka di laptop): tampil **tabel biasa** seperti sebelumnya. Kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) tetap menempel di kiri saat tabel digeser, kolom "No" ramping, dan baris selang-seling terlihat.
+- Perbesar layar (768px ke atas, atau buka di laptop): tampil **tabel biasa** seperti sebelumnya. Kolom **"Nama"** (rincian) atau **"Keterangan"** (ringkasan) tetap menempel di kiri saat tabel digeser, kolom "No" ramping, dan baris selang-seling terlihat. **Garis tepi di kanan kolom yang menempel tetap terlihat (beserta bayangan tipis) saat tabel digeser**, sehingga jelas di mana kolom nama berakhir dan kolom bulan yang lewat di belakangnya mulai. Garis di bawah judul kolom juga tetap ada.
 - Tabel sempit (2 sampai 4 kolom, mis. "Ringkasan kas" dari `2-ringkasan-kas.xlsx`) tetap berupa tabel di semua ukuran layar, tanpa kartu.
 - Pratinjau di layar impor memakai tampilan yang sama (kartu di layar kecil).
 - Kartu bekerja walau JavaScript dimatikan (DevTools, "Disable JavaScript"): ketuk tetap membuka dan menutup.
