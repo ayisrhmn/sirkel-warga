@@ -366,7 +366,7 @@ Login sebagai super admin atau admin. Buka menu "Laporan" → "Impor dari Excel"
 - Berkas contoh dari generator tidak punya warna (pustaka yang dipakai hanya bisa membaca warna, tidak bisa menulisnya), jadi pakai file Excel milikmu sendiri yang sel-selnya diberi warna latar (mis. file kas dawis).
 - Impor file itu dan lihat pratinjau: warna latar sel data muncul sama seperti di Excel (mis. sel merah untuk yang menunggak, baris SALDO kuning). **Warna baris judul kolom tidak ikut**: judul memakai gaya tampilan Sirkel sendiri.
 - Teks di atas warna tetap terbaca (hitam di warna terang, putih di warna gelap). Warna bergaris-garis selang-seling hanya tampil di sel yang tidak berwarna.
-- Sel kosong di **kolom angka** tampil sebagai "-" abu-abu; sel kosong di kolom teks tetap kosong.
+- Setiap sel yang kosong (kolom angka maupun teks) tampil sebagai "-" abu-abu.
 - Simpan, lalu buka laporan di halaman publik, halaman admin, dan (untuk yang dilindungi) setelah memasukkan password: warnanya sama. Unduh cadangan (JSON) lalu pulihkan di komunitas baru: warna tetap ada. Laporan lama (dibuat sebelum fitur ini) tampil tanpa warna.
 - Catatan: hanya warna isian polos (RGB) yang terbaca. Warna dari tema Excel, warna putih, dan tebal/miring tidak dibawa.
 - [ ] Lolos

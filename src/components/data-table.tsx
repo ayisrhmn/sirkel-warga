@@ -94,7 +94,7 @@ export function DataTable({
                       narrow[c] ? "tabular-nums" : numeric[c] || isNumericCell(cell) ? "text-right tabular-nums" : ""
                     } ${pin(c)} ${hideOnPhone(c)}`}
                   >
-                    {cell === null && numeric[c] ? (
+                    {cell === null ? (
                       <span className={fill ? "opacity-60" : "text-neutral-400"}>-</span>
                     ) : (
                       formatCell(cell)

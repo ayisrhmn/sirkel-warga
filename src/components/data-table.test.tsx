@@ -133,8 +133,8 @@ describe("DataTable", () => {
     expect(renderToStaticMarkup(<DataTable columns={wide.columns} rows={wide.rows} />)).not.toContain("style=");
   });
 
-  test("an empty cell shows a muted dash in an amount column only", () => {
+  test("every empty cell shows a muted dash", () => {
     const html = render(["Nama", "Jumlah"], [["Budi", 5000], ["Ani", null], [null, 7000]]);
-    expect(html.match(/>-<\/span>/g)?.length).toBe(1); // Ani's amount; the empty name stays empty
+    expect(html.match(/>-<\/span>/g)?.length).toBe(2);
   });
 });
