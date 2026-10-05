@@ -9,7 +9,7 @@ import { AdminListItem } from "@/components/organisms/admin-list-item";
 import { AdminSplit } from "@/components/templates/admin-split";
 import { requireMember } from "@/lib/access";
 import { asTimeZone, formatDate } from "@/lib/datetime";
-import { getDb } from "@/lib/db";
+import { listAnnouncements } from "@/lib/queries/content";
 import { deleteAnnouncement } from "./actions";
 import { AnnouncementForm } from "./announcement-form";
 
@@ -19,11 +19,7 @@ export default async function AnnouncementsPage({
   const { communitySlug } = await params;
   const { community } = await requireMember(communitySlug);
 
-  const items = await getDb().announcement.findMany({
-    where: { communityId: community.id },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, body: true, bodyDoc: true, status: true, publishedAt: true },
-  });
+  const items = await listAnnouncements(community.id);
 
   return (
     <>

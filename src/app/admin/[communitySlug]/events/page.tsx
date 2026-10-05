@@ -11,7 +11,7 @@ import { AdminListItem } from "@/components/organisms/admin-list-item";
 import { AdminSplit } from "@/components/templates/admin-split";
 import { requireMember } from "@/lib/access";
 import { asTimeZone, calendarTile, formatDateTime, startOfToday, TIME_ZONES, toLocalInput } from "@/lib/datetime";
-import { getDb } from "@/lib/db";
+import { listEvents } from "@/lib/queries/content";
 import { deleteEvent } from "./actions";
 import { EventForm } from "./event-form";
 
@@ -24,18 +24,7 @@ export default async function EventsPage({
   const zone = asTimeZone(community.timezone);
   const zoneLabel = TIME_ZONES[zone].label;
   const today = startOfToday(zone);
-  const items = await getDb().event.findMany({
-    where: { communityId: community.id },
-    orderBy: { startsAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      startsAt: true,
-      location: true,
-      description: true,
-      descriptionDoc: true,
-    },
-  });
+  const items = await listEvents(community.id);
 
   return (
     <>

@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/molecules/page-header";
 import { AdminListItem } from "@/components/organisms/admin-list-item";
 import { AdminSplit } from "@/components/templates/admin-split";
 import { requireMember } from "@/lib/access";
-import { getDb } from "@/lib/db";
+import { listMembers } from "@/lib/queries/accounts";
 import { AddAdminForm } from "./add-admin-form";
 import { RemoveAdminButton, ResetPasswordForm } from "./member-actions";
 
@@ -16,14 +16,7 @@ export default async function UsersPage({
   const { communitySlug } = await params;
   const { community } = await requireMember(communitySlug, { owner: true });
 
-  const members = await getDb().membership.findMany({
-    where: { communityId: community.id },
-    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-    select: {
-      role: true,
-      user: { select: { id: true, name: true, username: true } },
-    },
-  });
+  const members = await listMembers(community.id);
 
   return (
     <>

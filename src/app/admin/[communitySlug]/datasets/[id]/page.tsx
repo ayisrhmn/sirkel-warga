@@ -12,8 +12,9 @@ import { StatusChip } from "@/components/molecules/status-chip";
 import { DataTable } from "@/components/organisms/data-table";
 import { requireMember } from "@/lib/access";
 import type { DatasetCell, DatasetFill } from "@/lib/dataset";
-import { getDb } from "@/lib/db";
 import { requireUuid } from "@/lib/form";
+import { hasProtectedPassword } from "@/lib/queries/communities";
+import { getDataset } from "@/lib/queries/datasets";
 import { deleteDataset } from "../actions";
 import { DatasetMetaForm } from "./dataset-meta-form";
 
@@ -24,14 +25,9 @@ export default async function DatasetPage({
   const { community } = await requireMember(communitySlug);
   requireUuid(id);
 
-  const dataset = await getDb().dataset.findFirst({
-    where: { id, communityId: community.id },
-  });
+  const dataset = await getDataset(community.id, id);
   if (!dataset) notFound();
-  const { protectedPasswordHash } = await getDb().community.findUniqueOrThrow({
-    where: { id: community.id },
-    select: { protectedPasswordHash: true },
-  });
+  const hasPassword = await hasProtectedPassword(community.id);
   const rows = dataset.rows as DatasetCell[][];
 
   return (
@@ -48,7 +44,7 @@ export default async function DatasetPage({
           </div>
         }
       />
-      {dataset.visibility === "protected" && !protectedPasswordHash && (
+      {dataset.visibility === "protected" && !hasPassword && (
         <Banner tone="warning">
           Laporan ini Dilindungi, tapi password komunitas belum diatur sehingga
           belum bisa dibuka siapa pun. Super admin bisa mengaturnya di menu

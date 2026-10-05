@@ -10,7 +10,8 @@ import { Wordmark } from "@/components/atoms/logo";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { LogoutButton } from "@/components/molecules/logout-button";
 import { formatDate } from "@/lib/datetime";
-import { getDb } from "@/lib/db";
+import { listCommunitiesWithMembers } from "@/lib/queries/communities";
+import { listPendingUsers } from "@/lib/queries/accounts";
 import { requireUser } from "@/lib/session";
 import { approveUser, rejectUser } from "./actions";
 
@@ -18,24 +19,7 @@ export default async function PlatformPage() {
   const user = await requireUser();
   if (!user.isPlatformAdmin) notFound();
 
-  const db = getDb();
-  const [pending, communities] = await Promise.all([
-    db.user.findMany({
-      where: { approved: false },
-      orderBy: { createdAt: "asc" },
-      select: { id: true, name: true, username: true, createdAt: true },
-    }),
-    db.community.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        slug: true,
-        name: true,
-        createdAt: true,
-        memberships: { select: { role: true, user: { select: { name: true, username: true } } } },
-      },
-    }),
-  ]);
+  const [pending, communities] = await Promise.all([listPendingUsers(), listCommunitiesWithMembers()]);
   const memberCount = communities.reduce((sum, c) => sum + c.memberships.length, 0);
 
   return (

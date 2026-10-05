@@ -5,7 +5,7 @@ import { Container } from "@/components/atoms/container";
 import { Heading } from "@/components/atoms/heading";
 import { IconTile } from "@/components/atoms/icon-tile";
 import { Wordmark } from "@/components/atoms/logo";
-import { getDb } from "@/lib/db";
+import { countCommunitiesOfUser } from "@/lib/queries/accounts";
 import { requireUser } from "@/lib/session";
 import { CreateCommunityForm } from "./create-community-form";
 import { RestoreForm } from "./restore-form";
@@ -16,10 +16,7 @@ export default async function CreateCommunityPage() {
   if (user.isPlatformAdmin) redirect("/platform");
   // Each account belongs to one community: created admins to the one that
   // made them, everyone else to the one they create here.
-  const memberships = await getDb().membership.count({
-    where: { userId: user.id },
-  });
-  if (memberships > 0) redirect("/admin");
+  if ((await countCommunitiesOfUser(user.id)) > 0) redirect("/admin");
 
   return (
     <Container className="max-w-5xl pb-16">

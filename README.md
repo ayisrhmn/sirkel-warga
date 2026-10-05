@@ -2,7 +2,7 @@
 
 Info lingkungan (RT / gang / dasa wisma) dalam satu link: pengumuman, agenda, kontak penting, dan laporan dari Excel. Proyek sukarela, non-komersial.
 
-Rencana pengembangan: [docs/PLAN.md](docs/PLAN.md). Deploy dan akses darurat: [docs/RUNBOOK.md](docs/RUNBOOK.md). Skenario uji manual: [docs/QA.md](docs/QA.md).
+Rencana pengembangan: [docs/PLAN.md](docs/PLAN.md). Deploy dan akses darurat: [docs/RUNBOOK.md](docs/RUNBOOK.md). Skenario uji manual: [docs/QA.md](docs/QA.md). Struktur kode dan aturan lapisan: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Menjalankan
 

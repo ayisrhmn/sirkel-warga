@@ -8,17 +8,13 @@ import { IconTile } from "@/components/atoms/icon-tile";
 import { Wordmark } from "@/components/atoms/logo";
 import { Card } from "@/components/atoms/card";
 import { LogoutButton } from "@/components/molecules/logout-button";
-import { getDb } from "@/lib/db";
+import { listCommunitiesOfUser } from "@/lib/queries/accounts";
 import { requireUser } from "@/lib/session";
 
 export default async function AdminPage() {
   const user = await requireUser();
   if (user.isPlatformAdmin) redirect("/platform");
-  const memberships = await getDb().membership.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "asc" },
-    select: { community: { select: { slug: true, name: true } } },
-  });
+  const memberships = await listCommunitiesOfUser(user.id);
 
   if (memberships.length === 1)
     redirect(`/admin/${memberships[0].community.slug}`);

@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/molecules/page-header";
 import { AdminListItem } from "@/components/organisms/admin-list-item";
 import { AdminSplit } from "@/components/templates/admin-split";
 import { requireMember } from "@/lib/access";
-import { getDb } from "@/lib/db";
+import { listContacts } from "@/lib/queries/content";
 import { deleteContact } from "./actions";
 import { ContactForm } from "./contact-form";
 
@@ -21,11 +21,7 @@ export default async function ContactsPage({
   const { communitySlug } = await params;
   const { community } = await requireMember(communitySlug);
 
-  const items = await getDb().contact.findMany({
-    where: { communityId: community.id },
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { id: true, name: true, role: true, phone: true, sortOrder: true },
-  });
+  const items = await listContacts(community.id);
 
   return (
     <>

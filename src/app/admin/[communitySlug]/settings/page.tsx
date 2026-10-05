@@ -5,7 +5,7 @@ import { FormPanel } from "@/components/molecules/form-panel";
 import { PageHeader } from "@/components/molecules/page-header";
 import { requireMember } from "@/lib/access";
 import { asTimeZone } from "@/lib/datetime";
-import { getDb } from "@/lib/db";
+import { hasProtectedPassword } from "@/lib/queries/communities";
 import {
   DeleteCommunityForm,
   ProtectedPasswordForm,
@@ -20,10 +20,7 @@ export default async function SettingsPage({
 }: PageProps<"/admin/[communitySlug]/settings">) {
   const { communitySlug } = await params;
   const { community } = await requireMember(communitySlug, { owner: true });
-  const { protectedPasswordHash } = await getDb().community.findUniqueOrThrow({
-    where: { id: community.id },
-    select: { protectedPasswordHash: true },
-  });
+  const hasPassword = await hasProtectedPassword(community.id);
 
   return (
     <>
@@ -44,10 +41,10 @@ export default async function SettingsPage({
         </FormPanel>
         <FormPanel title="Password laporan dilindungi">
           <div>
-            {protectedPasswordHash ? <Chip tone="green">Sudah diatur</Chip> : <Chip tone="amber">Belum diatur</Chip>}
+            {hasPassword ? <Chip tone="green">Sudah diatur</Chip> : <Chip tone="amber">Belum diatur</Chip>}
           </div>
           <p className={note}>
-            {protectedPasswordHash
+            {hasPassword
               ? "Isi di bawah untuk menggantinya. "
               : "Laporan berstatus Dilindungi belum bisa dibuka siapa pun. "}
             Bagikan password ini hanya ke warga yang berhak, mis. lewat grup

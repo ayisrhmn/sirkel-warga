@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/molecules/page-header";
 import { StatTile } from "@/components/molecules/stat-tile";
 import { ShareLinkCard } from "@/components/organisms/share-link-card";
 import { requireMember } from "@/lib/access";
-import { getDb } from "@/lib/db";
+import { getContentCounts } from "@/lib/queries/content";
 
 export default async function CommunityAdminPage({
   params,
@@ -13,15 +13,7 @@ export default async function CommunityAdminPage({
   const { communitySlug } = await params;
   const { user, community, role } = await requireMember(communitySlug);
 
-  const where = { communityId: community.id };
-  const db = getDb();
-  const [announcements, drafts, events, contacts, datasets] = await Promise.all([
-    db.announcement.count({ where: { ...where, status: "public" } }),
-    db.announcement.count({ where: { ...where, status: "draft" } }),
-    db.event.count({ where }),
-    db.contact.count({ where }),
-    db.dataset.count({ where }),
-  ]);
+  const { announcements, drafts, events, contacts, datasets } = await getContentCounts(community.id);
   const base = `/admin/${community.slug}`;
 
   return (

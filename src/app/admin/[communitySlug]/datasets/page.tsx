@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/molecules/page-header";
 import { StatusChip } from "@/components/molecules/status-chip";
 import { requireMember } from "@/lib/access";
 import { asTimeZone, formatDate } from "@/lib/datetime";
-import { getDb } from "@/lib/db";
+import { listDatasets } from "@/lib/queries/datasets";
 
 export default async function DatasetsPage({
   params,
@@ -17,19 +17,7 @@ export default async function DatasetsPage({
   const { community } = await requireMember(communitySlug);
   const base = `/admin/${community.slug}/datasets`;
 
-  // Rows are left out: the list only needs the summary.
-  const items = await getDb().dataset.findMany({
-    where: { communityId: community.id },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      period: true,
-      visibility: true,
-      columns: true,
-      createdAt: true,
-    },
-  });
+  const items = await listDatasets(community.id);
 
   return (
     <>
