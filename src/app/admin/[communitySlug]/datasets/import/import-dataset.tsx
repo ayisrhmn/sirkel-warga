@@ -7,6 +7,7 @@ import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Banner } from "@/components/molecules/banner";
 import { Field } from "@/components/molecules/field";
+import { FileInput } from "@/components/molecules/file-input";
 import { FormMessage } from "@/components/molecules/form-message";
 import { SegmentedControl } from "@/components/molecules/segmented-control";
 import { StepCard } from "@/components/molecules/step-card";
@@ -135,7 +136,7 @@ export function ImportDataset({ slug }: { slug: string }) {
         description="File dibaca di browser kamu dan tidak diunggah. Yang disimpan hanya tabel hasilnya, setelah kamu setujui pratinjau."
       >
         <Field label="File (.xlsx, .xls, atau .csv)">
-          <Input type="file" accept=".xlsx,.xls,.csv" onChange={onFile} />
+          <FileInput accept=".xlsx,.xls,.csv" hint="Maksimal 5 MB" onChange={onFile} />
         </Field>
         {!workbook && <FormMessage state={{ error }} />}
       </StepCard>
