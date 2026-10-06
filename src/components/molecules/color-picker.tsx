@@ -5,15 +5,16 @@ import { useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { Chip } from "@/components/atoms/chip";
 import { ThemeScope } from "@/components/atoms/theme-scope";
-import { checkPrimaryColor, DEFAULT_PRIMARY, PRIMARY_PRESETS } from "@/lib/theme";
+import { Banner } from "@/components/molecules/banner";
+import { contrastWarning, DEFAULT_PRIMARY, parsePrimaryColor, PRIMARY_PRESETS } from "@/lib/theme";
 
-// Picks a community's primary colour: ready-made swatches, or any other colour
-// as long as white text stays readable on it. Submits the colour as `name`.
-// The server checks it again; this only gives an early answer.
+// Picks a community's primary colour: ready-made swatches, or any other colour.
+// Submits the colour as `name`. A light colour is allowed but gets a warning.
 export function ColorPicker({ name = "primaryColor", defaultValue = DEFAULT_PRIMARY }: { name?: string; defaultValue?: string }) {
   const [color, setColor] = useState(defaultValue);
-  const checked = checkPrimaryColor(color);
-  const readable = "color" in checked;
+  const parsed = parsePrimaryColor(color);
+  const valid = "color" in parsed;
+  const warning = valid ? contrastWarning(parsed.color) : null;
 
   return (
     <fieldset className="flex flex-col gap-4">
@@ -30,26 +31,27 @@ export function ColorPicker({ name = "primaryColor", defaultValue = DEFAULT_PRIM
           >
             <input type="radio" name={`${name}-preset`} value={preset.value} checked={color === preset.value} onChange={() => setColor(preset.value)} className="sr-only" />
             <span className="sr-only">{preset.name}</span>
-            {color === preset.value && <Check aria-hidden="true" size={22} strokeWidth={3} className="text-white" />}
+            {color === preset.value && <Check aria-hidden="true" size={22} strokeWidth={3} className="text-white drop-shadow" />}
           </label>
         ))}
       </div>
 
       <label className="flex w-fit items-center gap-3 text-[15px] font-semibold">
-        <input type="color" value={readable ? checked.color : "#000000"} onChange={(e) => setColor(e.target.value)} className="size-12 cursor-pointer rounded-xl border-[1.5px] border-line-strong bg-surface p-1" />
+        <input type="color" value={valid ? parsed.color : "#000000"} onChange={(e) => setColor(e.target.value)} className="size-12 cursor-pointer rounded-xl border-[1.5px] border-line-strong bg-surface p-1" />
         <span className="flex flex-col">
           Warna lain
           <span className="font-mono text-sm font-normal text-muted">{color}</span>
         </span>
       </label>
 
-      {!readable && (
+      {!valid && (
         <p role="alert" className="text-sm font-medium text-danger">
-          {checked.error}
+          {parsed.error}
         </p>
       )}
+      {warning && <Banner tone="warning">{warning}</Banner>}
 
-      <ThemeScope color={readable ? color : null} fill={false}>
+      <ThemeScope color={valid ? color : null} fill={false}>
         <div aria-hidden="true" className="overflow-hidden rounded-2xl border border-line bg-surface">
           <div className="bg-primary-dark px-5 py-4 font-display text-xl font-extrabold text-white">Pratinjau tampilan</div>
           <div className="flex flex-wrap items-center gap-3 p-4">

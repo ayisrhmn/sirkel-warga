@@ -9,7 +9,7 @@ import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { passwordProblem } from "@/lib/password-policy";
 import type { FormState } from "@/lib/form-state";
-import { checkPrimaryColor } from "@/lib/theme";
+import { parsePrimaryColor } from "@/lib/theme";
 
 export async function renameCommunity(
   slug: string,
@@ -118,7 +118,7 @@ export async function setPrimaryColor(
   formData: FormData,
 ): Promise<FormState> {
   const { community } = await requireMember(slug, { owner: true });
-  const color = checkPrimaryColor(formData.get("primaryColor"));
+  const color = parsePrimaryColor(formData.get("primaryColor"));
   if ("error" in color) return { error: color.error };
 
   await getDb().community.update({ where: { id: community.id }, data: { primaryColor: color.color } });

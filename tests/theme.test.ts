@@ -29,13 +29,13 @@ describe("community colour", () => {
     expect(await colorOf("gang-kenanga")).toBe("#0e6b58");
   });
 
-  test("a colour that is too light or not a colour is refused, and no community is made", async () => {
+  test("something that is not a colour is refused, a light colour is not", async () => {
     await register("owner_c");
     await login("owner_c");
     const before = await m.db.community.count();
-    for (const primaryColor of ["#ffff00", "kuning", "#fff;background:url(x)"]) {
-      const result = await m.createCommunity({}, form({ name: "Terlalu Terang", slug: "terlalu-terang", primaryColor }));
-      expect(result.error).toBeTruthy();
+    for (const primaryColor of ["kuning", "#fff;background:url(x)"]) {
+      const result = await m.createCommunity({}, form({ name: "Bukan Warna", slug: "bukan-warna", primaryColor }));
+      expect(result.error).toBe("Warna tidak valid.");
       expect(result.values?.primaryColor).toBe(primaryColor); // the form keeps what was typed
     }
     expect(await m.db.community.count()).toBe(before);
@@ -51,12 +51,17 @@ describe("community colour", () => {
     expect(await colorOf(slug)).toBe("#1d4ed8");
 
     await login("owner_a");
-    expect((await m.settings.setPrimaryColor(slug, {}, form({ primaryColor: "#f5b83d" }))).error).toContain("terlalu terang");
     expect((await m.settings.setPrimaryColor(slug, {}, form({}))).error).toBe("Warna tidak valid.");
+    expect((await m.settings.setPrimaryColor(slug, {}, form({ primaryColor: "#12" }))).error).toBe("Warna tidak valid.");
     expect(await colorOf(slug)).toBe("#1d4ed8");
 
     expect((await m.settings.setPrimaryColor(slug, {}, form({ primaryColor: "6D28D9" }))).ok).toBe("Warna komunitas disimpan.");
     expect(await colorOf(slug)).toBe("#6d28d9");
+
+    // A light yellow is the community's choice to make.
+    expect((await m.settings.setPrimaryColor(slug, {}, form({ primaryColor: "#EAB308" }))).ok).toBe("Warna komunitas disimpan.");
+    expect(await colorOf(slug)).toBe("#eab308");
+    await m.settings.setPrimaryColor(slug, {}, form({ primaryColor: "#6d28d9" }));
   });
 
   test("the colour travels in a backup and comes back on restore", async () => {
@@ -69,7 +74,7 @@ describe("community colour", () => {
     expect(await colorOf("pulih-warna")).toBe("#6d28d9");
   });
 
-  test("an old backup without a colour, or with an unreadable one, restores with the default", async () => {
+  test("an old backup without a colour, or with an invalid one, restores with the default", async () => {
     await login("owner_a");
     const backup = JSON.parse(await (await m.backupRoute(new Request("http://x"), params({ communitySlug: slug }))).text());
 
@@ -81,8 +86,8 @@ describe("community colour", () => {
 
     await register("owner_e");
     await login("owner_e");
-    backup.community.primaryColor = "#ffff00";
-    await rejects(m.restoreCommunity({}, restoreForm(JSON.stringify(backup), "pulih-terang")), "REDIRECT:/admin/pulih-terang");
-    expect(await colorOf("pulih-terang")).toBeNull();
+    backup.community.primaryColor = "kuning";
+    await rejects(m.restoreCommunity({}, restoreForm(JSON.stringify(backup), "pulih-salah")), "REDIRECT:/admin/pulih-salah");
+    expect(await colorOf("pulih-salah")).toBeNull();
   });
 });

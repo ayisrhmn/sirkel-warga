@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { checkPrimaryColor, contrastWithWhite, DEFAULT_PRIMARY, MIN_CONTRAST, normalizeHex, PRIMARY_PRESETS, themeStyle } from "./theme";
+import { contrastWarning, contrastWithWhite, DEFAULT_PRIMARY, MIN_CONTRAST, normalizeHex, parsePrimaryColor, PRIMARY_PRESETS, themeStyle } from "./theme";
 
 describe("normalizeHex", () => {
   test("accepts 3 and 6 digit colours with or without #, in any case", () => {
@@ -20,36 +20,58 @@ describe("contrast", () => {
     expect(contrastWithWhite("#ffffff")).toBeCloseTo(1, 1);
   });
 
-  test("every preset, and the default, is readable under white text", () => {
+  test("the default colour is readable under white text, and every preset is a valid colour", () => {
     expect(PRIMARY_PRESETS[0].value).toBe(DEFAULT_PRIMARY);
-    for (const { value } of PRIMARY_PRESETS) expect(contrastWithWhite(value)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    expect(contrastWithWhite(DEFAULT_PRIMARY)).toBeGreaterThanOrEqual(MIN_CONTRAST);
+    for (const { value } of PRIMARY_PRESETS) expect(normalizeHex(value)).toBe(value);
+  });
+
+  test("the presets include yellows", () => {
+    const names = PRIMARY_PRESETS.map((p) => p.name);
+    expect(names).toContain("Kuning");
+    expect(names).toContain("Emas");
   });
 });
 
-describe("checkPrimaryColor", () => {
-  test("returns the normalized colour when readable", () => {
-    expect(checkPrimaryColor("#1D4ED8")).toEqual({ color: "#1d4ed8" });
+describe("parsePrimaryColor", () => {
+  test("returns the normalized colour", () => {
+    expect(parsePrimaryColor("#1D4ED8")).toEqual({ color: "#1d4ed8" });
   });
 
-  test("refuses colours that are too light, and invalid input", () => {
-    expect(checkPrimaryColor("#ffff00")).toEqual({ error: expect.stringContaining("terlalu terang") });
-    expect(checkPrimaryColor("#f5b83d")).toEqual({ error: expect.stringContaining("terlalu terang") });
-    expect(checkPrimaryColor("hijau")).toEqual({ error: "Warna tidak valid." });
+  test("light colours are allowed: that is the community's choice", () => {
+    expect(parsePrimaryColor("#ffff00")).toEqual({ color: "#ffff00" });
+    expect(parsePrimaryColor("#ffffff")).toEqual({ color: "#ffffff" });
+  });
+
+  test("anything that is not a colour is refused", () => {
+    expect(parsePrimaryColor("hijau")).toEqual({ error: "Warna tidak valid." });
+    expect(parsePrimaryColor("#fff;background:url(x)")).toEqual({ error: "Warna tidak valid." });
+    expect(parsePrimaryColor(undefined)).toEqual({ error: "Warna tidak valid." });
+  });
+});
+
+describe("contrastWarning", () => {
+  test("warns for light colours only", () => {
+    expect(contrastWarning("#eab308")).toContain("terang");
+    expect(contrastWarning("#ffff00")).toContain("terang");
+    expect(contrastWarning("#0e6b58")).toBeNull();
+    expect(contrastWarning("#1d4ed8")).toBeNull();
   });
 });
 
 describe("themeStyle", () => {
-  test("no style for the default, nothing stored, or a bad stored value", () => {
+  test("no style for the default, nothing stored, or a stored value that is not a colour", () => {
     expect(themeStyle(null)).toBeUndefined();
     expect(themeStyle(DEFAULT_PRIMARY)).toBeUndefined();
-    expect(themeStyle("#ffff00")).toBeUndefined();
     expect(themeStyle("not a colour")).toBeUndefined();
   });
 
-  test("a chosen colour sets the primary token and derives the shades from it", () => {
-    const style = themeStyle("#1D4ED8") as Record<string, string>;
-    expect(style["--color-primary"]).toBe("#1d4ed8");
-    expect(style["--color-primary-dark"]).toContain("var(--color-primary)");
-    expect(style["--color-primary-tint"]).toContain("var(--color-primary)");
+  test("a chosen colour sets the primary token and derives the shades from it, light or not", () => {
+    for (const color of ["#1D4ED8", "#eab308"]) {
+      const style = themeStyle(color) as Record<string, string>;
+      expect(style["--color-primary"]).toBe(color.toLowerCase());
+      expect(style["--color-primary-dark"]).toContain("var(--color-primary)");
+      expect(style["--color-primary-tint"]).toContain("var(--color-primary)");
+    }
   });
 });

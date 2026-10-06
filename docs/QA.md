@@ -169,8 +169,8 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - [ ] Lolos
 
 **C6. Warna komunitas**
-- Di `/create-community` ada pemilih "Warna komunitas": 8 warna siap pakai (hijau terpilih), "Warna lain", dan kotak "Pratinjau tampilan" yang ikut berubah.
-- Pilih "Warna lain" lalu warna kuning terang. Diharapkan: muncul "Warna terlalu terang, teks putih di atasnya sulit dibaca. Pilih yang lebih gelap."; kalau tetap dikirim, server menolak dengan pesan yang sama dan isi form tidak hilang.
+- Di `/create-community` ada pemilih "Warna komunitas": 10 warna siap pakai (hijau terpilih, termasuk Kuning dan Emas), "Warna lain", dan kotak "Pratinjau tampilan" yang ikut berubah.
+- Pilih "Kuning" atau warna terang lewat "Warna lain". Diharapkan: muncul peringatan "Warna ini terang: teks putih di atasnya (mis. di tombol) bisa sulit dibaca.", pratinjau ikut kuning, dan komunitas tetap bisa dibuat dengan warna itu (hanya peringatan, tidak diblokir).
 - Pilih biru, buat komunitas. Diharapkan: panel admin dan halaman publik `/<slug>` (hero, tombol, ikon, tautan) memakai biru, sedangkan logo Sirkel tetap hijau dan aksen kuning tetap.
 - Sebagai super admin buka Pengaturan, ubah ke ungu, simpan. Diharapkan: "Warna komunitas disimpan.", panel admin dan halaman publik ikut ungu (halaman publik langsung, tanpa menunggu 1 jam). Sebagai Admin biasa, menu dan halaman Pengaturan tidak ada.
 - `/`, `/login`, `/register`, dan `/platform` tetap hijau.

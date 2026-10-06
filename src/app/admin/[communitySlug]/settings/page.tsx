@@ -37,7 +37,7 @@ export default async function SettingsPage({
         <FormPanel title="Warna komunitas">
           <p className={note}>
             Warna ini dipakai di halaman komunitas untuk warga dan di panel admin ini, supaya komunitasmu mudah dikenali.
-            Warna yang terlalu terang tidak bisa dipilih karena teks putih di atasnya jadi sulit dibaca.
+            Warna yang terang membuat teks putih di tombol sulit dibaca, jadi pilih yang cukup gelap kalau bisa.
           </p>
           <ColorForm slug={community.slug} color={community.primaryColor ?? DEFAULT_PRIMARY} />
         </FormPanel>

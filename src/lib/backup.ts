@@ -1,6 +1,6 @@
 import { validateDatasetInput, type DatasetInput } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
-import { checkPrimaryColor } from "@/lib/theme";
+import { parsePrimaryColor } from "@/lib/theme";
 import { parseRichDoc, type RichDoc } from "@/lib/rich-text";
 
 // A full backup of one community. It holds the content, not the secrets: no
@@ -106,9 +106,9 @@ const text = (v: unknown, min: number, max: number) =>
 const optionalText = (v: unknown, max: number) => v === null || text(v, 0, max);
 const isoDate = (v: unknown) => typeof v === "string" && !Number.isNaN(Date.parse(v));
 
-const readableColor = (value: unknown) => {
-  const checked = checkPrimaryColor(value);
-  return "color" in checked ? checked.color : null;
+const validColor = (value: unknown) => {
+  const parsed = parsePrimaryColor(value);
+  return "color" in parsed ? parsed.color : null;
 };
 
 const cleanDoc = (value: unknown): RichDoc | null => {
@@ -171,8 +171,8 @@ export function parseBackup(raw: string): { error: string } | { data: Backup } {
         name: community.name as string,
         // Older backups have no zone: restoring falls back to WIB.
         timezone: typeof community.timezone === "string" ? community.timezone : undefined,
-        // Older backups have no colour, and an unreadable one is dropped: the default applies.
-        primaryColor: readableColor(community.primaryColor),
+        // Older backups have no colour, and an invalid one is dropped: the default applies.
+        primaryColor: validColor(community.primaryColor),
       },
       members: [], // informational only, never restored
       // The documents are rebuilt from the allow-list, like on every save.

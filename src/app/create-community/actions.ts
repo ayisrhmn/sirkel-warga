@@ -10,7 +10,7 @@ import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { requireUser } from "@/lib/session";
 import { validateSlug } from "@/lib/slug";
-import { checkPrimaryColor, DEFAULT_PRIMARY } from "@/lib/theme";
+import { parsePrimaryColor, DEFAULT_PRIMARY } from "@/lib/theme";
 
 const PLATFORM_ADMIN_MESSAGE = "Akun platform admin tidak bisa membuat komunitas.";
 
@@ -31,7 +31,7 @@ export async function createCommunity(
   const slugError = validateSlug(slug);
   if (slugError) return { error: slugError, values };
 
-  const color = checkPrimaryColor(colorInput);
+  const color = parsePrimaryColor(colorInput);
   if ("error" in color) return { error: color.error, values };
 
   const db = getDb();

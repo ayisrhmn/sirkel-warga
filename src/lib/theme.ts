@@ -5,11 +5,12 @@ import type { CSSProperties } from "react";
 
 export const DEFAULT_PRIMARY = "#0e6b58";
 
-// White text sits on the primary colour (buttons, the page header), so the
-// colour must be dark enough for it to be readable: WCAG AA for normal text.
+// White text sits on the primary colour (buttons), so a light colour makes it
+// hard to read. That is the community's call, so it only earns a warning: the
+// contrast of white text must be at least this (WCAG AA for normal text).
 export const MIN_CONTRAST = 4.5;
 
-// Ready-made choices, each checked against MIN_CONTRAST (see theme.test.ts).
+// Ready-made choices. The yellows are light: they come with the warning.
 export const PRIMARY_PRESETS = [
   { name: "Hijau", value: DEFAULT_PRIMARY },
   { name: "Biru", value: "#1d4ed8" },
@@ -17,6 +18,8 @@ export const PRIMARY_PRESETS = [
   { name: "Magenta", value: "#a21caf" },
   { name: "Merah", value: "#be123c" },
   { name: "Oranye", value: "#b45309" },
+  { name: "Kuning", value: "#eab308" },
+  { name: "Emas", value: "#ca8a04" },
   { name: "Cokelat", value: "#78350f" },
   { name: "Abu tua", value: "#334155" },
 ] as const;
@@ -40,21 +43,25 @@ export function contrastWithWhite(hex: string): number {
   return 1.05 / (luminance + 0.05);
 }
 
-// Validates a colour typed or picked by a user. Run on the server for every
-// write: the form's own check is only a courtesy.
-export function checkPrimaryColor(input: unknown): { color: string } | { error: string } {
+// Reads a colour typed or picked by a user. Run on the server for every write:
+// only a real colour may be stored, because it ends up in a style attribute.
+export function parsePrimaryColor(input: unknown): { color: string } | { error: string } {
   const color = normalizeHex(input);
-  if (!color) return { error: "Warna tidak valid." };
-  if (contrastWithWhite(color) < MIN_CONTRAST)
-    return { error: "Warna terlalu terang, teks putih di atasnya sulit dibaca. Pilih yang lebih gelap." };
-  return { color };
+  return color ? { color } : { error: "Warna tidak valid." };
+}
+
+// A heads-up for light colours; the colour is still allowed.
+export function contrastWarning(color: string): string | null {
+  return contrastWithWhite(color) < MIN_CONTRAST
+    ? "Warna ini terang: teks putih di atasnya (mis. di tombol) bisa sulit dibaca."
+    : null;
 }
 
 // Style that re-points the primary tokens at a community's colour. Anything
-// stored that is not a readable colour is ignored, so a bad value can never
-// reach the page or break its contrast. No style for the default colour.
+// stored that is not a colour is ignored, so a bad value can never reach the
+// page. No style for the default colour.
 export function themeStyle(stored: string | null | undefined): CSSProperties | undefined {
-  const checked = checkPrimaryColor(stored);
+  const checked = parsePrimaryColor(stored);
   if ("error" in checked || checked.color === DEFAULT_PRIMARY) return undefined;
   return {
     "--color-primary": checked.color,
