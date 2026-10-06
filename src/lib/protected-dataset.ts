@@ -10,6 +10,7 @@ export type ProtectedDatasetResult =
   | {
       state: "locked";
       communityName: string;
+      primaryColor: string | null;
       title: string;
       period: string | null;
       hasPassword: boolean;
@@ -17,6 +18,7 @@ export type ProtectedDatasetResult =
   | {
       state: "open";
       communityName: string;
+      primaryColor: string | null;
       title: string;
       period: string | null;
       columns: string[];
@@ -34,7 +36,7 @@ export async function getProtectedDataset(
   const db = getDb();
   const community = await db.community.findUnique({
     where: { slug: communitySlug },
-    select: { id: true, name: true, protectedPasswordHash: true },
+    select: { id: true, name: true, primaryColor: true, protectedPasswordHash: true },
   });
   if (!community) return { state: "not-found" };
 
@@ -47,7 +49,7 @@ export async function getProtectedDataset(
   if (meta.visibility === "public") return { state: "public" };
 
   const hash = community.protectedPasswordHash;
-  const base = { communityName: community.name, title: meta.title, period: meta.period };
+  const base = { communityName: community.name, primaryColor: community.primaryColor, title: meta.title, period: meta.period };
 
   // Members of this community and platform admins read it without the password.
   // Everyone else, signed in or not, needs it every time.

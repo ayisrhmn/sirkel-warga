@@ -37,7 +37,7 @@ export default async function EventPage({
   ];
 
   return (
-    <PublicPage back={{ href: `/${community.slug}`, label: community.name }}>
+    <PublicPage themeColor={community.primaryColor} back={{ href: `/${community.slug}`, label: community.name }}>
       <div>
         <Chip tone="amber" icon={CalendarDays}>
           Agenda

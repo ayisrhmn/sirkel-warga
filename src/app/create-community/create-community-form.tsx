@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Button } from "@/components/atoms/button";
 import { Input, Select } from "@/components/atoms/input";
+import { ColorPicker } from "@/components/molecules/color-picker";
 import { Field } from "@/components/molecules/field";
 import { FormMessage } from "@/components/molecules/form-message";
 import type { FormState } from "@/lib/form-state";
@@ -54,6 +55,7 @@ export function CreateCommunityForm() {
           ))}
         </Select>
       </Field>
+      <ColorPicker defaultValue={state.values?.primaryColor} />
       <FormMessage state={state} />
       <Button type="submit" full disabled={pending}>
         {pending ? "Membuat..." : "Buat komunitas"}

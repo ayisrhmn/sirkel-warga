@@ -4,7 +4,7 @@ import { cx } from "@/lib/cx";
 export function LogoMark({ size = 32, light = false }: { size?: number; light?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="shrink-0">
-      <circle cx="16" cy="16" r="11" fill="none" strokeWidth="5" stroke={light ? "#ffffff" : "var(--color-primary)"} />
+      <circle cx="16" cy="16" r="11" fill="none" strokeWidth="5" stroke={light ? "#ffffff" : "var(--color-brand)"} />
       <circle cx="25.5" cy="7.5" r="5" fill="var(--color-accent)" />
     </svg>
   );
@@ -16,7 +16,7 @@ export function Wordmark({ light = false, size = "md" }: { light?: boolean; size
   return (
     <span className="inline-flex items-center gap-2.5">
       <LogoMark size={mark} light={light} />
-      <span className={cx("font-display font-extrabold tracking-tight", text, light ? "text-white" : "text-primary-dark")}>Sirkel</span>
+      <span className={cx("font-display font-extrabold tracking-tight", text, light ? "text-white" : "text-brand-dark")}>Sirkel</span>
     </span>
   );
 }

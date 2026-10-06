@@ -32,6 +32,9 @@ model Community {
   timezone              String         @default("Asia/Jakarta")
   // scrypt hash for the `protected` datasets of this community (Phase 3).
   protectedPasswordHash String?        @map("protected_password_hash")
+  // The community's primary colour as "#rrggbb", or null for the default.
+  // Validated for readable contrast by `checkPrimaryColor` before it is saved.
+  primaryColor          String?        @map("primary_color")
   createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   announcements         Announcement[]
   events                Event[]

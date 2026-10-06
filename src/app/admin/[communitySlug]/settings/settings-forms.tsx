@@ -6,10 +6,11 @@ import { Button } from "@/components/atoms/button";
 import { Input, Select } from "@/components/atoms/input";
 import { Field } from "@/components/molecules/field";
 import { FormMessage } from "@/components/molecules/form-message";
+import { ColorPicker } from "@/components/molecules/color-picker";
 import { PasswordInput } from "@/components/molecules/password-input";
 import type { FormState } from "@/lib/form-state";
 import { TIME_ZONES, type TimeZone } from "@/lib/datetime";
-import { deleteCommunity, renameCommunity, setProtectedPassword, setTimezone } from "./actions";
+import { deleteCommunity, renameCommunity, setPrimaryColor, setProtectedPassword, setTimezone } from "./actions";
 
 export function RenameCommunityForm({ slug, name }: { slug: string; name: string }) {
   const [state, action, pending] = useActionState(
@@ -91,6 +92,20 @@ export function TimezoneForm({ slug, timezone }: { slug: string; timezone: TimeZ
       <FormMessage state={state} />
       <Button type="submit" full disabled={pending}>
         {pending ? "Menyimpan..." : "Simpan zona waktu"}
+      </Button>
+    </form>
+  );
+}
+
+export function ColorForm({ slug, color }: { slug: string; color: string }) {
+  const [state, action, pending] = useActionState(setPrimaryColor.bind(null, slug), {} as FormState);
+
+  return (
+    <form action={action} className="flex flex-col gap-5">
+      <ColorPicker defaultValue={color} />
+      <FormMessage state={state} />
+      <Button type="submit" full disabled={pending}>
+        {pending ? "Menyimpan..." : "Simpan warna"}
       </Button>
     </form>
   );

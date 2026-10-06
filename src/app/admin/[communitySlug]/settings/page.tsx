@@ -5,8 +5,10 @@ import { FormPanel } from "@/components/molecules/form-panel";
 import { PageHeader } from "@/components/molecules/page-header";
 import { requireMember } from "@/lib/access";
 import { asTimeZone } from "@/lib/datetime";
+import { DEFAULT_PRIMARY } from "@/lib/theme";
 import { hasProtectedPassword } from "@/lib/queries/communities";
 import {
+  ColorForm,
   DeleteCommunityForm,
   ProtectedPasswordForm,
   RenameCommunityForm,
@@ -31,6 +33,13 @@ export default async function SettingsPage({
           <p className={note}>
             Slug <span className="font-mono">/{community.slug}</span> tidak bisa diubah.
           </p>
+        </FormPanel>
+        <FormPanel title="Warna komunitas">
+          <p className={note}>
+            Warna ini dipakai di halaman komunitas untuk warga dan di panel admin ini, supaya komunitasmu mudah dikenali.
+            Warna yang terlalu terang tidak bisa dipilih karena teks putih di atasnya jadi sulit dibaca.
+          </p>
+          <ColorForm slug={community.slug} color={community.primaryColor ?? DEFAULT_PRIMARY} />
         </FormPanel>
         <FormPanel title="Zona waktu">
           <p className={note}>

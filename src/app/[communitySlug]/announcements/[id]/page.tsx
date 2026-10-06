@@ -30,7 +30,7 @@ export default async function AnnouncementPage({
   if (!announcement) notFound();
 
   return (
-    <PublicPage back={{ href: `/${community.slug}`, label: community.name }}>
+    <PublicPage themeColor={community.primaryColor} back={{ href: `/${community.slug}`, label: community.name }}>
       <div>
         <Chip tone="green" icon={Megaphone}>
           Pengumuman

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 
-const communitySelect = { id: true, slug: true, name: true, timezone: true } as const;
+const communitySelect = { id: true, slug: true, name: true, timezone: true, primaryColor: true } as const;
 
 // The single gate for community admin pages and Server Actions: the signed-in
 // user must be a member of this community (and its owner when `owner` is set).

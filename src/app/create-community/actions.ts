@@ -10,6 +10,7 @@ import { getDb } from "@/lib/db";
 import type { FormState } from "@/lib/form-state";
 import { requireUser } from "@/lib/session";
 import { validateSlug } from "@/lib/slug";
+import { checkPrimaryColor, DEFAULT_PRIMARY } from "@/lib/theme";
 
 const PLATFORM_ADMIN_MESSAGE = "Akun platform admin tidak bisa membuat komunitas.";
 
@@ -22,12 +23,16 @@ export async function createCommunity(
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
   const timezone = asTimeZone(String(formData.get("timezone") ?? ""));
-  const values = { name, slug };
+  const colorInput = String(formData.get("primaryColor") ?? DEFAULT_PRIMARY);
+  const values = { name, slug, primaryColor: colorInput };
 
   if (name.length < 3 || name.length > 80)
     return { error: "Nama komunitas 3-80 karakter.", values };
   const slugError = validateSlug(slug);
   if (slugError) return { error: slugError, values };
+
+  const color = checkPrimaryColor(colorInput);
+  if ("error" in color) return { error: color.error, values };
 
   const db = getDb();
   if ((await db.membership.count({ where: { userId: user.id } })) > 0)
@@ -39,6 +44,7 @@ export async function createCommunity(
         name,
         slug,
         timezone,
+        primaryColor: color.color,
         memberships: { create: { userId: user.id, role: "owner" } },
       },
     });
@@ -90,6 +96,7 @@ export async function restoreCommunity(
             slug,
             name: backup.community.name,
             timezone: asTimeZone(backup.community.timezone),
+            primaryColor: backup.community.primaryColor,
             memberships: { create: { userId: user.id, role: "owner" } },
           },
         });

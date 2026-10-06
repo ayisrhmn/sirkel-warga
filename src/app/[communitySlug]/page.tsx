@@ -1,5 +1,6 @@
 import { CalendarDays, Megaphone, Phone, Table2 } from "lucide-react";
 import { Container } from "@/components/atoms/container";
+import { ThemeScope } from "@/components/atoms/theme-scope";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { PageSection } from "@/components/molecules/page-section";
 import { AnnouncementCard } from "@/components/organisms/announcement-card";
@@ -47,7 +48,7 @@ export default async function CommunityPage({
   ];
 
   return (
-    <>
+    <ThemeScope color={community.primaryColor}>
       <CommunityHero name={community.name} sections={sections} />
       <Container className="py-8 lg:py-12">
         <main className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
@@ -97,6 +98,6 @@ export default async function CommunityPage({
         </main>
       </Container>
       <SiteFooter />
-    </>
+    </ThemeScope>
   );
 }

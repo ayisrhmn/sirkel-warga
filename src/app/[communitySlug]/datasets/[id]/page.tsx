@@ -30,7 +30,7 @@ export default async function DatasetPage({
     redirect(`/${community.slug}/protected/${dataset.id}`);
 
   return (
-    <PublicPage size="content" back={{ href: `/${community.slug}`, label: community.name }}>
+    <PublicPage size="content" themeColor={community.primaryColor} back={{ href: `/${community.slug}`, label: community.name }}>
       <div className="flex flex-wrap gap-2.5">
         <Chip tone="green" icon={Table2}>
           Laporan

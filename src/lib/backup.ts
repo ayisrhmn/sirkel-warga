@@ -1,5 +1,6 @@
 import { validateDatasetInput, type DatasetInput } from "@/lib/dataset";
 import { getDb } from "@/lib/db";
+import { checkPrimaryColor } from "@/lib/theme";
 import { parseRichDoc, type RichDoc } from "@/lib/rich-text";
 
 // A full backup of one community. It holds the content, not the secrets: no
@@ -9,7 +10,7 @@ export type Backup = {
   format: "sirkel-backup";
   version: 1;
   exportedAt: string;
-  community: { slug: string; name: string; timezone?: string };
+  community: { slug: string; name: string; timezone?: string; primaryColor?: string | null };
   members: { username: string | null; name: string; role: "owner" | "admin" }[];
   announcements: {
     title: string;
@@ -36,6 +37,7 @@ export async function buildBackup(community: {
   slug: string;
   name: string;
   timezone: string;
+  primaryColor: string | null;
 }): Promise<Backup> {
   const db = getDb();
   const where = { communityId: community.id };
@@ -71,7 +73,7 @@ export async function buildBackup(community: {
     format: "sirkel-backup",
     version: 1,
     exportedAt: new Date().toISOString(),
-    community: { slug: community.slug, name: community.name, timezone: community.timezone },
+    community: { slug: community.slug, name: community.name, timezone: community.timezone, primaryColor: community.primaryColor },
     members: members.map((m) => ({ ...m.user, role: m.role })),
     announcements: announcements.map((a) => ({
       ...a,
@@ -103,6 +105,11 @@ const text = (v: unknown, min: number, max: number) =>
   typeof v === "string" && v.length >= min && v.length <= max;
 const optionalText = (v: unknown, max: number) => v === null || text(v, 0, max);
 const isoDate = (v: unknown) => typeof v === "string" && !Number.isNaN(Date.parse(v));
+
+const readableColor = (value: unknown) => {
+  const checked = checkPrimaryColor(value);
+  return "color" in checked ? checked.color : null;
+};
 
 const cleanDoc = (value: unknown): RichDoc | null => {
   if (value == null) return null;
@@ -164,6 +171,8 @@ export function parseBackup(raw: string): { error: string } | { data: Backup } {
         name: community.name as string,
         // Older backups have no zone: restoring falls back to WIB.
         timezone: typeof community.timezone === "string" ? community.timezone : undefined,
+        // Older backups have no colour, and an unreadable one is dropped: the default applies.
+        primaryColor: readableColor(community.primaryColor),
       },
       members: [], // informational only, never restored
       // The documents are rebuilt from the allow-list, like on every save.

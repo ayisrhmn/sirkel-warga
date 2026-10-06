@@ -12,7 +12,7 @@ export function getCommunity(slug: string) {
     () =>
       getDb().community.findUnique({
         where: { slug },
-        select: { id: true, slug: true, name: true, timezone: true },
+        select: { id: true, slug: true, name: true, timezone: true, primaryColor: true },
       }),
     ["community", slug],
     // Also expires after an hour, so lookups of slugs that never existed (scans,

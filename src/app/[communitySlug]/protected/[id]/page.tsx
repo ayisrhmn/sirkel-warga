@@ -26,7 +26,7 @@ export default async function ProtectedDatasetPage({
   if (result.state === "public") redirect(`/${communitySlug}/datasets/${id}`);
 
   return (
-    <PublicPage size="content" back={{ href: `/${communitySlug}`, label: result.communityName }}>
+    <PublicPage size="content" themeColor={result.primaryColor} back={{ href: `/${communitySlug}`, label: result.communityName }}>
       <div className="flex flex-wrap gap-2.5">
         <Chip tone="amber" icon={Lock}>
           Dilindungi

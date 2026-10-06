@@ -38,7 +38,7 @@ Tidak ada variabel dengan prefix `NEXT_PUBLIC_`. `ADMIN_PASSWORD` dan `PROTECTED
 Tabel konten:
 
 ```
-communities  (id, slug UNIQUE, name, protected_password_hash NULL, created_at)
+communities  (id, slug UNIQUE, name, protected_password_hash NULL, primary_color NULL, created_at)
 announcements(id, community_id FK, title, body, published_at, status draft|public, created_at, updated_at)
 events       (id, community_id FK, title, starts_at, location, description, created_at, updated_at)
 contacts     (id, community_id FK, name, role, phone, sort_order, created_at, updated_at)

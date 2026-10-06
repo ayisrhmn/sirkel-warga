@@ -41,6 +41,8 @@ Kapan membuat komponen baru: bila pola yang sama muncul di dua tempat atau lebih
 
 Warna, font, dan radius didefinisikan sekali di `src/app/globals.css` (`@theme`). Komponen memakai nama token (`bg-primary`, `text-muted`, `border-line`), bukan kode warna. Font dimuat lewat `next/font` di `src/app/layout.tsx` (Bricolage Grotesque untuk judul, Plus Jakarta Sans untuk isi). Helper `cx` (`src/lib/cx.ts`) menggabungkan nama kelas.
 
+Warna utama tiap komunitas disimpan di kolom `primary_color` dan dipasang oleh `ThemeScope` (atom) yang menimpa token `--color-primary`; bayangan gelap dan terangnya dihitung di CSS (`color-mix`). Warna divalidasi kontrasnya terhadap teks putih di server (`checkPrimaryColor`, `src/lib/theme.ts`). Warna merek Sirkel (`--color-brand`) tidak ikut berubah.
+
 ## Menambah halaman admin
 
 1. Fungsi baca data di `src/lib/queries/` (dibatasi `communityId` dari `requireMember`).

@@ -14,6 +14,9 @@
   --color-primary: #0e6b58;
   --color-primary-dark: #0a4d40;
   --color-primary-tint: #ddefe8;
+  /* The Sirkel brand colours: they do not change with a community's colour. */
+  --color-brand: #0e6b58;
+  --color-brand-dark: #0a4d40;
   --color-accent: #f5b83d;
   --color-accent-tint: #fdf0cf;
   --color-accent-ink: #6b4a00;

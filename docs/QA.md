@@ -168,6 +168,14 @@ Tandai tiap skenario dengan `[x]` jika lolos. Jika gagal, catat apa yang kamu li
 - Sebagai `qa_owner1`, buka `/create-community` secara langsung. Diharapkan: dialihkan ke `/admin`.
 - [ ] Lolos
 
+**C6. Warna komunitas**
+- Di `/create-community` ada pemilih "Warna komunitas": 8 warna siap pakai (hijau terpilih), "Warna lain", dan kotak "Pratinjau tampilan" yang ikut berubah.
+- Pilih "Warna lain" lalu warna kuning terang. Diharapkan: muncul "Warna terlalu terang, teks putih di atasnya sulit dibaca. Pilih yang lebih gelap."; kalau tetap dikirim, server menolak dengan pesan yang sama dan isi form tidak hilang.
+- Pilih biru, buat komunitas. Diharapkan: panel admin dan halaman publik `/<slug>` (hero, tombol, ikon, tautan) memakai biru, sedangkan logo Sirkel tetap hijau dan aksen kuning tetap.
+- Sebagai super admin buka Pengaturan, ubah ke ungu, simpan. Diharapkan: "Warna komunitas disimpan.", panel admin dan halaman publik ikut ungu (halaman publik langsung, tanpa menunggu 1 jam). Sebagai Admin biasa, menu dan halaman Pengaturan tidak ada.
+- `/`, `/login`, `/register`, dan `/platform` tetap hijau.
+- [ ] Lolos
+
 ---
 
 ## D. Role, isolasi, cadangan, akses darurat, dan platform admin
@@ -551,7 +559,7 @@ Siapkan: Komunitas 1 dengan satu laporan "Dilindungi" (mis. impor `1-iuran-oktob
 |---|---|---|---|---|
 | A. Halaman publik dasar | 3 | | | |
 | B. Akun dan persetujuan | 8 | | | |
-| C. Komunitas | 5 | | | |
+| C. Komunitas | 6 | | | |
 | D. Role, isolasi, cadangan, akses darurat, dan platform admin | 11 | | | |
 | E. Konten publik | 8 | | | |
 | F. Laporan dari Excel | 13 | | | |

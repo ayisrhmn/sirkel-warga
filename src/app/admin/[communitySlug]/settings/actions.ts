@@ -9,6 +9,7 @@ import { getDb } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { passwordProblem } from "@/lib/password-policy";
 import type { FormState } from "@/lib/form-state";
+import { checkPrimaryColor } from "@/lib/theme";
 
 export async function renameCommunity(
   slug: string,
@@ -107,4 +108,22 @@ export async function setTimezone(
   revalidatePath(`/${slug}`);
   revalidatePath(`/admin/${slug}`, "layout");
   return { ok: "Zona waktu disimpan." };
+}
+
+// The colour that gives the community's public page and admin panel their
+// own look. Rejected when white text on it would be hard to read.
+export async function setPrimaryColor(
+  slug: string,
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { community } = await requireMember(slug, { owner: true });
+  const color = checkPrimaryColor(formData.get("primaryColor"));
+  if ("error" in color) return { error: color.error };
+
+  await getDb().community.update({ where: { id: community.id }, data: { primaryColor: color.color } });
+  updateTag(communityTag(slug));
+  revalidatePath(`/${slug}`);
+  revalidatePath(`/admin/${slug}`, "layout");
+  return { ok: "Warna komunitas disimpan." };
 }
