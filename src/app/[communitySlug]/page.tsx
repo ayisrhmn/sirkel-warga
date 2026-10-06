@@ -1,6 +1,7 @@
-import { CalendarDays, Megaphone, Phone, Table2 } from "lucide-react";
+import { CalendarDays, Megaphone, Table2 } from "lucide-react";
 import { Container } from "@/components/atoms/container";
 import { ThemeScope } from "@/components/atoms/theme-scope";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
 import { EmptyState } from "@/components/molecules/empty-state";
 import { PageSection } from "@/components/molecules/page-section";
 import { AnnouncementCard } from "@/components/organisms/announcement-card";
@@ -44,7 +45,7 @@ export default async function CommunityPage({
     { id: "pengumuman", label: "Pengumuman", icon: Megaphone },
     { id: "agenda", label: "Agenda", icon: CalendarDays },
     ...(datasets.length > 0 ? [{ id: "laporan", label: "Laporan", icon: Table2 }] : []),
-    { id: "kontak", label: "Kontak", icon: Phone },
+    { id: "kontak", label: "Kontak", icon: WhatsAppIcon },
   ];
 
   return (
@@ -88,7 +89,7 @@ export default async function CommunityPage({
                 ))}
               </PageSection>
             )}
-            <PageSection id="kontak" icon={Phone} tone="amber" title="Kontak penting">
+            <PageSection id="kontak" icon={WhatsAppIcon} tone="amber" title="Kontak penting">
               {contacts.length === 0 && <EmptyState>Belum ada kontak.</EmptyState>}
               {contacts.map((c) => (
                 <ContactCard key={c.id} name={c.name} role={c.role} phone={c.phone} whatsappHref={whatsappUrl(c.phone)} />

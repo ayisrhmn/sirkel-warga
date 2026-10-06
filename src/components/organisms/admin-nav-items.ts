@@ -1,4 +1,5 @@
-import { CalendarDays, LayoutDashboard, Megaphone, Phone, SlidersHorizontal, Table2, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Megaphone, SlidersHorizontal, Table2, Users, type LucideIcon } from "lucide-react";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
 
 export type AdminNavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 
@@ -13,7 +14,7 @@ export function adminNavSections(slug: string, owner: boolean): { label?: string
       items: [
         { href: `${base}/announcements`, label: "Pengumuman", icon: Megaphone },
         { href: `${base}/events`, label: "Agenda", icon: CalendarDays },
-        { href: `${base}/contacts`, label: "Kontak", icon: Phone },
+        { href: `${base}/contacts`, label: "Kontak", icon: WhatsAppIcon },
         { href: `${base}/datasets`, label: "Laporan", icon: Table2 },
       ],
     },

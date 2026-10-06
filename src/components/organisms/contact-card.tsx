@@ -1,5 +1,5 @@
-import { MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/atoms/avatar";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
 
 // A person to call, with a one-tap WhatsApp button. The number stays visible
 // because many people want to read or copy it.
@@ -19,7 +19,7 @@ export function ContactCard({ name, role, phone, whatsappHref }: { name: string;
         aria-label={`Chat WhatsApp ${name}, ${phone}`}
         className="flex size-13 shrink-0 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-dark"
       >
-        <MessageCircle aria-hidden="true" size={24} />
+        <WhatsAppIcon aria-hidden="true" size={26} />
       </a>
     </article>
   );

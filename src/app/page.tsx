@@ -1,16 +1,18 @@
-import { CalendarDays, Link2, LogIn, Megaphone, Phone, Table2 } from "lucide-react";
+import { CalendarDays, Link2, LogIn, Megaphone, Table2 } from "lucide-react";
 import { ButtonLink } from "@/components/atoms/button";
 import { Container } from "@/components/atoms/container";
 import { Heading } from "@/components/atoms/heading";
 import { IconTile } from "@/components/atoms/icon-tile";
 import { Wordmark } from "@/components/atoms/logo";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
+
 import { Ring, Dot } from "@/components/atoms/ring";
 import { PhoneMockup } from "@/components/organisms/phone-mockup";
 
 const FEATURES = [
   { icon: Megaphone, tone: "green", title: "Pengumuman", text: "Kabar terbaru dari pengurus." },
   { icon: CalendarDays, tone: "amber", title: "Agenda", text: "Jadwal rapat dan kegiatan." },
-  { icon: Phone, tone: "green", title: "Kontak penting", text: "Chat WhatsApp pengurus sekali tap." },
+  { icon: WhatsAppIcon, tone: "green", title: "Kontak penting", text: "Chat WhatsApp pengurus sekali tap." },
   { icon: Table2, tone: "amber", title: "Laporan", text: "Kas dan data lingkungan dalam tabel." },
 ] as const;
 

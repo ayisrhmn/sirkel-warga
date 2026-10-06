@@ -1,5 +1,6 @@
-import { Archive, CalendarDays, ExternalLink, Megaphone, Phone, Plus, Table2, Upload } from "lucide-react";
+import { Archive, CalendarDays, ExternalLink, Megaphone, Plus, Table2, Upload } from "lucide-react";
 import { ButtonLink, buttonClass } from "@/components/atoms/button";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
 import { FormPanel } from "@/components/molecules/form-panel";
 import { PageHeader } from "@/components/molecules/page-header";
 import { StatTile } from "@/components/molecules/stat-tile";
@@ -31,7 +32,7 @@ export default async function CommunityAdminPage({
       <div className="flex flex-wrap gap-4">
         <StatTile href={`${base}/announcements`} icon={Megaphone} tone="green" value={announcements} label="Pengumuman publik" note={`${drafts} draft`} />
         <StatTile href={`${base}/events`} icon={CalendarDays} tone="amber" value={events} label="Agenda" />
-        <StatTile href={`${base}/contacts`} icon={Phone} tone="green" value={contacts} label="Kontak penting" />
+        <StatTile href={`${base}/contacts`} icon={WhatsAppIcon} tone="green" value={contacts} label="Kontak penting" />
         <StatTile href={`${base}/datasets`} icon={Table2} tone="amber" value={datasets} label="Laporan" />
       </div>
       <div className="grid items-start gap-5 md:grid-cols-2">

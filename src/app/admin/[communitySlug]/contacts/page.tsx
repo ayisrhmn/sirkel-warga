@@ -1,7 +1,7 @@
-import { MessageCircle } from "lucide-react";
 import { Avatar } from "@/components/atoms/avatar";
 import { Chip } from "@/components/atoms/chip";
 import { Heading } from "@/components/atoms/heading";
+import { WhatsAppIcon } from "@/components/atoms/whatsapp-icon";
 import { DeleteButton } from "@/components/molecules/delete-button";
 import { EditDisclosure } from "@/components/molecules/edit-disclosure";
 import { EmptyState } from "@/components/molecules/empty-state";
@@ -45,7 +45,7 @@ export default async function ContactsPage({
                   meta={
                     <>
                       <span>{item.role}</span>
-                      <MetaItem icon={MessageCircle}>{item.phone}</MetaItem>
+                      <MetaItem icon={WhatsAppIcon}>{item.phone}</MetaItem>
                       <Chip>Urutan {item.sortOrder}</Chip>
                     </>
                   }
