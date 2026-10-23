@@ -16,7 +16,14 @@ function create() {
       ? "postgresql://build:build@localhost:5432/build"
       : undefined);
   if (!connectionString) throw new Error("DATABASE_URL is not set");
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  // The pg adapter ignores `?schema=` (which `prisma migrate` honours), so read
+  // it here to keep the app and the migrations on the same Postgres schema.
+  const url = new URL(connectionString);
+  const schema = url.searchParams.get("schema") ?? undefined;
+  url.searchParams.delete("schema");
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString: url.toString() }, { schema }),
+  });
 }
 
 export function getDb() {
